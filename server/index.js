@@ -1,3 +1,4 @@
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -6,6 +7,10 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
+
+const app = express();
+app.use(cors());
+app.use(express.json());
 
 // --- Simple admin check (by email, for demo) ---
 const ADMIN_EMAILS = [process.env.ADMIN_EMAIL || 'admin@patak.local'];
@@ -23,8 +28,7 @@ function adminOnly(req, res, next) {
   }
 }
 
-
-// Create a new user (admin only)
+// --- Admin endpoints (must be after app is initialized) ---
 app.post('/api/admin/create-user', adminOnly, async (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
@@ -38,7 +42,6 @@ app.post('/api/admin/create-user', adminOnly, async (req, res) => {
   res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name } });
 });
 
-// Assign a device to a user (admin only)
 app.post('/api/admin/assign-device', adminOnly, (req, res) => {
   const { email, deviceId } = req.body;
   if (!email || !deviceId) return res.status(400).json({ error: 'Email and deviceId required' });
@@ -52,7 +55,6 @@ app.post('/api/admin/assign-device', adminOnly, (req, res) => {
   res.json({ ok: true, user: { id: user.id, email: user.email, devices: user.devices } });
 });
 
-// List all users and their devices (admin only)
 app.get('/api/admin/list-users', adminOnly, (req, res) => {
   let users = [];
   try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
