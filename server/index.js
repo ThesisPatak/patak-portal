@@ -9,6 +9,11 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 
 
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 // --- Simple admin check (by email, for demo) ---
 const ADMIN_EMAILS = [process.env.ADMIN_EMAIL || 'admin@patak.local'];
 function adminOnly(req, res, next) {
