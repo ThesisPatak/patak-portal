@@ -23,9 +23,6 @@ function adminOnly(req, res, next) {
   }
 }
 
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 // Create a new user (admin only)
 app.post('/api/admin/create-user', adminOnly, async (req, res) => {
