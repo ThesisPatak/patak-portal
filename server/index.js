@@ -1,3 +1,17 @@
+
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 // Get all readings for a house, grouped by device
 app.get('/api/readings/:houseId', (req, res) => {
   const { houseId } = req.params;
@@ -13,14 +27,6 @@ app.get('/api/readings/:houseId', (req, res) => {
   }
   res.json({ houseId, byDevice });
 });
-import express from 'express'
-import fs from 'fs'
-import path from 'path'
-import crypto from 'crypto'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import cors from 'cors'
-import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
