@@ -1,3 +1,12 @@
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+
 // --- Simple admin check (by email, for demo) ---
 const ADMIN_EMAILS = [process.env.ADMIN_EMAIL || 'admin@patak.local'];
 function adminOnly(req, res, next) {
@@ -13,6 +22,10 @@ function adminOnly(req, res, next) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 }
+
+const app = express();
+app.use(cors());
+app.use(express.json());
 
 // Create a new user (admin only)
 app.post('/api/admin/create-user', adminOnly, async (req, res) => {
@@ -48,15 +61,6 @@ app.get('/api/admin/list-users', adminOnly, (req, res) => {
   try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
   res.json(users.map(u => ({ id: u.id, email: u.email, name: u.name, devices: u.devices })));
 });
-
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
 
 const app = express();
 app.use(cors());
