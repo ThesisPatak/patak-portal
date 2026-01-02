@@ -51,11 +51,8 @@ function writeJSON(file, obj) {
   fs.writeFileSync(file, JSON.stringify(obj, null, 2))
 }
 
-ensureDataFiles()
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+ensureDataFiles()
 
 // Serve a minimal web UI for account and device management
 app.use(express.static(path.join(__dirname, 'public')))
