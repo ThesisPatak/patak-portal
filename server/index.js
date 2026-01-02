@@ -1,3 +1,53 @@
+// --- Simple admin check (by email, for demo) ---
+const ADMIN_EMAILS = [process.env.ADMIN_EMAIL || 'admin@patak.local'];
+function adminOnly(req, res, next) {
+  const h = req.headers.authorization;
+  if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
+  const token = h.slice(7);
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (!ADMIN_EMAILS.includes(payload.email)) return res.status(403).json({ error: 'Admin only' });
+    req.user = payload;
+    next();
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+// Create a new user (admin only)
+app.post('/api/admin/create-user', adminOnly, async (req, res) => {
+  const { email, password, name } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  let users = [];
+  try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
+  if (users.find(u => u.email === email)) return res.status(400).json({ error: 'User already exists' });
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = { id: crypto.randomUUID(), email, passwordHash, name: name || '', devices: [] };
+  users.push(user);
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name } });
+});
+
+// Assign a device to a user (admin only)
+app.post('/api/admin/assign-device', adminOnly, (req, res) => {
+  const { email, deviceId } = req.body;
+  if (!email || !deviceId) return res.status(400).json({ error: 'Email and deviceId required' });
+  let users = [];
+  try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (!user.devices) user.devices = [];
+  if (!user.devices.includes(deviceId)) user.devices.push(deviceId);
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  res.json({ ok: true, user: { id: user.id, email: user.email, devices: user.devices } });
+});
+
+// List all users and their devices (admin only)
+app.get('/api/admin/list-users', adminOnly, (req, res) => {
+  let users = [];
+  try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
+  res.json(users.map(u => ({ id: u.id, email: u.email, name: u.name, devices: u.devices })));
+});
 
 import express from 'express';
 import fs from 'fs';
