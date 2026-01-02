@@ -63,10 +63,6 @@ app.get('/api/admin/list-users', adminOnly, (req, res) => {
   res.json(users.map(u => ({ id: u.id, email: u.email, name: u.name, devices: u.devices })));
 });
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-
 // Get all readings for a house, grouped by device
 app.get('/api/readings/:houseId', (req, res) => {
   const { houseId } = req.params;
