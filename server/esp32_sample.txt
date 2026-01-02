@@ -1,0 +1,22 @@
+ESP32 pairing and heartbeat example (pseudocode)
+
+- On first boot generate deviceId and deviceKey and store in NVS.
+- Show QR containing JSON: { "deviceId": "<id>", "deviceKey": "<key>" }
+
+HTTP heartbeat example (Arduino-style pseudocode):
+
+POST /devices/heartbeat
+Content-Type: application/json
+{
+  "deviceId": "my-device-123",
+  "deviceKey": "super-secret-generated-on-device"
+}
+
+Server will create or update the device record and set lastSeen and lastIP.
+
+Pairing via mobile/web:
+- Mobile scans the QR and sends POST /devices/register with user JWT and the same payload.
+- Server will bind the device to the user account if unclaimed.
+
+Security notes:
+- In production, use TLS and avoid sending raw deviceKey repeatedly; instead exchange a short-lived token after initial onboarding.

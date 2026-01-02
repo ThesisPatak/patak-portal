@@ -1,0 +1,27 @@
+{
+  "readings": [],
+  "summary": {
+    "house1": {
+      "totalLiters": 783.654835,
+      "cubicMeters": 0.783655,
+      "last": {
+        "house": "house1",
+        "totalLiters": 783.654835,
+        "cubicMeters": 0.783655,
+        "timestamp": "2025-12-23T08:15:15.000Z",
+        "receivedAt": "2025-12-23T08:15:16.469Z"
+      }
+    },
+    "House1": {
+      "totalLiters": 100,
+      "cubicMeters": 0.1,
+      "last": {
+        "cubicMeters": 0.1,
+        "house": "House1",
+        "totalLiters": 100,
+        "receivedAt": "2025-12-15T06:53:04.825Z",
+        "timestamp": "2025-12-15T06:53:04.825Z"
+      }
+    }
+  }
+}

@@ -1,0 +1,2037 @@
+{
+  "readings": [
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:22:12.102Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:41:45.173Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:42:00.242Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:42:15.318Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:42:30.538Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:42:45.703Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:43:00.852Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:43:15.927Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:43:31.017Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:43:46.097Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:44:01.265Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:44:16.528Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:44:31.679Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:44:46.750Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:45:01.819Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:45:17.043Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:45:32.197Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:45:47.352Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:46:02.441Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:46:17.515Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:46:32.818Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:46:47.987Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:47:03.235Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:47:36.522Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:47:51.602Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:48:06.723Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:48:21.813Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:48:37.133Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:48:52.296Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:49:07.445Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:49:22.517Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:49:37.659Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:49:53.015Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:50:08.275Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:50:23.355Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:50:38.493Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:50:53.637Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:51:08.718Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:51:23.950Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:51:39.208Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:51:54.576Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:52:09.929Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:52:25.286Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:52:40.441Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:52:55.598Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:53:10.863Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:53:26.221Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:53:41.375Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 18345,
+      "cubicMeters": 18.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T03:53:56.637Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.007Z",
+      "receivedAt": "2025-12-15T03:59:02.702Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.007Z",
+      "receivedAt": "2025-12-15T03:59:03.217Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.008Z",
+      "receivedAt": "2025-12-15T03:59:04.135Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.009Z",
+      "receivedAt": "2025-12-15T03:59:05.108Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.010Z",
+      "receivedAt": "2025-12-15T03:59:06.124Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.011Z",
+      "receivedAt": "2025-12-15T03:59:07.310Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.012Z",
+      "receivedAt": "2025-12-15T03:59:08.234Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.013Z",
+      "receivedAt": "2025-12-15T03:59:09.162Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.014Z",
+      "receivedAt": "2025-12-15T03:59:10.192Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.015Z",
+      "receivedAt": "2025-12-15T03:59:11.201Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.016Z",
+      "receivedAt": "2025-12-15T03:59:12.225Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.017Z",
+      "receivedAt": "2025-12-15T03:59:13.150Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.018Z",
+      "receivedAt": "2025-12-15T03:59:14.182Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.019Z",
+      "receivedAt": "2025-12-15T03:59:15.202Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.020Z",
+      "receivedAt": "2025-12-15T03:59:16.321Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.021Z",
+      "receivedAt": "2025-12-15T03:59:17.145Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.022Z",
+      "receivedAt": "2025-12-15T03:59:18.167Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.023Z",
+      "receivedAt": "2025-12-15T03:59:19.188Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.024Z",
+      "receivedAt": "2025-12-15T03:59:20.315Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.025Z",
+      "receivedAt": "2025-12-15T03:59:21.134Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.026Z",
+      "receivedAt": "2025-12-15T03:59:22.111Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.027Z",
+      "receivedAt": "2025-12-15T03:59:23.117Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.028Z",
+      "receivedAt": "2025-12-15T03:59:24.113Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.029Z",
+      "receivedAt": "2025-12-15T03:59:25.230Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.030Z",
+      "receivedAt": "2025-12-15T03:59:26.152Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.031Z",
+      "receivedAt": "2025-12-15T03:59:27.117Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.032Z",
+      "receivedAt": "2025-12-15T03:59:28.200Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.033Z",
+      "receivedAt": "2025-12-15T03:59:29.327Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.034Z",
+      "receivedAt": "2025-12-15T03:59:30.145Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.035Z",
+      "receivedAt": "2025-12-15T03:59:31.110Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.036Z",
+      "receivedAt": "2025-12-15T03:59:32.201Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.037Z",
+      "receivedAt": "2025-12-15T03:59:33.217Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.038Z",
+      "receivedAt": "2025-12-15T03:59:34.115Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.039Z",
+      "receivedAt": "2025-12-15T03:59:35.166Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.040Z",
+      "receivedAt": "2025-12-15T03:59:36.122Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.041Z",
+      "receivedAt": "2025-12-15T03:59:37.115Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.042Z",
+      "receivedAt": "2025-12-15T03:59:38.239Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.043Z",
+      "receivedAt": "2025-12-15T03:59:39.157Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.044Z",
+      "receivedAt": "2025-12-15T03:59:40.118Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.045Z",
+      "receivedAt": "2025-12-15T03:59:41.205Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.046Z",
+      "receivedAt": "2025-12-15T03:59:42.230Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.048Z",
+      "receivedAt": "2025-12-15T03:59:43.560Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.048Z",
+      "receivedAt": "2025-12-15T03:59:44.284Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.050Z",
+      "receivedAt": "2025-12-15T03:59:45.720Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.050Z",
+      "receivedAt": "2025-12-15T03:59:46.223Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.052Z",
+      "receivedAt": "2025-12-15T03:59:47.349Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.053Z",
+      "receivedAt": "2025-12-15T03:59:48.373Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.053Z",
+      "receivedAt": "2025-12-15T03:59:49.448Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.054Z",
+      "receivedAt": "2025-12-15T03:59:50.223Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.056Z",
+      "receivedAt": "2025-12-15T03:59:51.651Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.056Z",
+      "receivedAt": "2025-12-15T03:59:52.265Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.058Z",
+      "receivedAt": "2025-12-15T03:59:53.711Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.058Z",
+      "receivedAt": "2025-12-15T03:59:54.221Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.059Z",
+      "receivedAt": "2025-12-15T03:59:55.113Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.060Z",
+      "receivedAt": "2025-12-15T03:59:56.126Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.061Z",
+      "receivedAt": "2025-12-15T03:59:57.221Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.062Z",
+      "receivedAt": "2025-12-15T03:59:57.372Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.006Z",
+      "receivedAt": "2025-12-15T04:32:00.991Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.006Z",
+      "receivedAt": "2025-12-15T04:32:01.194Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.007Z",
+      "receivedAt": "2025-12-15T04:32:02.421Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.008Z",
+      "receivedAt": "2025-12-15T04:32:03.239Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.009Z",
+      "receivedAt": "2025-12-15T04:32:04.377Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.010Z",
+      "receivedAt": "2025-12-15T04:32:05.148Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.011Z",
+      "receivedAt": "2025-12-15T04:32:06.138Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.012Z",
+      "receivedAt": "2025-12-15T04:32:07.148Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.013Z",
+      "receivedAt": "2025-12-15T04:32:08.263Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.014Z",
+      "receivedAt": "2025-12-15T04:32:09.291Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.015Z",
+      "receivedAt": "2025-12-15T04:32:10.159Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.016Z",
+      "receivedAt": "2025-12-15T04:32:11.437Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.017Z",
+      "receivedAt": "2025-12-15T04:32:12.253Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.018Z",
+      "receivedAt": "2025-12-15T04:32:13.387Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.019Z",
+      "receivedAt": "2025-12-15T04:32:14.407Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.020Z",
+      "receivedAt": "2025-12-15T04:32:15.325Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.021Z",
+      "receivedAt": "2025-12-15T04:32:16.353Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.022Z",
+      "receivedAt": "2025-12-15T04:32:17.371Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.023Z",
+      "receivedAt": "2025-12-15T04:32:18.293Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.024Z",
+      "receivedAt": "2025-12-15T04:32:19.221Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.025Z",
+      "receivedAt": "2025-12-15T04:32:20.341Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.026Z",
+      "receivedAt": "2025-12-15T04:32:21.276Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.027Z",
+      "receivedAt": "2025-12-15T04:32:22.286Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.028Z",
+      "receivedAt": "2025-12-15T04:32:23.208Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.029Z",
+      "receivedAt": "2025-12-15T04:32:24.447Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.030Z",
+      "receivedAt": "2025-12-15T04:32:25.367Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.031Z",
+      "receivedAt": "2025-12-15T04:32:26.382Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.032Z",
+      "receivedAt": "2025-12-15T04:32:27.408Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.033Z",
+      "receivedAt": "2025-12-15T04:32:28.227Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.034Z",
+      "receivedAt": "2025-12-15T04:32:29.362Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.035Z",
+      "receivedAt": "2025-12-15T04:32:30.380Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.036Z",
+      "receivedAt": "2025-12-15T04:32:31.302Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.037Z",
+      "receivedAt": "2025-12-15T04:32:32.220Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.038Z",
+      "receivedAt": "2025-12-15T04:32:33.245Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.039Z",
+      "receivedAt": "2025-12-15T04:32:34.374Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.040Z",
+      "receivedAt": "2025-12-15T04:32:35.393Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.041Z",
+      "receivedAt": "2025-12-15T04:32:36.428Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.042Z",
+      "receivedAt": "2025-12-15T04:32:37.347Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.043Z",
+      "receivedAt": "2025-12-15T04:32:38.262Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.044Z",
+      "receivedAt": "2025-12-15T04:32:39.287Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.045Z",
+      "receivedAt": "2025-12-15T04:32:40.312Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.046Z",
+      "receivedAt": "2025-12-15T04:32:41.337Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.047Z",
+      "receivedAt": "2025-12-15T04:32:42.256Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.048Z",
+      "receivedAt": "2025-12-15T04:32:43.398Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.049Z",
+      "receivedAt": "2025-12-15T04:32:44.310Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.050Z",
+      "receivedAt": "2025-12-15T04:32:45.326Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 0,
+      "cubicMeters": 0,
+      "timestamp": "1970-01-01T00:00:00.051Z",
+      "receivedAt": "2025-12-15T04:32:46.351Z"
+    },
+    {
+      "cubicMeters": 0.1,
+      "house": "House1",
+      "totalLiters": 100,
+      "receivedAt": "2025-12-15T06:53:04.825Z",
+      "timestamp": "2025-12-15T06:53:04.825Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T08:47:25.501Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T08:59:55.026Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:00:10.101Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:00:25.233Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:00:40.389Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:00:55.547Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:01:10.714Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:01:25.854Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:01:40.921Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:01:56.002Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:02:11.072Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:02:26.167Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:02:41.327Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:03:16.449Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:03:31.527Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:03:46.656Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:04:01.813Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:04:16.946Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:04:32.024Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:04:47.175Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:05:02.331Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:05:20.264Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:05:38.376Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:05:53.455Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:06:08.588Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:06:23.662Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:06:38.761Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:06:54.050Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:07:09.138Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:07:24.258Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:07:39.334Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:07:54.405Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:08:09.622Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:08:24.706Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:08:39.787Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:08:54.999Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:09:10.243Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:09:25.327Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:09:40.451Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:09:55.709Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:10:10.866Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:10:25.933Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:10:41.012Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:10:56.093Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:11:11.178Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:11:26.255Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:11:41.338Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:11:56.412Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:12:11.706Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:12:26.775Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:18:21.983Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:21:17.106Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:21:32.241Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:21:47.319Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:22:02.393Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:22:17.612Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:22:32.874Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:22:48.027Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:23:03.094Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:23:18.226Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:23:33.314Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:23:48.407Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:24:03.596Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:24:18.677Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:24:33.800Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:24:48.955Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:25:04.109Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:25:19.267Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:25:34.336Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:25:49.475Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:26:04.628Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:26:19.698Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:26:34.775Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:26:49.890Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:27:04.956Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:27:20.044Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:27:35.151Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:27:50.309Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:28:05.384Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:28:20.456Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:28:35.579Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:28:50.723Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:29:05.879Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:29:21.037Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:29:36.108Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:29:51.180Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:30:06.502Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:30:21.657Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:30:36.745Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:30:51.863Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:31:07.019Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:31:22.174Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:31:37.250Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:31:52.325Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:32:07.438Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:32:22.504Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:32:37.643Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:32:52.799Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:33:07.954Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:33:23.025Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:33:38.115Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:33:53.177Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:34:08.248Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:34:23.330Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:34:38.403Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:34:53.480Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:35:08.689Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:35:23.849Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:35:38.940Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:35:54.023Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:36:09.204Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:36:24.272Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:36:39.339Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:36:54.432Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:37:09.508Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:37:24.674Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:37:39.741Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:37:54.819Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:38:09.935Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:38:25.090Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:38:40.168Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:38:55.233Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:39:10.307Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:39:25.388Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:39:40.560Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:39:55.659Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:40:10.772Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:40:25.844Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:40:40.949Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:40:56.060Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:41:11.141Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:41:26.340Z"
+    },
+    {
+      "house": "house1",
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "timestamp": "2025-12-15T12:00:00.000Z",
+      "receivedAt": "2025-12-15T09:41:41.428Z"
+    }
+  ],
+  "summary": {
+    "house1": {
+      "totalLiters": 12345,
+      "cubicMeters": 12.345,
+      "last": {
+        "house": "house1",
+        "totalLiters": 12345,
+        "cubicMeters": 12.345,
+        "timestamp": "2025-12-15T12:00:00.000Z",
+        "receivedAt": "2025-12-15T09:41:41.428Z"
+      }
+    },
+    "House1": {
+      "totalLiters": 100,
+      "cubicMeters": 0.1,
+      "last": {
+        "cubicMeters": 0.1,
+        "house": "House1",
+        "totalLiters": 100,
+        "receivedAt": "2025-12-15T06:53:04.825Z",
+        "timestamp": "2025-12-15T06:53:04.825Z"
+      }
+    }
+  }
+}

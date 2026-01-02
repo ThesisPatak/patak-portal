@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PATAK Admin</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>PATAK — Account & Device Management</h1>
+
+    <section id="auth">
+      <h2>Register</h2>
+      <input id="regEmail" placeholder="email" />
+      <input id="regPass" placeholder="password" type="password" />
+      <button id="btnRegister">Register</button>
+
+      <h2>Login</h2>
+      <input id="logEmail" placeholder="email" />
+      <input id="logPass" placeholder="password" type="password" />
+      <button id="btnLogin">Login</button>
+
+      <div id="authStatus" class="muted"></div>
+    </section>
+
+    <section id="devices" style="display:none">
+      <h2>Devices for <span id="userEmail"></span></h2>
+      <button id="btnRefresh">Refresh</button>
+      <ul id="deviceList"></ul>
+
+      <h3>Register Device</h3>
+      <input id="deviceId" placeholder="deviceId (e.g. dev-1)" />
+      <input id="deviceKey" placeholder="deviceKey" />
+      <button id="btnRegisterDevice">Register Device</button>
+
+      <h3>Device Heartbeat (test)</h3>
+      <button id="btnHeartbeat">Send Heartbeat</button>
+
+      <div id="devicesStatus" class="muted"></div>
+    </section>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
