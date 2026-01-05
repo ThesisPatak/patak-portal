@@ -269,7 +269,7 @@ app.get('/admin/users', adminOnly, (req, res) => {
 
 
 // App initialization
-const app = express();
+
 app.use(cors());
 app.use(express.json());
 
