@@ -1,9 +1,5 @@
 
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-
 // Accept ESP32 readings (no auth, public endpoint)
 app.post('/api/readings', (req, res) => {
   const { house, totalLiters, cubicMeters, timestamp } = req.body || {};
