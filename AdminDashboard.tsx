@@ -95,9 +95,6 @@ const AdminDashboard: React.FC = () => {
             fontFamily: "Poppins, Arial, sans-serif",
             background: "#f5f7fa",
             minHeight: "100vh",
-            minWidth: "100vw",
-            width: "100vw",
-            height: "100vh",
             margin: 0,
             padding: 0,
             boxSizing: "border-box",
@@ -113,6 +110,7 @@ const AdminDashboard: React.FC = () => {
               color: "#fff",
               textAlign: "center",
               width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
@@ -127,8 +125,6 @@ const AdminDashboard: React.FC = () => {
           <main
             style={{
               flex: 1,
-              width: "100vw",
-              height: "100%",
               padding: "2rem",
               boxSizing: "border-box",
               display: "flex",
@@ -136,6 +132,7 @@ const AdminDashboard: React.FC = () => {
               alignItems: "center",
               justifyContent: "flex-start",
               overflow: "auto",
+              width: "100%",
             }}
           >
             <div style={{ display: "flex", gap: "2rem", width: "100%", maxWidth: "1400px" }}>
@@ -320,11 +317,12 @@ const AdminDashboard: React.FC = () => {
           <footer
             style={{
               textAlign: "center",
-              padding: "1.5rem 0",
+              padding: "1.5rem 2rem",
               color: "#888",
               width: "100%",
               background: "#fff",
               borderTop: "1px solid #e0e0e0",
+              boxSizing: "border-box",
             }}
           >
             <div>
