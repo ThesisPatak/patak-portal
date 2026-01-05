@@ -28,19 +28,25 @@ const AdminDashboard: React.FC = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userReadings, setUserReadings] = useState<any[]>([]);
   const [readingsLoading, setReadingsLoading] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Handle admin login
   const handleLogin = (newToken: string) => {
     setToken(newToken);
   };
 
-  // Handle logout
-  const handleLogout = () => {
+  // Confirm logout
+  const confirmLogout = () => {
     localStorage.removeItem("adminToken");
     setToken("");
     setUsers([]);
     setSelectedUserId(null);
+    setShowLogoutConfirm(false);
   };
+
+  // Handle logout (show confirmation)
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
 
   // Load dashboard data
   const loadDashboard = async () => {
@@ -338,6 +344,81 @@ const AdminDashboard: React.FC = () => {
               &copy; 2026 PATAK. Guard every drop.
             </div>
           </footer>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: "2rem",
+              borderRadius: "12px",
+              textAlign: "center",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+              maxWidth: "400px",
+              width: "90%",
+            }}
+          >
+            <h2 style={{ color: "#333", marginBottom: "1rem", fontSize: "1.3rem" }}>
+              Confirm Logout
+            </h2>
+            <p style={{ color: "#666", marginBottom: "2rem", fontSize: "1rem" }}>
+              Are you sure you want to log out?
+            </p>
+            <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{
+                  padding: "0.7rem 2rem",
+                  background: "#f5f5f5",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "0.95rem",
+                  fontWeight: 600,
+                  color: "#333",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
+              >
+                No
+              </button>
+              <button
+                onClick={confirmLogout}
+                style={{
+                  padding: "0.7rem 2rem",
+                  background: "#dc3545",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "0.95rem",
+                  fontWeight: 600,
+                  color: "#fff",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#c82333"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>
