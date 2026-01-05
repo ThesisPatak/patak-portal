@@ -218,11 +218,6 @@ app.post('/devices/heartbeat', verifyDeviceToken, async (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`));
-// All imports at the very top
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
