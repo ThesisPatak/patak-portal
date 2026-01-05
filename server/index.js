@@ -252,5 +252,64 @@ app.post('/devices/heartbeat', verifyDeviceToken, async (req, res) => {
   res.json({ ok: true, readingId: reading.id });
 });
 
+// Admin endpoint: Get all users with their water consumption data
+app.get('/api/admin/dashboard', adminOnly, (req, res) => {
+  const users = readJSON(USERS_FILE);
+  const devices = readJSON(DEVICES_FILE);
+  const readings = readJSON(READINGS_FILE);
+  
+  // Build dashboard data for each user
+  const usersData = users.map(user => {
+    const userDevices = devices.filter(d => d.ownerUserId === user.id);
+    let totalCubicMeters = 0;
+    let totalLiters = 0;
+    let lastReading = null;
+    
+    // Aggregate readings for all devices owned by this user
+    for (const device of userDevices) {
+      const deviceReadings = readings.filter(r => (r.deviceId || r.houseId) === device.deviceId);
+      if (deviceReadings.length > 0) {
+        const latest = deviceReadings[deviceReadings.length - 1];
+        totalCubicMeters += latest.data?.cubicMeters || latest.cubicMeters || 0;
+        totalLiters += latest.data?.totalLiters || latest.totalLiters || 0;
+        if (!lastReading || new Date(latest.receivedAt) > new Date(lastReading.receivedAt)) {
+          lastReading = latest;
+        }
+      }
+    }
+    
+    return {
+      id: user.id,
+      username: user.username,
+      cubicMeters: Number(totalCubicMeters.toFixed(3)),
+      totalLiters: Number(totalLiters.toFixed(0)),
+      deviceCount: userDevices.length,
+      lastReading: lastReading?.receivedAt || null,
+      devices: userDevices.map(d => ({ deviceId: d.deviceId, status: d.status, lastSeen: d.lastSeen }))
+    };
+  });
+  
+  res.json({ users: usersData });
+});
+
+// Admin endpoint: Get specific user's readings history
+app.get('/api/admin/users/:userId/readings', adminOnly, (req, res) => {
+  const { userId } = req.params;
+  const devices = readJSON(DEVICES_FILE);
+  const readings = readJSON(READINGS_FILE);
+  
+  // Get all devices for this user
+  const userDevices = devices.filter(d => d.ownerUserId === userId);
+  const deviceIds = userDevices.map(d => d.deviceId);
+  
+  // Get all readings for these devices
+  const userReadings = readings.filter(r => deviceIds.includes(r.deviceId || r.houseId));
+  
+  res.json({ 
+    userId, 
+    readings: userReadings.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()) 
+  });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`));
