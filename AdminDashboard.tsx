@@ -140,21 +140,26 @@ const AdminDashboard: React.FC = () => {
               boxSizing: "border-box",
               margin: 0,
               display: "flex",
-              justifyContent: "space-between",
+              flexDirection: "column",
+              justifyContent: "center",
               alignItems: "center",
+              textAlign: "center",
+              position: "relative",
             }}
           >
-            <div style={{ flex: 1 }}>
-              <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
-                PATAK Supplier Portal
-              </h1>
-              <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.9rem" }}>
-                Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
-              </p>
-            </div>
+            <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
+              PATAK Supplier Portal
+            </h1>
+            <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.9rem" }}>
+              Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
+            </p>
             <button
               onClick={handleLogout}
               style={{
+                position: "absolute",
+                right: "2rem",
+                top: "50%",
+                transform: "translateY(-50%)",
                 padding: "0.6rem 1.5rem",
                 background: "#fff",
                 border: "none",
@@ -164,7 +169,6 @@ const AdminDashboard: React.FC = () => {
                 color: "#0057b8",
                 fontWeight: 600,
                 whiteSpace: "nowrap",
-                marginLeft: "2rem",
               }}
             >
               Log out
