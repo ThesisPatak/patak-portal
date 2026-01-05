@@ -34,7 +34,7 @@ jobs:
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas build --platform android --non-interactive --wait
+        run: eas build --platform android --non-interactive
       
       - name: Download APK
         run: |
