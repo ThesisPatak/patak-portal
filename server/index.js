@@ -5,7 +5,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   const users = readJSON(USERS_FILE);
   const user = users.find(u => u.id === req.user.userId);
   // Group readings by house (or by username if you want per-user data)
-  const summary = {};
+  let summary = {};
   for (const r of readings) {
     // Only show readings for this user (if houseId or house matches username or userId)
     if (r.house === user.username || r.houseId === user.id) {
@@ -16,6 +16,10 @@ app.get('/api/houses', authMiddleware, (req, res) => {
         summary[r.house].last = r;
       }
     }
+  }
+  // If no readings, return a default summary for the user
+  if (Object.keys(summary).length === 0) {
+    summary[user.username] = { totalLiters: 0, cubicMeters: 0, last: null };
   }
   res.json({ summary });
 });
