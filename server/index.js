@@ -1,5 +1,4 @@
 
-
 // Accept ESP32 readings (no auth, public endpoint)
 app.post('/api/readings', (req, res) => {
   const { house, totalLiters, cubicMeters, timestamp } = req.body || {};
