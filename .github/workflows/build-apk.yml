@@ -1,0 +1,67 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+      
+      - name: Setup EAS
+        run: npm install -g eas-cli
+      
+      - name: Build APK with EAS
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform android --non-interactive --wait
+      
+      - name: Download APK
+        run: |
+          # Get the build ID from the latest build
+          BUILD_ID=$(eas build:list --platform android --limit 1 --json | jq -r '.[0].id')
+          echo "Build ID: $BUILD_ID"
+          # Download the APK
+          eas build:download --id "$BUILD_ID" --path ./app.apk || echo "APK download will be available in EAS dashboard"
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: android-apk
+          path: |
+            app.apk
+            mobile/
+          retention-days: 30
+      
+      - name: Comment on PR with build result
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🚀 Android APK build completed! Check the artifacts in the Actions tab.'
+            })

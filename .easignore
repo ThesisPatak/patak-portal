@@ -1,0 +1,15 @@
+node_modules/
+.git/
+.expo/
+*.log
+build/
+dist/
+.env
+.env.local
+.DS_Store
+.vscode/
+.idea/
+examples/
+scripts/
+server/
+README.md
