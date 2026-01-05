@@ -218,36 +218,6 @@ app.post('/devices/heartbeat', verifyDeviceToken, async (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`));
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
-
-// App initialization
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, 'data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
-const READINGS_FILE = path.join(DATA_DIR, 'readings.json');
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
-
-
-function ensureDataFiles() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, JSON.stringify([]));
-  if (!fs.existsSync(DEVICES_FILE)) fs.writeFileSync(DEVICES_FILE, JSON.stringify([]));
-  if (!fs.existsSync(READINGS_FILE)) fs.writeFileSync(READINGS_FILE, JSON.stringify([]));
-}
-
-function readJSON(file) {
-  try {
-    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-    return Array.isArray(data) ? data : [];
   } catch (e) {
     return [];
   }
