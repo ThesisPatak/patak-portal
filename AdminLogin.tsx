@@ -52,15 +52,16 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         flexDirection: "column",
       }}
     >
-      {/* Header */}
+      {/* Header - Full Width */}
       <header
         style={{
-          padding: "2rem 0",
+          padding: "2rem",
           background: "#0057b8",
           color: "#fff",
           textAlign: "center",
           width: "100%",
           boxSizing: "border-box",
+          margin: 0,
         }}
       >
         <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
@@ -224,7 +225,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Footer - Full Width */}
       <footer
         style={{
           textAlign: "center",
@@ -234,6 +235,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
           background: "#fff",
           borderTop: "1px solid #e0e0e0",
           boxSizing: "border-box",
+          margin: 0,
         }}
       >
         <div>
