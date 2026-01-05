@@ -59,7 +59,7 @@ function authMiddleware(req, res, next) {
   }
 }
 
-function adminOnly(req, res, next) {
+
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
   const token = h.slice(7);
