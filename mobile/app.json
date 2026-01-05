@@ -9,12 +9,7 @@
     ],
     "android": {
       "package": "com.patak.mobile",
-      "versionCode": 1,
-      "splash": {
-        "image": "./expo_go_screenshot.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#FFFFFF"
-      }
+      "versionCode": 1
     },
     "extra": {
       "eas": {
