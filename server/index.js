@@ -20,7 +20,7 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
 const READINGS_FILE = path.join(DATA_DIR, 'readings.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
-const ADMIN_USERS = [process.env.ADMIN_USER || 'admin'];
+
 
 function ensureDataFiles() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
