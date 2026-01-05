@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminUsers from "./AdminUsers";
+import AdminLogin from "./AdminLogin";
 
 interface UserData {
   id: string;
@@ -25,6 +26,19 @@ const AdminDashboard: React.FC = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userReadings, setUserReadings] = useState<any[]>([]);
   const [readingsLoading, setReadingsLoading] = useState(false);
+
+  // Handle admin login
+  const handleLogin = (newToken: string) => {
+    setToken(newToken);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    setToken("");
+    setUsers([]);
+    setSelectedUserId(null);
+  };
 
   // Load dashboard data
   const loadDashboard = async () => {
@@ -70,16 +84,37 @@ const AdminDashboard: React.FC = () => {
   }, [token]);
 
   return (
-    <div style={{ display: "flex", gap: "2rem", width: "100%", maxWidth: "1400px", margin: "0 auto" }}>
-      {/* Left: User Management */}
-      <div style={{ flex: 1, minWidth: "300px" }}>
-        <AdminUsers />
-      </div>
+    <>
+      {!token ? (
+        <AdminLogin onLogin={handleLogin} />
+      ) : (
+        <div style={{ display: "flex", gap: "2rem", width: "100%", maxWidth: "1400px", margin: "0 auto" }}>
+          {/* Left: User Management */}
+          <div style={{ flex: 1, minWidth: "300px" }}>
+            <AdminUsers />
+          </div>
 
-      {/* Right: Monitoring Dashboard */}
-      <div style={{ flex: 1.5, minWidth: "400px" }}>
-        <div style={{ background: "#fff", padding: "1.5rem", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f" }}>
-          <h2 style={{ color: "#0057b8", margin: "0 0 1rem 0" }}>Water Usage Monitoring</h2>
+          {/* Right: Monitoring Dashboard */}
+          <div style={{ flex: 1.5, minWidth: "400px" }}>
+            <div style={{ background: "#fff", padding: "1.5rem", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+                <h2 style={{ color: "#0057b8", margin: 0 }}>Water Usage Monitoring</h2>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    background: "#f5f5f5",
+                    border: "1px solid #ddd",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                    color: "#333",
+                    fontWeight: 500,
+                  }}
+                >
+                  Log Out
+                </button>
+              </div>
 
           {!token && (
             <div style={{ padding: "1rem", background: "#fee", color: "#c33", borderRadius: "6px" }}>
@@ -228,7 +263,9 @@ const AdminDashboard: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -252,6 +252,24 @@ app.post('/devices/heartbeat', verifyDeviceToken, async (req, res) => {
   res.json({ ok: true, readingId: reading.id });
 });
 
+// Admin login endpoint
+app.post('/auth/admin-login', async (req, res) => {
+  const { username, password } = req.body || {};
+  const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'adminpatak';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'patakdeploy';
+  
+  if (!username || !password) {
+    return res.status(400).json({ error: 'username and password required' });
+  }
+  
+  if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+  
+  const token = jwt.sign({ username: 'admin', role: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
+  res.json({ token, admin: { username: 'admin' } });
+});
+
 // Admin endpoint: Get all users with their water consumption data
 app.get('/api/admin/dashboard', adminOnly, (req, res) => {
   const users = readJSON(USERS_FILE);
