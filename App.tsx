@@ -1,37 +1,7 @@
 import React, { useState } from "react";
 import AdminDashboard from "./AdminDashboard";
-import UsageDashboard from "./UsageDashboard";
-import LoginDashboard from "./LoginDashboard";
 
 function App() {
-  const [token, setToken] = useState(() => {
-    try {
-      return localStorage.getItem("userToken") || "";
-    } catch {
-      return "";
-    }
-  });
-  
-  const [username, setUsername] = useState(() => {
-    try {
-      return localStorage.getItem("username") || "";
-    } catch {
-      return "";
-    }
-  });
-
-  const handleLogin = (newToken: string, newUsername: string) => {
-    setToken(newToken);
-    setUsername(newUsername);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("userToken");
-    localStorage.removeItem("username");
-    setToken("");
-    setUsername("");
-  };
-
   return (
     <div
       style={{
@@ -57,9 +27,9 @@ function App() {
           width: "100%",
         }}
       >
-        <h1 style={{ margin: 0 }}>PATAK Supplier Portal</h1>
+        <h1 style={{ margin: 0 }}>PATAK Admin Portal</h1>
         <p style={{ margin: "0.5rem 0 0 0" }}>
-          Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
+          Admin: Create user accounts and assign ESP32 devices.
         </p>
       </header>
       <main
@@ -67,24 +37,19 @@ function App() {
           flex: 1,
           width: "100vw",
           height: "100%",
-          padding: "2rem",
+          padding: "2rem 0",
           boxSizing: "border-box",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "flex-start",
-          overflow: "auto",
         }}
       >
-        {token ? (
-          <UsageDashboard token={token} username={username} onLogout={handleLogout} />
-        ) : (
-          <LoginDashboard onLogin={handleLogin} />
-        )}
+        <AdminDashboard />
       </main>
-      <footer style={{ textAlign: "center", padding: "1.5rem 0", color: "#888", width: "100%", background: "#fff", borderTop: "1px solid #e0e0e0" }}>
+      <footer style={{ textAlign: "center", padding: "1.5rem 0 0 0", color: "#888", width: "100%", background: "#fff" }}>
         <div>
-          &copy; 2026 PATAK. Guard every drop.
+          &copy; {new Date().getFullYear()} PATAK. Guard every drop.
         </div>
       </footer>
     </div>
