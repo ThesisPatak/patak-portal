@@ -33,14 +33,14 @@ app.post('/api/readings', (req, res) => {
 });
 
 // --- Simple admin check (by email, for demo) ---
-const ADMIN_EMAILS = [process.env.ADMIN_EMAIL || 'admin@patak.local'];
+const ADMIN_USERS = [process.env.ADMIN_USER || 'admin'];
 function adminOnly(req, res, next) {
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
   const token = h.slice(7);
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    if (!ADMIN_EMAILS.includes(payload.email)) return res.status(403).json({ error: 'Admin only' });
+    if (!ADMIN_USERS.includes(payload.username)) return res.status(403).json({ error: 'Admin only' });
     req.user = payload;
     next();
   } catch (e) {
@@ -50,35 +50,35 @@ function adminOnly(req, res, next) {
 
 // --- Admin endpoints (must be after app is initialized) ---
 app.post('/api/admin/create-user', adminOnly, async (req, res) => {
-  const { email, password, name } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  const { username, password, name } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
   let users = [];
   try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
-  if (users.find(u => u.email === email)) return res.status(400).json({ error: 'User already exists' });
+  if (users.find(u => u.username === username)) return res.status(400).json({ error: 'User already exists' });
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = { id: crypto.randomUUID(), email, passwordHash, name: name || '', devices: [] };
+  const user = { id: crypto.randomUUID(), username, passwordHash, name: name || '', devices: [] };
   users.push(user);
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-  res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name } });
+  res.json({ ok: true, user: { id: user.id, username: user.username, name: user.name } });
 });
 
 app.post('/api/admin/assign-device', adminOnly, (req, res) => {
-  const { email, deviceId } = req.body;
-  if (!email || !deviceId) return res.status(400).json({ error: 'Email and deviceId required' });
+  const { username, deviceId } = req.body;
+  if (!username || !deviceId) return res.status(400).json({ error: 'Username and deviceId required' });
   let users = [];
   try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
-  const user = users.find(u => u.email === email);
+  const user = users.find(u => u.username === username);
   if (!user) return res.status(404).json({ error: 'User not found' });
   if (!user.devices) user.devices = [];
   if (!user.devices.includes(deviceId)) user.devices.push(deviceId);
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-  res.json({ ok: true, user: { id: user.id, email: user.email, devices: user.devices } });
+  res.json({ ok: true, user: { id: user.id, username: user.username, devices: user.devices } });
 });
 
 app.get('/api/admin/list-users', adminOnly, (req, res) => {
   let users = [];
   try { users = JSON.parse(fs.readFileSync(USERS_FILE)); } catch { users = []; }
-  res.json(users.map(u => ({ id: u.id, email: u.email, name: u.name, devices: u.devices })));
+  res.json(users.map(u => ({ id: u.id, username: u.username, name: u.name, devices: u.devices })));
 });
 
 // Get all readings for a house, grouped by device
@@ -144,28 +144,28 @@ function authMiddleware(req, res, next) {
 }
 
 app.post('/auth/register', async (req, res) => {
-  const { email, password } = req.body || {}
-  if (!email || !password) return res.status(400).json({ error: 'email and password required' })
+  const { username, password } = req.body || {}
+  if (!username || !password) return res.status(400).json({ error: 'username and password required' })
   const users = readJSON(USERS_FILE)
-  if (users.find(u => u.email === email)) return res.status(409).json({ error: 'User exists' })
+  if (users.find(u => u.username === username)) return res.status(409).json({ error: 'User exists' })
   const passwordHash = await bcrypt.hash(password, 10)
-  const user = { id: generateId('user'), email, passwordHash, createdAt: new Date().toISOString() }
+  const user = { id: generateId('user'), username, passwordHash, createdAt: new Date().toISOString() }
   users.push(user)
   writeJSON(USERS_FILE, users)
-  const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' })
-  res.status(201).json({ token, user: { id: user.id, email: user.email } })
+  const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
+  res.status(201).json({ token, user: { id: user.id, username: user.username } })
 })
 
 app.post('/auth/login', async (req, res) => {
-  const { email, password } = req.body || {}
-  if (!email || !password) return res.status(400).json({ error: 'email and password required' })
+  const { username, password } = req.body || {}
+  if (!username || !password) return res.status(400).json({ error: 'username and password required' })
   const users = readJSON(USERS_FILE)
-  const user = users.find(u => u.email === email)
+  const user = users.find(u => u.username === username)
   if (!user) return res.status(401).json({ error: 'Invalid credentials' })
   const ok = await bcrypt.compare(password, user.passwordHash)
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
-  const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' })
-  res.json({ token, user: { id: user.id, email: user.email } })
+  const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
+  res.json({ token, user: { id: user.id, username: user.username } })
 })
 
 app.get('/users/:id/devices', authMiddleware, (req, res) => {
