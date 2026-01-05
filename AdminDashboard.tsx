@@ -29,6 +29,7 @@ const AdminDashboard: React.FC = () => {
   const [userReadings, setUserReadings] = useState<any[]>([]);
   const [readingsLoading, setReadingsLoading] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Handle admin login
   const handleLogin = (newToken: string) => {
@@ -115,7 +116,17 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     loadDashboard();
     const interval = setInterval(loadDashboard, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
+    
+    // Handle window resize for mobile detection
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("resize", handleResize);
+    };
   }, [token]);
 
   return (
@@ -140,7 +151,7 @@ const AdminDashboard: React.FC = () => {
           {/* Header - Full Width */}
           <header
             style={{
-              padding: "1.5rem 2rem",
+              padding: isMobile ? "1rem 1rem" : "1.5rem 2rem",
               background: "#0057b8",
               color: "#fff",
               width: "100vw",
@@ -154,25 +165,25 @@ const AdminDashboard: React.FC = () => {
               position: "relative",
             }}
           >
-            <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
+            <h1 style={{ margin: 0, fontSize: isMobile ? "1.3rem" : "2rem", fontWeight: 700 }}>
               PATAK Supplier Portal
             </h1>
-            <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.9rem" }}>
+            <p style={{ margin: "0.25rem 0 0 0", fontSize: isMobile ? "0.75rem" : "0.9rem" }}>
               Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
             </p>
             <button
               onClick={handleLogout}
               style={{
                 position: "absolute",
-                right: "2rem",
+                right: isMobile ? "1rem" : "2rem",
                 top: "50%",
                 transform: "translateY(-50%)",
-                padding: "0.6rem 1.5rem",
+                padding: isMobile ? "0.4rem 1rem" : "0.6rem 1.5rem",
                 background: "#fff",
                 border: "none",
                 borderRadius: "6px",
                 cursor: "pointer",
-                fontSize: "0.95rem",
+                fontSize: isMobile ? "0.8rem" : "0.95rem",
                 color: "#0057b8",
                 fontWeight: 600,
                 whiteSpace: "nowrap",
@@ -186,7 +197,7 @@ const AdminDashboard: React.FC = () => {
           <main
             style={{
               flex: 1,
-              padding: "2rem",
+              padding: isMobile ? "1rem" : "2rem",
               boxSizing: "border-box",
               display: "flex",
               flexDirection: "column",
@@ -195,44 +206,44 @@ const AdminDashboard: React.FC = () => {
               width: "100%",
             }}
           >
-            <div style={{ width: "100%", maxWidth: "1400px" }}>
+            <div style={{ width: "100%", maxWidth: isMobile ? "100%" : "1400px" }}>
               {/* Real-Time Water Usage Section */}
               <section style={{ marginBottom: "3rem" }}>
-                <h2 style={{ color: "#0057b8", fontSize: "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
+                <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
                   Real-Time Water Usage
                 </h2>
 
                 {/* Total Stats Card */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "2rem" }}>
-                  <div style={{ background: "#e2f0ff", padding: "2rem", borderRadius: "12px" }}>
-                    <div style={{ fontSize: "0.95rem", color: "#666", fontWeight: 500, marginBottom: "0.5rem" }}>
-                      Total (m³)
-                    </div>
-                    <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "#0057b8" }}>
-                      {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(3)}
-                    </div>
-                    <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "0.5rem" }}>
-                      Across all houses
-                    </div>
+                <div style={{ background: "#e2f0ff", padding: isMobile ? "1.5rem" : "2rem", borderRadius: "12px", width: isMobile ? "100%" : "300px", marginBottom: "2rem" }}>
+                  <div style={{ fontSize: isMobile ? "0.85rem" : "0.95rem", color: "#666", fontWeight: 500, marginBottom: "0.5rem" }}>
+                    Total (m³)
                   </div>
+                  <div style={{ fontSize: isMobile ? "2rem" : "2.5rem", fontWeight: 700, color: "#0057b8" }}>
+                    {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(3)}
+                  </div>
+                  <div style={{ fontSize: isMobile ? "0.75rem" : "0.85rem", color: "#666", marginTop: "0.5rem" }}>
+                    Across all houses
+                  </div>
+                </div>
 
-                  {/* Per-House Cards */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {/* Per-House Cards */}
+                {users.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: isMobile ? "0.8rem" : "1rem", marginBottom: "2rem" }}>
                     {users.map((user) => (
-                      <div key={user.id} style={{ background: "#f9f9f9", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e0e0e0" }}>
-                        <div style={{ fontSize: "0.9rem", color: "#333", fontWeight: 600, marginBottom: "0.5rem" }}>
+                      <div key={user.id} style={{ background: "#f9f9f9", padding: isMobile ? "1rem" : "1.5rem", borderRadius: "12px", border: "1px solid #e0e0e0" }}>
+                        <div style={{ fontSize: isMobile ? "0.8rem" : "0.9rem", color: "#333", fontWeight: 600, marginBottom: "0.5rem" }}>
                           {user.username}
                         </div>
-                        <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "#0057b8" }}>
+                        <div style={{ fontSize: isMobile ? "1.5rem" : "1.8rem", fontWeight: 700, color: "#0057b8" }}>
                           {user.cubicMeters.toFixed(3)} m³
                         </div>
-                        <div style={{ fontSize: "0.8rem", color: "#999", marginTop: "0.3rem" }}>
+                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999", marginTop: "0.3rem" }}>
                           {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
               </section>
 
               {/* Separator */}
@@ -240,83 +251,157 @@ const AdminDashboard: React.FC = () => {
 
               {/* Automated Billing Section */}
               <section>
-                <h2 style={{ color: "#0057b8", fontSize: "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
+                <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
                   Automated Billing
                 </h2>
 
-                <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden" }}>
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
-                          <th style={{ padding: "1rem", textAlign: "left", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                            Household
-                          </th>
-                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                            Usage (m³)
-                          </th>
-                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                            Amount Due (₱)
-                          </th>
-                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                            Due Date
-                          </th>
-                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                            Status
-                          </th>
-                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                            Action
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.map((user) => (
-                          <tr key={user.id} style={{ borderBottom: "1px solid #e0e0e0", transition: "background 0.2s" }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = "#f9f9f9"}
-                            onMouseLeave={(e) => e.currentTarget.style.background = "#fff"}
+                <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden", overflowX: "auto" }}>
+                  {/* Mobile card view / Desktop table view */}
+                  {isMobile ? (
+                    // Mobile card view
+                    <div style={{ padding: "1rem" }}>
+                      {users.length === 0 ? (
+                        <div style={{ padding: "1.5rem", textAlign: "center", color: "#999", fontSize: "0.9rem" }}>
+                          No users registered yet
+                        </div>
+                      ) : (
+                        users.map((user) => (
+                          <div
+                            key={user.id}
+                            style={{
+                              background: "#f9f9f9",
+                              padding: "1rem",
+                              marginBottom: "0.75rem",
+                              borderRadius: "8px",
+                              border: "1px solid #e0e0e0",
+                            }}
                           >
-                            <td style={{ padding: "1rem", color: "#333", fontSize: "0.95rem" }}>
-                              {user.username}
-                            </td>
-                            <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                              {user.cubicMeters.toFixed(3)}
-                            </td>
-                            <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
-                              ₱{(user.cubicMeters * 5208.33).toFixed(2)}
-                            </td>
-                            <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                              {new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
-                            </td>
-                            <td style={{ padding: "1rem", textAlign: "center" }}>
-                              <span style={{ color: "#dc3545", fontWeight: 600, fontSize: "0.9rem" }}>
-                                Unpaid
-                              </span>
-                            </td>
-                            <td style={{ padding: "1rem", textAlign: "center" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+                              <div style={{ fontWeight: 600, color: "#333", fontSize: "0.95rem" }}>
+                                {user.username}
+                              </div>
                               <button
                                 onClick={() => deleteUser(user.id, user.username)}
                                 style={{
-                                  padding: "0.5rem 1rem",
+                                  padding: "0.4rem 0.8rem",
                                   background: "#dc3545",
                                   color: "#fff",
                                   border: "none",
-                                  borderRadius: "6px",
+                                  borderRadius: "4px",
                                   cursor: "pointer",
-                                  fontSize: "0.85rem",
+                                  fontSize: "0.75rem",
                                   fontWeight: 600,
-                                  transition: "background 0.2s",
+                                  minHeight: "auto",
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = "#c82333"}
-                                onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
                               >
                                 Delete
                               </button>
-                            </td>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", fontSize: "0.85rem" }}>
+                              <div>
+                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Usage (m³)</div>
+                                <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "#0057b8" }}>
+                                  {user.cubicMeters.toFixed(3)}
+                                </div>
+                              </div>
+                              <div>
+                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Amount Due</div>
+                                <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "#333" }}>
+                                  ₱{(user.cubicMeters * 5208.33).toFixed(2)}
+                                </div>
+                              </div>
+                              <div>
+                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Due Date</div>
+                                <div style={{ fontSize: "0.85rem", color: "#999" }}>
+                                  {new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
+                                </div>
+                              </div>
+                              <div>
+                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Status</div>
+                                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#dc3545" }}>
+                                  Unpaid
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  ) : (
+                    // Desktop table view
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
+                            <th style={{ padding: "1rem", textAlign: "left", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Household
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Usage (m³)
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Amount Due (₱)
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Due Date
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Status
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Action
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {users.map((user) => (
+                            <tr key={user.id} style={{ borderBottom: "1px solid #e0e0e0", transition: "background 0.2s" }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = "#f9f9f9"}
+                              onMouseLeave={(e) => e.currentTarget.style.background = "#fff"}
+                            >
+                              <td style={{ padding: "1rem", color: "#333", fontSize: "0.95rem" }}>
+                                {user.username}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
+                                {user.cubicMeters.toFixed(3)}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
+                                ₱{(user.cubicMeters * 5208.33).toFixed(2)}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
+                                {new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center" }}>
+                                <span style={{ color: "#dc3545", fontWeight: 600, fontSize: "0.9rem" }}>
+                                  Unpaid
+                                </span>
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center" }}>
+                                <button
+                                  onClick={() => deleteUser(user.id, user.username)}
+                                  style={{
+                                    padding: "0.5rem 1rem",
+                                    background: "#dc3545",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontSize: "0.85rem",
+                                    fontWeight: 600,
+                                    transition: "background 0.2s",
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.background = "#c82333"}
+                                  onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
 
                 {users.length === 0 && (
@@ -362,26 +447,33 @@ const AdminDashboard: React.FC = () => {
             justifyContent: "center",
             alignItems: "center",
             zIndex: 9999,
+            padding: "1rem",
+            boxSizing: "border-box",
           }}
         >
           <div
             style={{
               background: "#fff",
-              padding: "2rem",
+              padding: isMobile ? "1.5rem" : "2rem",
               borderRadius: "12px",
               textAlign: "center",
               boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
               maxWidth: "400px",
-              width: "90%",
+              width: "100%",
             }}
           >
-            <h2 style={{ color: "#333", marginBottom: "1rem", fontSize: "1.3rem" }}>
+            <h2 style={{ color: "#333", marginBottom: "1rem", fontSize: isMobile ? "1.2rem" : "1.3rem", fontWeight: 600 }}>
               Confirm Logout
             </h2>
-            <p style={{ color: "#666", marginBottom: "2rem", fontSize: "1rem" }}>
+            <p style={{ color: "#666", marginBottom: "2rem", fontSize: isMobile ? "0.9rem" : "1rem" }}>
               Are you sure you want to log out?
             </p>
-            <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: isMobile ? "0.75rem" : "1rem",
+              justifyContent: "center",
+            }}>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 style={{
@@ -390,15 +482,19 @@ const AdminDashboard: React.FC = () => {
                   border: "1px solid #ddd",
                   borderRadius: "6px",
                   cursor: "pointer",
-                  fontSize: "0.95rem",
+                  fontSize: isMobile ? "0.9rem" : "0.95rem",
                   fontWeight: 600,
                   color: "#333",
                   transition: "background 0.2s",
+                  minHeight: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
               >
-                No
+                No, Stay
               </button>
               <button
                 onClick={confirmLogout}
@@ -408,15 +504,19 @@ const AdminDashboard: React.FC = () => {
                   border: "none",
                   borderRadius: "6px",
                   cursor: "pointer",
-                  fontSize: "0.95rem",
+                  fontSize: isMobile ? "0.9rem" : "0.95rem",
                   fontWeight: 600,
                   color: "#fff",
                   transition: "background 0.2s",
+                  minHeight: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = "#c82333"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
               >
-                Yes
+                Yes, Logout
               </button>
             </div>
           </div>
