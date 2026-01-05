@@ -7,6 +7,13 @@ app.get('/admin/users', adminOnly, (req, res) => {
 })
 
 // All imports at the very top
+
+// App initialization
+
+// Dashboard summary endpoint for mobile app
+
+
+// All imports at the very top
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -17,45 +24,6 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 
 // App initialization
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// Dashboard summary endpoint for mobile app
-app.get('/api/houses', authMiddleware, (req, res) => {
-  // For demo: return all readings grouped by house for the logged-in user
-  const readings = readJSON(READINGS_FILE);
-  const users = readJSON(USERS_FILE);
-  const user = users.find(u => u.id === req.user.userId);
-  // Group readings by house (or by username if you want per-user data)
-  let summary = {};
-  for (const r of readings) {
-    // Only show readings for this user (if houseId or house matches username or userId)
-    if (r.house === user.username || r.houseId === user.id) {
-      if (!summary[r.house]) summary[r.house] = { totalLiters: 0, cubicMeters: 0, last: null };
-      summary[r.house].totalLiters += r.totalLiters || 0;
-      summary[r.house].cubicMeters += r.cubicMeters || 0;
-      if (!summary[r.house].last || new Date(r.timestamp) > new Date(summary[r.house].last.timestamp)) {
-        summary[r.house].last = r;
-      }
-    }
-  }
-  // If no readings, return a default summary for the user
-  if (Object.keys(summary).length === 0) {
-    summary[user.username] = { totalLiters: 0, cubicMeters: 0, last: null };
-  }
-  res.json({ summary });
-});
-
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
-
 const app = express();
 app.use(cors());
 app.use(express.json());
