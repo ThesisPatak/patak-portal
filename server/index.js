@@ -59,20 +59,6 @@ function authMiddleware(req, res, next) {
   }
 }
 
-
-  const h = req.headers.authorization;
-  if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
-  const token = h.slice(7);
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    if (!ADMIN_USERS.includes(payload.username)) return res.status(403).json({ error: 'Admin only' });
-    req.user = payload;
-    next();
-  } catch (e) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-}
-
 ensureDataFiles();
 app.use(express.static(path.join(__dirname, 'public')));
 
