@@ -149,6 +149,42 @@ app.post('/auth/login', async (req, res) => {
   res.json({ token, user: { id: user.id, username: user.username } });
 });
 
+app.get('/api/houses', authMiddleware, (req, res) => {
+  const userId = req.user.userId;
+  const devices = readJSON(DEVICES_FILE);
+  const readings = readJSON(READINGS_FILE);
+  
+  // Get all devices owned by this user
+  const userDevices = devices.filter(d => d.ownerUserId === userId);
+  
+  // Group readings by house/device
+  const summary = {};
+  for (const device of userDevices) {
+    const houseId = device.houseId || device.ownerUserId;
+    if (!summary[houseId]) {
+      summary[houseId] = {
+        deviceId: device.deviceId,
+        cubicMeters: 0,
+        totalLiters: 0,
+        last: null,
+        lastUpdated: null
+      };
+    }
+    
+    // Get latest reading for this device
+    const deviceReadings = readings.filter(r => (r.deviceId || r.houseId) === device.deviceId);
+    if (deviceReadings.length > 0) {
+      const latest = deviceReadings[deviceReadings.length - 1];
+      summary[houseId].cubicMeters = latest.data?.cubicMeters || latest.cubicMeters || 0;
+      summary[houseId].totalLiters = latest.data?.totalLiters || latest.totalLiters || 0;
+      summary[houseId].last = latest;
+      summary[houseId].lastUpdated = latest.receivedAt;
+    }
+  }
+  
+  res.json({ summary });
+});
+
 app.get('/users/:id/devices', authMiddleware, (req, res) => {
   const { id } = req.params;
   if (req.user.userId !== id) return res.status(403).json({ error: 'Forbidden' });
