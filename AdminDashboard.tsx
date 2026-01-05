@@ -79,6 +79,32 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Delete user account
+  const deleteUser = async (userId: string, username: string) => {
+    if (!window.confirm(`Are you sure you want to delete user "${username}" and all their data? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      if (!res.ok) throw new Error("Failed to delete user");
+      
+      setUsers(users.filter(u => u.id !== userId));
+      if (selectedUserId === userId) {
+        setSelectedUserId(null);
+        setUserReadings([]);
+      }
+      alert(`User ${username} deleted successfully`);
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete user");
+    }
+  };
+
   useEffect(() => {
     loadDashboard();
     const interval = setInterval(loadDashboard, 5000); // Refresh every 5 seconds
@@ -227,6 +253,9 @@ const AdminDashboard: React.FC = () => {
                           <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                             Status
                           </th>
+                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                            Action
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -251,6 +280,26 @@ const AdminDashboard: React.FC = () => {
                               <span style={{ color: "#dc3545", fontWeight: 600, fontSize: "0.9rem" }}>
                                 Unpaid
                               </span>
+                            </td>
+                            <td style={{ padding: "1rem", textAlign: "center" }}>
+                              <button
+                                onClick={() => deleteUser(user.id, user.username)}
+                                style={{
+                                  padding: "0.5rem 1rem",
+                                  background: "#dc3545",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  fontSize: "0.85rem",
+                                  fontWeight: 600,
+                                  transition: "background 0.2s",
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = "#c82333"}
+                                onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
+                              >
+                                Delete
+                              </button>
                             </td>
                           </tr>
                         ))}

@@ -329,5 +329,36 @@ app.get('/api/admin/users/:userId/readings', adminOnly, (req, res) => {
   });
 });
 
+// Admin endpoint: Delete user account
+app.delete('/api/admin/users/:userId', adminOnly, (req, res) => {
+  const { userId } = req.params;
+  let users = readJSON(USERS_FILE);
+  let devices = readJSON(DEVICES_FILE);
+  let readings = readJSON(READINGS_FILE);
+  
+  // Check if user exists
+  const userIndex = users.findIndex(u => u.id === userId);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  
+  const username = users[userIndex].username;
+  
+  // Delete user
+  users.splice(userIndex, 1);
+  writeJSON(USERS_FILE, users);
+  
+  // Delete user's devices
+  const userDeviceIds = devices.filter(d => d.ownerUserId === userId).map(d => d.deviceId);
+  devices = devices.filter(d => d.ownerUserId !== userId);
+  writeJSON(DEVICES_FILE, devices);
+  
+  // Delete user's readings
+  readings = readings.filter(r => !userDeviceIds.includes(r.deviceId || r.houseId));
+  writeJSON(READINGS_FILE, readings);
+  
+  res.json({ success: true, message: `User ${username} and all associated data deleted` });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`));
