@@ -107,21 +107,42 @@ const AdminDashboard: React.FC = () => {
           {/* Header - Full Width */}
           <header
             style={{
-              padding: "2rem",
+              padding: "1.5rem 2rem",
               background: "#0057b8",
               color: "#fff",
-              textAlign: "center",
               width: "100vw",
               boxSizing: "border-box",
               margin: 0,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
-              PATAK Supplier Portal
-            </h1>
-            <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.95rem" }}>
-              Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
-            </p>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
+                PATAK Supplier Portal
+              </h1>
+              <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.9rem" }}>
+                Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: "0.6rem 1.5rem",
+                background: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "0.95rem",
+                color: "#0057b8",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                marginLeft: "2rem",
+              }}
+            >
+              Log out
+            </button>
           </header>
 
           {/* Main Content */}
@@ -133,186 +154,117 @@ const AdminDashboard: React.FC = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "flex-start",
               overflow: "auto",
               width: "100%",
             }}
           >
-            <div style={{ display: "flex", gap: "2rem", width: "100%", maxWidth: "1400px" }}>
-              {/* Left: User Management */}
-              <div style={{ flex: 1, minWidth: "300px" }}>
-                <AdminUsers />
-              </div>
+            <div style={{ width: "100%", maxWidth: "1400px" }}>
+              {/* Real-Time Water Usage Section */}
+              <section style={{ marginBottom: "3rem" }}>
+                <h2 style={{ color: "#0057b8", fontSize: "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
+                  Real-Time Water Usage
+                </h2>
 
-              {/* Right: Monitoring Dashboard */}
-              <div style={{ flex: 1.5, minWidth: "400px" }}>
-                <div style={{ background: "#fff", padding: "1.5rem", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                    <h2 style={{ color: "#0057b8", margin: 0 }}>Water Usage Monitoring</h2>
-                    <button
-                      onClick={handleLogout}
-                      style={{
-                        padding: "0.5rem 1rem",
-                        background: "#f5f5f5",
-                        border: "1px solid #ddd",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontSize: "0.9rem",
-                        color: "#333",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Log Out
-                    </button>
+                {/* Total Stats Card */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "2rem" }}>
+                  <div style={{ background: "#e2f0ff", padding: "2rem", borderRadius: "12px" }}>
+                    <div style={{ fontSize: "0.95rem", color: "#666", fontWeight: 500, marginBottom: "0.5rem" }}>
+                      Total (m³)
+                    </div>
+                    <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "#0057b8" }}>
+                      {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(3)}
+                    </div>
+                    <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "0.5rem" }}>
+                      Across all houses
+                    </div>
                   </div>
 
-          {!token && (
-            <div style={{ padding: "1rem", background: "#fee", color: "#c33", borderRadius: "6px" }}>
-              Please set admin token in User Management section
-            </div>
-          )}
-
-          {loading && <div>Loading users...</div>}
-
-          {!loading && users.length === 0 && (
-            <div style={{ padding: "1rem", color: "#666" }}>No users registered yet</div>
-          )}
-
-          {users.length > 0 && (
-            <>
-              {/* Summary Stats */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-                <div style={{ background: "#e2f3ff", padding: "1rem", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.9rem", color: "#666" }}>Total Users</div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#0057b8" }}>{users.length}</div>
-                </div>
-                <div style={{ background: "#e2f3ff", padding: "1rem", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.9rem", color: "#666" }}>Total Devices</div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#0057b8" }}>
-                    {users.reduce((sum, u) => sum + u.deviceCount, 0)}
-                  </div>
-                </div>
-                <div style={{ background: "#e2f3ff", padding: "1rem", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.9rem", color: "#666" }}>Total Usage (m³)</div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#0057b8" }}>
-                    {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(2)}
-                  </div>
-                </div>
-              </div>
-
-              {/* User List */}
-              <h3 style={{ color: "#333", marginBottom: "1rem" }}>Users</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                {users.map((user) => (
-                  <div
-                    key={user.id}
-                    onClick={() => {
-                      setSelectedUserId(user.id);
-                      loadUserReadings(user.id);
-                    }}
-                    style={{
-                      padding: "1rem",
-                      background: selectedUserId === user.id ? "#e2f3ff" : "#f9f9f9",
-                      border: selectedUserId === user.id ? "2px solid #0057b8" : "1px solid #e0e0e0",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <h4 style={{ margin: "0 0 0.25rem 0", color: "#0057b8" }}>{user.username}</h4>
-                        <small style={{ color: "#666" }}>{user.deviceCount} device(s)</small>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#0057b8" }}>
+                  {/* Per-House Cards */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    {users.map((user) => (
+                      <div key={user.id} style={{ background: "#f9f9f9", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e0e0e0" }}>
+                        <div style={{ fontSize: "0.9rem", color: "#333", fontWeight: 600, marginBottom: "0.5rem" }}>
+                          {user.username}
+                        </div>
+                        <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "#0057b8" }}>
                           {user.cubicMeters.toFixed(3)} m³
                         </div>
-                        <small style={{ color: "#666" }}>
-                          {user.lastReading
-                            ? `Updated: ${new Date(user.lastReading).toLocaleTimeString()}`
-                            : "No data"}
-                        </small>
-                      </div>
-                    </div>
-
-                    {/* Device status */}
-                    {user.devices.length > 0 && (
-                      <div style={{ marginTop: "0.5rem", fontSize: "0.85rem" }}>
-                        {user.devices.map((d, idx) => (
-                          <div key={idx} style={{ color: d.status === "online" ? "#0a7e3a" : "#999" }}>
-                            {d.deviceId}: {d.status}
-                            {d.lastSeen && ` - Seen: ${new Date(d.lastSeen).toLocaleTimeString()}`}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Readings Detail */}
-              {selectedUserId && (
-                <div style={{ marginTop: "2rem", borderTop: "1px solid #e0e0e0", paddingTop: "1.5rem" }}>
-                  <h3 style={{ color: "#333" }}>
-                    {users.find((u) => u.id === selectedUserId)?.username} - Reading History
-                  </h3>
-
-                  {readingsLoading && <div>Loading readings...</div>}
-
-                  {!readingsLoading && userReadings.length === 0 && (
-                    <div style={{ padding: "1rem", color: "#666" }}>No readings yet</div>
-                  )}
-
-                  {userReadings.length > 0 && (
-                    <div style={{ overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
-                        <thead>
-                          <tr style={{ background: "#f5f5f5" }}>
-                            <th style={{ padding: "0.5rem", textAlign: "left", borderBottom: "1px solid #ddd" }}>
-                              Device
-                            </th>
-                            <th style={{ padding: "0.5rem", textAlign: "right", borderBottom: "1px solid #ddd" }}>
-                              m³
-                            </th>
-                            <th style={{ padding: "0.5rem", textAlign: "right", borderBottom: "1px solid #ddd" }}>
-                              Liters
-                            </th>
-                            <th style={{ padding: "0.5rem", textAlign: "left", borderBottom: "1px solid #ddd" }}>
-                              Received At
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {userReadings.slice(0, 20).map((r, idx) => (
-                            <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0" }}>
-                              <td style={{ padding: "0.5rem" }}>{r.deviceId || "N/A"}</td>
-                              <td style={{ padding: "0.5rem", textAlign: "right" }}>
-                                {(r.data?.cubicMeters || r.cubicMeters || 0).toFixed(3)}
-                              </td>
-                              <td style={{ padding: "0.5rem", textAlign: "right" }}>
-                                {(r.data?.totalLiters || r.totalLiters || 0).toFixed(0)}
-                              </td>
-                              <td style={{ padding: "0.5rem" }}>
-                                {new Date(r.receivedAt).toLocaleString()}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {userReadings.length > 20 && (
-                        <div style={{ marginTop: "0.5rem", color: "#666", fontSize: "0.85rem" }}>
-                          Showing latest 20 readings (total: {userReadings.length})
+                        <div style={{ fontSize: "0.8rem", color: "#999", marginTop: "0.3rem" }}>
+                          {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </>
-          )}
-        </div>
-              </div>
+              </section>
+
+              {/* Separator */}
+              <div style={{ height: "1px", background: "#ddd", margin: "2rem 0" }} />
+
+              {/* Automated Billing Section */}
+              <section>
+                <h2 style={{ color: "#0057b8", fontSize: "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
+                  Automated Billing
+                </h2>
+
+                <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden" }}>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
+                          <th style={{ padding: "1rem", textAlign: "left", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                            Household
+                          </th>
+                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                            Usage (m³)
+                          </th>
+                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                            Amount Due (₱)
+                          </th>
+                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                            Due Date
+                          </th>
+                          <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map((user) => (
+                          <tr key={user.id} style={{ borderBottom: "1px solid #e0e0e0", transition: "background 0.2s" }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = "#f9f9f9"}
+                            onMouseLeave={(e) => e.currentTarget.style.background = "#fff"}
+                          >
+                            <td style={{ padding: "1rem", color: "#333", fontSize: "0.95rem" }}>
+                              {user.username}
+                            </td>
+                            <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
+                              {user.cubicMeters.toFixed(3)}
+                            </td>
+                            <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
+                              ₱{(user.cubicMeters * 5208.33).toFixed(2)}
+                            </td>
+                            <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
+                              {new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
+                            </td>
+                            <td style={{ padding: "1rem", textAlign: "center" }}>
+                              <span style={{ color: "#dc3545", fontWeight: 600, fontSize: "0.9rem" }}>
+                                Unpaid
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {users.length === 0 && (
+                  <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
+                    No users registered yet
+                  </div>
+                )}
+              </section>
             </div>
           </main>
 
