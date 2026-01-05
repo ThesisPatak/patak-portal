@@ -95,11 +95,13 @@ const AdminDashboard: React.FC = () => {
             fontFamily: "Poppins, Arial, sans-serif",
             background: "#f5f7fa",
             minHeight: "100vh",
+            width: "100vw",
             margin: 0,
             padding: 0,
             boxSizing: "border-box",
             display: "flex",
             flexDirection: "column",
+            overflow: "hidden",
           }}
         >
           {/* Header - Full Width */}
@@ -109,7 +111,7 @@ const AdminDashboard: React.FC = () => {
               background: "#0057b8",
               color: "#fff",
               textAlign: "center",
-              width: "100%",
+              width: "100vw",
               boxSizing: "border-box",
               margin: 0,
             }}
@@ -320,7 +322,7 @@ const AdminDashboard: React.FC = () => {
               textAlign: "center",
               padding: "1.5rem 2rem",
               color: "#888",
-              width: "100%",
+              width: "100vw",
               background: "#fff",
               borderTop: "1px solid #e0e0e0",
               boxSizing: "border-box",

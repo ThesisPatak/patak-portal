@@ -45,11 +45,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         fontFamily: "Poppins, Arial, sans-serif",
         background: "#f5f7fa",
         minHeight: "100vh",
+        width: "100vw",
         margin: 0,
         padding: 0,
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden",
       }}
     >
       {/* Header - Full Width */}
@@ -231,7 +233,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
           textAlign: "center",
           padding: "1.5rem 2rem",
           color: "#888",
-          width: "100%",
+          width: "100vw",
           background: "#fff",
           borderTop: "1px solid #e0e0e0",
           boxSizing: "border-box",
