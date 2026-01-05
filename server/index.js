@@ -1,12 +1,5 @@
 // All imports at the very top
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
+
 
 // App initialization
 const app = express();
@@ -56,14 +49,7 @@ app.get('/admin/users', adminOnly, (req, res) => {
 
 
 // All imports at the very top
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
+
 
 // App initialization
 const app = express();
