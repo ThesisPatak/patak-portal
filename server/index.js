@@ -218,10 +218,6 @@ app.post('/devices/heartbeat', verifyDeviceToken, async (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`));
-  } catch (e) {
-    return [];
-  }
-}
 
 function writeJSON(file, obj) {
   fs.writeFileSync(file, JSON.stringify(obj, null, 2));
