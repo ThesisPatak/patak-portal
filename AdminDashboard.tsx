@@ -47,6 +47,7 @@ const AdminDashboard: React.FC = () => {
   // Handle logout (show confirmation)
   const handleLogout = () => {
     setShowLogoutConfirm(true);
+  };
 
   // Load dashboard data
   const loadDashboard = async () => {
