@@ -12,6 +12,8 @@ interface UserData {
   devices: Array<{ deviceId: string; status: string; lastSeen: string | null }>;
 }
 
+const API_URL = "https://patak-portal.onrender.com";
+
 const AdminDashboard: React.FC = () => {
   const [token, setToken] = useState(() => {
     try {
@@ -45,7 +47,7 @@ const AdminDashboard: React.FC = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/dashboard", {
+      const res = await fetch(`${API_URL}/api/admin/dashboard`, {
         headers: { Authorization: "Bearer " + token },
       });
       if (!res.ok) throw new Error("Failed to load dashboard");
@@ -63,7 +65,7 @@ const AdminDashboard: React.FC = () => {
   const loadUserReadings = async (userId: string) => {
     setReadingsLoading(true);
     try {
-      const res = await fetch(`/api/admin/users/${userId}/readings`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${userId}/readings`, {
         headers: { Authorization: "Bearer " + token },
       });
       if (!res.ok) throw new Error("Failed to load readings");

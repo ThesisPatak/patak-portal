@@ -4,6 +4,8 @@ interface AdminLoginProps {
   onLogin: (token: string) => void;
 }
 
+const API_URL = "https://patak-portal.onrender.com";
+
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +18,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      const res = await fetch("/auth/admin-login", {
+      const res = await fetch(`${API_URL}/auth/admin-login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -44,75 +46,86 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #0057b8 0%, #0047a3 100%)",
+        background: "#f0f2f5",
+        fontFamily: "Poppins, Arial, sans-serif",
+        padding: "20px",
       }}
     >
       <div
         style={{
           background: "#fff",
-          padding: "2.5rem",
-          borderRadius: "16px",
-          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+          padding: "3rem 2.5rem",
+          borderRadius: "12px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
           width: "100%",
-          maxWidth: "450px",
+          maxWidth: "500px",
+          textAlign: "center",
         }}
       >
-        {/* Logo/Title Area */}
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <h1
-            style={{
-              color: "#0057b8",
-              margin: "0 0 0.5rem 0",
-              fontSize: "2rem",
-              fontWeight: 700,
-            }}
-          >
-            PATAK
-          </h1>
-          <p style={{ color: "#666", margin: "0", fontSize: "0.95rem" }}>
-            Admin Portal
-          </p>
-          <p
-            style={{
-              color: "#999",
-              margin: "0.5rem 0 0 0",
-              fontSize: "0.85rem",
-              fontStyle: "italic",
-            }}
-          >
-            Monitor water consumption & manage users
-          </p>
-        </div>
+        {/* Title */}
+        <h1
+          style={{
+            color: "#0057b8",
+            margin: "0 0 0.5rem 0",
+            fontSize: "1.8rem",
+            fontWeight: 700,
+            letterSpacing: "-0.5px",
+          }}
+        >
+          PATAK Supplier Portal
+        </h1>
+
+        {/* Subtitle */}
+        <p
+          style={{
+            color: "#666",
+            margin: "0 0 2rem 0",
+            fontSize: "0.95rem",
+            lineHeight: "1.5",
+            fontWeight: 500,
+          }}
+        >
+          Thesis Project Design:
+          <br />
+          <span style={{ fontSize: "0.9rem", color: "#888" }}>
+            A modern IoT-based water consumption and billing system. This portal
+            enables suppliers to monitor water usage, manage automated billing,
+            and provide actionable insights for efficient and sustainable water
+            management.
+          </span>
+        </p>
+
+        {/* Login Heading */}
+        <h2
+          style={{
+            color: "#0057b8",
+            margin: "2rem 0 1.5rem 0",
+            fontSize: "1.3rem",
+            fontWeight: 600,
+          }}
+        >
+          Supplier Login
+        </h2>
 
         <form onSubmit={handleLogin}>
           {/* Username Field */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                color: "#333",
-                fontWeight: 600,
-                fontSize: "0.95rem",
-              }}
-            >
-              Admin Username
-            </label>
+          <div style={{ marginBottom: "1.2rem", textAlign: "left" }}>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter admin username"
+              placeholder="Username"
               disabled={loading}
               autoFocus
               style={{
                 width: "100%",
-                padding: "0.75rem 1rem",
+                padding: "0.9rem 1rem",
                 border: "2px solid #ddd",
-                borderRadius: "8px",
+                borderRadius: "6px",
                 fontSize: "1rem",
                 boxSizing: "border-box",
-                transition: "border-color 0.2s",
+                transition: "border-color 0.3s",
+                fontFamily: "inherit",
                 outline: "none",
               }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "#0057b8")}
@@ -121,32 +134,22 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
           </div>
 
           {/* Password Field */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                color: "#333",
-                fontWeight: 600,
-                fontSize: "0.95rem",
-              }}
-            >
-              Password
-            </label>
+          <div style={{ marginBottom: "1.5rem", textAlign: "left" }}>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder="Password"
               disabled={loading}
               style={{
                 width: "100%",
-                padding: "0.75rem 1rem",
+                padding: "0.9rem 1rem",
                 border: "2px solid #ddd",
-                borderRadius: "8px",
+                borderRadius: "6px",
                 fontSize: "1rem",
                 boxSizing: "border-box",
-                transition: "border-color 0.2s",
+                transition: "border-color 0.3s",
+                fontFamily: "inherit",
                 outline: "none",
               }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "#0057b8")}
@@ -159,12 +162,12 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             <div
               style={{
                 padding: "0.75rem 1rem",
-                marginBottom: "1.5rem",
-                background: "#fee",
-                color: "#c33",
-                borderRadius: "8px",
+                marginBottom: "1rem",
+                background: "#fff3cd",
+                color: "#856404",
+                borderRadius: "6px",
                 fontSize: "0.9rem",
-                border: "1px solid #fcc",
+                border: "1px solid #ffeaa7",
               }}
             >
               ⚠️ {error}
@@ -177,16 +180,16 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             disabled={loading}
             style={{
               width: "100%",
-              padding: "0.85rem",
-              background: loading ? "#0057b8cc" : "#0057b8",
+              padding: "0.9rem",
+              background: "#0057b8",
               color: "#fff",
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "6px",
               fontSize: "1rem",
               fontWeight: 600,
               cursor: loading ? "not-allowed" : "pointer",
-              transition: "background 0.2s",
-              marginBottom: "1rem",
+              transition: "background 0.3s",
+              opacity: loading ? 0.8 : 1,
             }}
             onMouseEnter={(e) => {
               if (!loading) e.currentTarget.style.background = "#003d82";
@@ -195,25 +198,9 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
               if (!loading) e.currentTarget.style.background = "#0057b8";
             }}
           >
-            {loading ? "Logging in..." : "Sign In"}
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
-
-        {/* Footer */}
-        <div
-          style={{
-            textAlign: "center",
-            paddingTop: "1.5rem",
-            borderTop: "1px solid #e0e0e0",
-            color: "#999",
-            fontSize: "0.85rem",
-          }}
-        >
-          <p style={{ margin: "0" }}>PATAK Thesis Project</p>
-          <p style={{ margin: "0.25rem 0 0 0" }}>
-            © 2026 Water Management System
-          </p>
-        </div>
       </div>
     </div>
   );
