@@ -1,3 +1,45 @@
+// All imports at the very top
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+
+// App initialization
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Admin-only endpoint to list all users (for deployment/admin verification)
+app.get('/admin/users', adminOnly, (req, res) => {
+  const users = readJSON(USERS_FILE)
+  // Do not expose password hashes
+  const safeUsers = users.map(({ passwordHash, ...u }) => u)
+  res.json({ users: safeUsers })
+})
+
+// Accept ESP32 readings (no auth, public endpoint)
+app.post('/api/readings', (req, res) => {
+  const { house, totalLiters, cubicMeters, timestamp } = req.body || {};
+  if (!house || typeof totalLiters !== 'number' || typeof cubicMeters !== 'number') {
+    return res.status(400).json({ error: 'Missing or invalid fields' });
+  }
+  const readings = readJSON(READINGS_FILE);
+  const reading = {
+    id: generateId('r'),
+    house,
+    totalLiters,
+    cubicMeters,
+    timestamp: timestamp || new Date().toISOString(),
+    receivedAt: new Date().toISOString()
+  };
+  readings.push(reading);
+  writeJSON(READINGS_FILE, readings);
+  res.json({ ok: true, reading });
+});
 // Admin-only endpoint to list all users (for deployment/admin verification)
 app.get('/admin/users', adminOnly, (req, res) => {
   const users = readJSON(USERS_FILE)
