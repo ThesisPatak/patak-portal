@@ -129,7 +129,7 @@ void handleSerial() {
 // Configure these for your WiFi and server
 const char* WIFI_SSID = "PLDTHOMEFIBRBsDd4"; // <-- set your SSID
 const char* WIFI_PASS = "PLDTWIFITd5XU"; // <-- set your password
-const char* SERVER_URL = "http://192.168.1.18:4000/api/readings"; // <-- your PC LAN IP
+const char* SERVER_URL = "https://patak-portal.onrender.com/api/readings"; // <-- cloud backend URL
 const char* HOUSE_NAME = "house1"; // change per device
 
 // Debug: if set to 1 the device will POST a reading every interval (high traffic)
