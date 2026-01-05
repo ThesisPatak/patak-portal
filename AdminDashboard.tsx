@@ -90,33 +90,81 @@ const AdminDashboard: React.FC = () => {
       {!token ? (
         <AdminLogin onLogin={handleLogin} />
       ) : (
-        <div style={{ display: "flex", gap: "2rem", width: "100%", maxWidth: "1400px", margin: "0 auto" }}>
-          {/* Left: User Management */}
-          <div style={{ flex: 1, minWidth: "300px" }}>
-            <AdminUsers />
-          </div>
+        <div
+          style={{
+            fontFamily: "Poppins, Arial, sans-serif",
+            background: "#f5f7fa",
+            minHeight: "100vh",
+            minWidth: "100vw",
+            width: "100vw",
+            height: "100vh",
+            margin: 0,
+            padding: 0,
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Header */}
+          <header
+            style={{
+              padding: "2rem 0",
+              background: "#0057b8",
+              color: "#fff",
+              textAlign: "center",
+              width: "100%",
+            }}
+          >
+            <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700 }}>
+              PATAK Supplier Portal
+            </h1>
+            <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.95rem" }}>
+              Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
+            </p>
+          </header>
 
-          {/* Right: Monitoring Dashboard */}
-          <div style={{ flex: 1.5, minWidth: "400px" }}>
-            <div style={{ background: "#fff", padding: "1.5rem", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                <h2 style={{ color: "#0057b8", margin: 0 }}>Water Usage Monitoring</h2>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    padding: "0.5rem 1rem",
-                    background: "#f5f5f5",
-                    border: "1px solid #ddd",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "0.9rem",
-                    color: "#333",
-                    fontWeight: 500,
-                  }}
-                >
-                  Log Out
-                </button>
+          {/* Main Content */}
+          <main
+            style={{
+              flex: 1,
+              width: "100vw",
+              height: "100%",
+              padding: "2rem",
+              boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              overflow: "auto",
+            }}
+          >
+            <div style={{ display: "flex", gap: "2rem", width: "100%", maxWidth: "1400px" }}>
+              {/* Left: User Management */}
+              <div style={{ flex: 1, minWidth: "300px" }}>
+                <AdminUsers />
               </div>
+
+              {/* Right: Monitoring Dashboard */}
+              <div style={{ flex: 1.5, minWidth: "400px" }}>
+                <div style={{ background: "#fff", padding: "1.5rem", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+                    <h2 style={{ color: "#0057b8", margin: 0 }}>Water Usage Monitoring</h2>
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: "#f5f5f5",
+                        border: "1px solid #ddd",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontSize: "0.9rem",
+                        color: "#333",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Log Out
+                    </button>
+                  </div>
 
           {!token && (
             <div style={{ padding: "1rem", background: "#fee", color: "#c33", borderRadius: "6px" }}>
@@ -264,7 +312,25 @@ const AdminDashboard: React.FC = () => {
             </>
           )}
         </div>
-      </div>
+              </div>
+            </div>
+          </main>
+
+          {/* Footer */}
+          <footer
+            style={{
+              textAlign: "center",
+              padding: "1.5rem 0",
+              color: "#888",
+              width: "100%",
+              background: "#fff",
+              borderTop: "1px solid #e0e0e0",
+            }}
+          >
+            <div>
+              &copy; 2026 PATAK. Guard every drop.
+            </div>
+          </footer>
         </div>
       )}
     </>
