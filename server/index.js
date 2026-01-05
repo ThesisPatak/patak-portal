@@ -1,10 +1,7 @@
 // All imports at the very top
 
 
-// App initialization
-const app = express();
-app.use(cors());
-app.use(express.json());
+
 
 // Admin-only endpoint to list all users (for deployment/admin verification)
 app.get('/admin/users', adminOnly, (req, res) => {
