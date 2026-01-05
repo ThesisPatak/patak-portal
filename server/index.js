@@ -84,6 +84,9 @@ function adminOnly(req, res, next) {
     if (!ADMIN_USERS.includes(payload.username)) return res.status(403).json({ error: 'Admin only' });
     req.user = payload;
     next();
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
 app.get('/api/readings/:houseId', (req, res) => {
   const { houseId } = req.params;
