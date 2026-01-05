@@ -1,4 +1,5 @@
 
+// All imports at the very top
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -8,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 
+// App initialization
 const app = express();
 app.use(cors());
 app.use(express.json());
