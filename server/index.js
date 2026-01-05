@@ -113,7 +113,12 @@ function ensureDataFiles() {
 }
 
 function readJSON(file) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')) } catch (e) { return [] }
+  try {
+    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
 }
 
 function writeJSON(file, obj) {
