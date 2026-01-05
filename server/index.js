@@ -464,9 +464,9 @@ app.post('/devices/heartbeat', verifyDeviceToken, async (req, res) => {
   }
   readings.push(reading)
   writeJSON(READINGS_FILE, readings)
-  res.json({ ok: true, readingId: reading.id })
-})
 
+  res.json({ ok: true, readingId: reading.id });
+});
 
-const PORT = process.env.PORT || 4000
-app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`))
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`));
