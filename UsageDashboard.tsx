@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 
+interface UsageDashboardProps {
+  token: string;
+  username: string;
+  onLogout: () => void;
+}
+
 type HouseSummary = {
   totalLiters: number;
   cubicMeters: number;
   last: any | null;
 };
 
-const UsageDashboard: React.FC = () => {
+const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogout }) => {
   const [summary, setSummary] = useState<Record<string, HouseSummary>>({});
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Record<string, any[]>>({});
@@ -22,7 +28,9 @@ const UsageDashboard: React.FC = () => {
 
     const fetchInitial = async () => {
       try {
-        const res = await fetch('/api/houses');
+        const res = await fetch('/api/houses', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (!res.ok) throw new Error('Failed to fetch initial summary');
         const data: ApiResponse = await res.json();
         if (!closed) setSummary(data.summary || {});
@@ -175,6 +183,34 @@ const UsageDashboard: React.FC = () => {
 
   return (
     <>
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "2rem",
+        paddingBottom: "1rem",
+        borderBottom: "1px solid #e0e0e0"
+      }}>
+        <div>
+          <h2 style={{ margin: 0, color: "#0057b8" }}>Welcome, {username}</h2>
+          <small style={{ color: "#666" }}>Your water usage dashboard</small>
+        </div>
+        <button
+          onClick={onLogout}
+          style={{
+            padding: "0.5rem 1rem",
+            background: "#f5f5f5",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "0.9rem",
+            color: "#333"
+          }}
+        >
+          Log Out
+        </button>
+      </div>
+
       <section>
         <h2 style={{ color: "#0057b8" }}>Real-Time Water Usage</h2>
         {houses.length === 0 ? (
