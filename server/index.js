@@ -1,3 +1,10 @@
+// Admin-only endpoint to list all users (for deployment/admin verification)
+app.get('/admin/users', adminOnly, (req, res) => {
+  const users = readJSON(USERS_FILE)
+  // Do not expose password hashes
+  const safeUsers = users.map(({ passwordHash, ...u }) => u)
+  res.json({ users: safeUsers })
+})
 
 // All imports at the very top
 import express from 'express';
@@ -160,8 +167,16 @@ app.post('/auth/register', async (req, res) => {
   const user = { id: generateId('user'), username, passwordHash, createdAt: new Date().toISOString() }
   users.push(user)
   writeJSON(USERS_FILE, users)
+  // Automatically assign a device to this user
+  const devices = readJSON(DEVICES_FILE)
+  const deviceId = generateId('esp32')
+  const deviceToken = crypto.randomBytes(32).toString('hex')
+  const tokenHash = await bcrypt.hash(deviceToken, 10)
+  const device = { deviceId, tokenHash, ownerUserId: user.id, houseId: user.id, meta: { assignedAt: new Date().toISOString() }, status: 'registered', lastSeen: null, createdAt: new Date().toISOString() }
+  devices.push(device)
+  writeJSON(DEVICES_FILE, devices)
   const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
-  res.status(201).json({ token, user: { id: user.id, username: user.username } })
+  res.status(201).json({ token, user: { id: user.id, username: user.username }, device: { deviceId, deviceToken } })
 })
 
 app.post('/auth/login', async (req, res) => {
