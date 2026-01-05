@@ -1,3 +1,17 @@
+
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 // Dashboard summary endpoint for mobile app
 app.get('/api/houses', authMiddleware, (req, res) => {
   // For demo: return all readings grouped by house for the logged-in user
