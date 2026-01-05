@@ -1,3 +1,24 @@
+// Dashboard summary endpoint for mobile app
+app.get('/api/houses', authMiddleware, (req, res) => {
+  // For demo: return all readings grouped by house for the logged-in user
+  const readings = readJSON(READINGS_FILE);
+  const users = readJSON(USERS_FILE);
+  const user = users.find(u => u.id === req.user.userId);
+  // Group readings by house (or by username if you want per-user data)
+  const summary = {};
+  for (const r of readings) {
+    // Only show readings for this user (if houseId or house matches username or userId)
+    if (r.house === user.username || r.houseId === user.id) {
+      if (!summary[r.house]) summary[r.house] = { totalLiters: 0, cubicMeters: 0, last: null };
+      summary[r.house].totalLiters += r.totalLiters || 0;
+      summary[r.house].cubicMeters += r.cubicMeters || 0;
+      if (!summary[r.house].last || new Date(r.timestamp) > new Date(summary[r.house].last.timestamp)) {
+        summary[r.house].last = r;
+      }
+    }
+  }
+  res.json({ summary });
+});
 
 import express from 'express';
 import fs from 'fs';
