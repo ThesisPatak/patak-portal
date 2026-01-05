@@ -1,3 +1,22 @@
+// Accept ESP32 readings (no auth, public endpoint)
+app.post('/api/readings', (req, res) => {
+  const { house, totalLiters, cubicMeters, timestamp } = req.body || {};
+  if (!house || typeof totalLiters !== 'number' || typeof cubicMeters !== 'number') {
+    return res.status(400).json({ error: 'Missing or invalid fields' });
+  }
+  const readings = readJSON(READINGS_FILE);
+  const reading = {
+    id: generateId('r'),
+    house,
+    totalLiters,
+    cubicMeters,
+    timestamp: timestamp || new Date().toISOString(),
+    receivedAt: new Date().toISOString()
+  };
+  readings.push(reading);
+  writeJSON(READINGS_FILE, readings);
+  res.json({ ok: true, reading });
+});
 
 import express from 'express';
 import fs from 'fs';
