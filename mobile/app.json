@@ -28,6 +28,9 @@
         "projectId": "e8945e0a-8776-441f-b565-2272c473413c"
       }
     },
-    "owner": "patakdeploys-organization"
+    "owner": "patakdeploy6-cpu",
+    "cli": {
+      "appVersionSource": "local"
+    }
   }
 }
