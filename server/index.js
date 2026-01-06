@@ -37,6 +37,11 @@ app.use(express.json())
 // Serve a minimal web UI for account and device management
 app.use(express.static(path.join(__dirname, 'public')))
 
+// Lightweight health endpoint used by uptime pings to keep free instances warm
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
 function generateId(prefix = 'id') {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random()*1000)}`
 }
