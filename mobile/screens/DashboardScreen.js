@@ -128,7 +128,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
                   {s.last && <Text style={[styles.smallText, { marginTop: 4 }]}>Updated {lastAge}s ago</Text>}
                   <View style={{ height: SPACING.small }} />
                   <Text style={[styles.subtitle, { fontSize: TYPO.subtitleSize + 2 }]}>Usage</Text>
-                  <Animated.Text style={[styles.latestValue, { transform: [{ scale: usageAnim }] }]}>{usage ? usage.toFixed(3) : '—'} m³</Animated.Text>
+                  <Animated.Text style={[styles.latestValue, { transform: [{ scale: usageAnim }] }]}>{usage ? usage.toFixed(3) : '0.000'} m³</Animated.Text>
 
                   <View style={{ height: SPACING.small }} />
                   <Text style={{ fontSize: TYPO.bodySize, fontWeight: '800', color: COLORS.link }}>Amount Due (₱)</Text>
