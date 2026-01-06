@@ -313,13 +313,13 @@ const AdminDashboard: React.FC = () => {
                               <div>
                                 <div style={{ color: "#666", marginBottom: "0.2rem" }}>Due Date</div>
                                 <div style={{ fontSize: "0.85rem", color: "#999" }}>
-                                  {new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
+                                  {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
                                 </div>
                               </div>
                               <div>
                                 <div style={{ color: "#666", marginBottom: "0.2rem" }}>Status</div>
-                                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#dc3545" }}>
-                                  Unpaid
+                                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: user.cubicMeters === 0 ? "#999" : "#dc3545" }}>
+                                  {user.cubicMeters === 0 ? 'No data' : 'Unpaid'}
                                 </div>
                               </div>
                             </div>
@@ -369,11 +369,11 @@ const AdminDashboard: React.FC = () => {
                                 ₱{(user.cubicMeters * 5208.33).toFixed(2)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
+                                {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
-                                <span style={{ color: "#dc3545", fontWeight: 600, fontSize: "0.9rem" }}>
-                                  Unpaid
+                                <span style={{ color: user.cubicMeters === 0 ? "#999" : "#dc3545", fontWeight: 600, fontSize: "0.9rem" }}>
+                                  {user.cubicMeters === 0 ? 'No data' : 'Unpaid'}
                                 </span>
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
