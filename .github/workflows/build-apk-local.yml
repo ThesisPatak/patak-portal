@@ -1,0 +1,52 @@
+name: Build Android APK (Local)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+      
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+      
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+      
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+      
+      - name: Build APK (Managed)
+        working-directory: mobile
+        run: eas build --platform android --local --non-interactive
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: android-apk
+          path: mobile/dist/*.apk
+          retention-days: 30
