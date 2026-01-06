@@ -6,6 +6,7 @@ import DashboardScreen from './screens/DashboardScreen';
 import UsageScreen from './screens/UsageScreen';
 import BillingScreen from './screens/BillingScreen';
 import PayScreen from './screens/PayScreen';
+import DeviceScreen from './screens/DeviceScreen';
 import styles from './screens/styles';
 
 
@@ -38,6 +39,7 @@ export default function App() {
               onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
               onLogout={() => setToken(null)}
               onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
+              onOpenDevices={() => setScreen('devices')}
             />
           )}
           {screen === 'billing' && (
@@ -48,6 +50,9 @@ export default function App() {
           )}
           {screen === 'pay' && (
             <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />
+          )}
+          {screen === 'devices' && (
+            <DeviceScreen token={token} onBack={() => setScreen('dashboard')} />
           )}
         </View>
         <View style={styles.footer} pointerEvents="none">

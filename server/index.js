@@ -211,6 +211,13 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
   res.status(201).json({ device: { deviceId: device.deviceId, owner: device.ownerUserId, houseId: device.houseId }, deviceToken });
 });
 
+// Get authenticated user's devices
+app.get('/devices/list', authMiddleware, (req, res) => {
+  const devices = readJSON(DEVICES_FILE);
+  const userDevices = devices.filter(d => d.ownerUserId === req.user.userId);
+  res.json({ devices: userDevices });
+});
+
 async function verifyDeviceToken(req, res, next) {
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing device token' });

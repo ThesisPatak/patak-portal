@@ -4,7 +4,7 @@ import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING } from './variables';
 
-export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay }) {
+export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, onOpenDevices }) {
   const [summary, setSummary] = useState(null);
   const [lastAge, setLastAge] = useState(0);
   const usageAnim = useRef(new Animated.Value(1)).current;
@@ -146,6 +146,10 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay })
                   <View style={{ height: SPACING.base }} />
                   <TouchableOpacity style={styles.primaryButton} onPress={() => onOpenUsage(primaryHouse)}>
                     <Text style={styles.primaryButtonText}>View Usage Details</Text>
+                  </TouchableOpacity>
+                  <View style={{ height: SPACING.base }} />
+                  <TouchableOpacity style={[styles.primaryButton, { backgroundColor: COLORS.secondary }]} onPress={() => onOpenDevices && onOpenDevices()}>
+                    <Text style={styles.primaryButtonText}>🔧 My Devices</Text>
                   </TouchableOpacity>
                 </View>
               );

@@ -38,6 +38,10 @@ unsigned long long totalPulsesAccum = 0; // accumulated pulses across sessions (
 unsigned long lastMillis = 0;
 unsigned long lastSaveMillis = 0;
 
+// Device Authentication
+String DEVICE_ID = "ESP32-001";  // Change per device or use MAC address
+String DEVICE_TOKEN = "";  // Will be set via serial command or loaded from Preferences
+
 Preferences prefs;
 
 void IRAM_ATTR pulseISR() {
@@ -60,6 +64,7 @@ void saveState() {
   prefs.putDouble("ppl", PULSES_PER_LITER);
   prefs.putDouble("totalL", totalLiters);
   prefs.putDouble("totalPp", (double)totalPulsesAccum);
+  prefs.putString("deviceToken", DEVICE_TOKEN);  // Save device token
   prefs.end();
   Serial.println("State saved to Preferences.");
   // Send reading to server when state is saved
@@ -119,8 +124,31 @@ void handleSerial() {
     } else if (s.equalsIgnoreCase("send")) {
       Serial.println("Manual send requested.");
       sendReading();
+    } else if (s.startsWith("token ")) {
+      String newToken = s.substring(6);
+      DEVICE_TOKEN = newToken;
+      prefs.begin("flow", false);
+      prefs.putString("deviceToken", DEVICE_TOKEN);
+      prefs.end();
+      Serial.print("Device token set. Length: ");
+      Serial.println(DEVICE_TOKEN.length());
+      Serial.println("Token saved to Preferences. Device is now authenticated.");
+    } else if (s.equalsIgnoreCase("status")) {
+      Serial.print("Device ID: ");
+      Serial.println(DEVICE_ID);
+      Serial.print("Device Token: ");
+      if (DEVICE_TOKEN.length() > 0) {
+        Serial.println(DEVICE_TOKEN.substring(0, 16) + "...");
+      } else {
+        Serial.println("[NOT SET]");
+      }
+      Serial.print("Total Liters: ");
+      Serial.println(totalLiters, 6);
+      Serial.print("WiFi: ");
+      Serial.println(WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected");
     } else {
-      Serial.println("Commands: r (reset total), c <value> (set pulses per liter), p (print pulses), cal <liters>");
+      Serial.println("Commands: r (reset), c <val> (calibrate), p (pulses), cal <liters> (calibrate),");
+      Serial.println("send (send reading), token <device_token> (set auth token), status (show status)");
     }
   }
 }
@@ -168,6 +196,15 @@ void sendReading() {
   HTTPClient http;
   http.begin(SERVER_URL);
   http.addHeader("Content-Type", "application/json");
+  
+  // Add device token authentication if available
+  if (DEVICE_TOKEN.length() > 0) {
+    String authHeader = "Bearer " + DEVICE_TOKEN;
+    http.addHeader("Authorization", authHeader);
+    Serial.println("Sending with device token authentication");
+  } else {
+    Serial.println("[WARNING] No device token set. Data may be rejected.");
+  }
 
   double cubicMeters = totalLiters / 1000.0;
   // Build JSON body with ISO timestamp (use NTP time if available)
@@ -237,10 +274,19 @@ void setup() {
   PULSES_PER_LITER = prefs.getDouble("ppl", PULSES_PER_LITER);
   totalLiters = prefs.getDouble("totalL", 0.0);
   totalPulsesAccum = (unsigned long long)(prefs.getDouble("totalPp", 0.0));
+  DEVICE_TOKEN = prefs.getString("deviceToken", "");  // Load device token
   prefs.end();
 
   Serial.print("Loaded PULSES_PER_LITER = ");
   Serial.println(PULSES_PER_LITER, 6);
+  
+  Serial.print("Device ID: ");
+  Serial.println(DEVICE_ID);
+  if (DEVICE_TOKEN.length() > 0) {
+    Serial.println("Device token loaded from Preferences (authenticated)");
+  } else {
+    Serial.println("[!] No device token found. Register device in mobile app and enter: token <device_token>");
+  }
   Serial.print("Loaded totalLiters = ");
   Serial.println(totalLiters, 6);
   Serial.print("Loaded totalPulsesAccum = ");
