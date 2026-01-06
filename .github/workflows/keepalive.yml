@@ -2,9 +2,7 @@ name: Keep Render Alive
 
 on:
   schedule:
-    # Every 5 minutes
     - cron: '*/5 * * * *'
-  workflow_dispatch: {}
 
 jobs:
   ping:
@@ -12,5 +10,4 @@ jobs:
     steps:
       - name: Curl health endpoint
         run: |
-          echo "Pinging health endpoint"
           curl -fsS https://patak-portal.onrender.com/health || true

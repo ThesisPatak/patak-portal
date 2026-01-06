@@ -37,8 +37,9 @@ app.use(express.json())
 // Serve a minimal web UI for account and device management
 app.use(express.static(path.join(__dirname, 'public')))
 
-// Lightweight health endpoint used by uptime pings to keep free instances warm
+// Lightweight health endpoint for uptime checks and keepalive pings
 app.get('/health', (req, res) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate')
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
