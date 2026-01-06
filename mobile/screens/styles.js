@@ -94,7 +94,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.cardBg,
     width: '100%',
     alignSelf: 'stretch',
-    borderRadius: RADIUS.small,
+    borderRadius: RADIUS.sm,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginVertical: 8,
@@ -105,6 +105,39 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
+  },
+  
+  // Professional metric card
+  metricCard: {
+    backgroundColor: COLORS.cardBg,
+    borderRadius: RADIUS.base,
+    padding: SPACING.base,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.primary,
+    marginBottom: SPACING.small,
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: ELEVATION.low
+  },
+  
+  // Status badge
+  statusBadge: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.pill,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  
+  // Section header
+  sectionHeader: {
+    fontSize: TYPO.h4,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: SPACING.base,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase'
   },
   title: {
     fontSize: TYPO.titleSize + 6,
@@ -149,10 +182,15 @@ export default StyleSheet.create({
     backgroundColor: COLORS.primary,
     paddingVertical: 14,
     paddingHorizontal: 18,
-    borderRadius: 12,
+    borderRadius: RADIUS.base,
     alignItems: 'center',
     alignSelf: 'stretch',
-    width: '100%'
+    width: '100%',
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: ELEVATION.high
   },
   primaryButtonText: {
     color: COLORS.onPrimary,
