@@ -1,52 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
+import { View, Text, TouchableOpacity, Linking, ActivityIndicator, Share } from 'react-native';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
 export default function PayScreen({ payInfo, onBack }) {
   const amount = payInfo?.amount ?? 0;
   const house = payInfo?.house ?? 'Unnamed';
-  const [qrValue, setQrValue] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // PayPal.Me username for Rodney Delgado
+  // PayPal.Me username
   const PAYPAL_ID = 'PatakSupplier';
 
-  useEffect(() => {
-    // Generate PayPal payment link with amount
-    const paypalLink = `https://www.paypal.com/paypalme/${PAYPAL_ID}/${Number(amount).toFixed(2)}`;
-    setQrValue(paypalLink);
-  }, [amount]);
+  const paypalLink = `https://www.paypal.com/paypalme/${PAYPAL_ID}/${Number(amount).toFixed(2)}`;
 
-  const handlePayPalPress = async () => {
+  const handleOpenPayPal = async () => {
     try {
-      if (PAYPAL_ID === 'YOUR_PAYPAL_ID') {
-        alert('Please update PAYPAL_ID in PayScreen.js with your PayPal.Me username');
-        return;
+      setLoading(true);
+      const canOpen = await Linking.canOpenURL(paypalLink);
+      if (canOpen) {
+        await Linking.openURL(paypalLink);
+      } else {
+        alert('Cannot open PayPal link. Please open it manually:\n' + paypalLink);
       }
-      if (!qrValue) {
-        alert('QR code is still loading. Please wait.');
-        return;
-      }
-      const url = qrValue.trim();
-      if (!url.startsWith('http')) {
-        alert('Invalid payment URL');
-        return;
-      }
-      
-      // Check if URL can be opened
-      const canOpen = await Linking.canOpenURL(url);
-      if (!canOpen) {
-        console.warn('Cannot open URL:', url);
-        // Fallback: copy to clipboard or show alternate message
-        alert('Your PayPal link is ready:\n' + url + '\n\nPlease open in your browser.');
-        return;
-      }
-      
-      await Linking.openURL(url);
     } catch (error) {
       console.error('Error opening PayPal:', error);
       alert('Failed to open PayPal. Please check your internet connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Pay ₱${Number(amount).toFixed(2)} via PayPal:\n${paypalLink}`,
+        url: paypalLink,
+        title: `Payment for ${house}`,
+      });
+    } catch (error) {
+      console.error('Share error:', error);
     }
   };
 
@@ -61,29 +53,45 @@ export default function PayScreen({ payInfo, onBack }) {
         <Text style={[styles.subtitle, { marginTop: SPACING.base }]}>Amount Due</Text>
         <Text style={{ fontSize: TYPO.bodySize + 8, fontWeight: '900', color: COLORS.link, marginTop: SPACING.small }}>₱{Number(amount).toFixed(2)}</Text>
 
-        <View style={{ height: SPACING.base }} />
-        {/* PayPal QR Code */}
-        {qrValue ? (
-          <View style={{ width: 220, height: 220, backgroundColor: 'white', borderWidth: 2, borderColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', padding: SPACING.small }}>
-            <QRCode
-              value={qrValue}
-              size={200}
-              color={COLORS.primary}
-              backgroundColor="white"
-            />
-          </View>
-        ) : (
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        )}
+        <View style={{ height: SPACING.base * 2 }} />
+        
+        {/* PayPal Payment Info */}
+        <View style={{ width: '100%', padding: SPACING.base, backgroundColor: '#f0f7ff', borderRadius: 12, marginVertical: SPACING.base }}>
+          <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.primary, textAlign: 'center', marginBottom: SPACING.small }}>PayPal Payment</Text>
+          <Text style={{ fontSize: TYPO.bodySize - 2, color: '#666', textAlign: 'center', marginBottom: SPACING.small }}>
+            Click below to open PayPal and complete your payment
+          </Text>
+          <Text style={{ fontSize: TYPO.bodySize - 3, color: '#999', textAlign: 'center', fontStyle: 'italic' }}>
+            PayPal ID: {PAYPAL_ID}
+          </Text>
+        </View>
 
         <View style={{ height: SPACING.base }} />
-        <TouchableOpacity onPress={handlePayPalPress} style={[styles.primaryButton]}>
-          <Text style={[styles.primaryButtonText]}>Open PayPal</Text>
+        
+        <TouchableOpacity 
+          onPress={handleOpenPayPal} 
+          disabled={loading}
+          style={[styles.primaryButton, { opacity: loading ? 0.6 : 1 }]}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={[styles.primaryButtonText]}>Open PayPal Payment</Text>
+          )}
         </TouchableOpacity>
 
         <View style={{ height: SPACING.small }} />
-        <Text style={[styles.subtitle, { color: COLORS.muted, marginTop: SPACING.base }]}>
-          Scan the QR code above with your phone camera or PayPal app to pay ₱{Number(amount).toFixed(2)}
+        
+        <TouchableOpacity 
+          onPress={handleShare}
+          style={[styles.secondaryButton, { marginHorizontal: 0 }]}
+        >
+          <Text style={styles.secondaryButtonText}>Share Payment Link</Text>
+        </TouchableOpacity>
+
+        <View style={{ height: SPACING.small }} />
+        <Text style={[styles.subtitle, { color: COLORS.muted, marginTop: SPACING.base, textAlign: 'center' }]}>
+          Your payment of ₱{Number(amount).toFixed(2)} will be securely processed through PayPal.
         </Text>
       </View>
     </View>
