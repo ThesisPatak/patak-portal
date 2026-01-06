@@ -1,8 +1,6 @@
 // Keep-Alive Service: Prevents Render free tier server from sleeping
 // Pings the backend every 12 minutes to keep it warm and responsive
 
-import * as SecureStore from 'expo-secure-store';
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 const KEEP_ALIVE_INTERVAL = 12 * 60 * 1000; // 12 minutes in milliseconds
 let keepAliveTimer = null;
@@ -43,15 +41,5 @@ async function pingBackend() {
     // Silently fail - don't disrupt user experience
     // Keep-alive is best-effort, not critical
     console.log('[KeepAlive] Ping error (non-critical):', error.message);
-  }
-}
-
-// Check if user is logged in (has a token)
-export async function isUserLoggedIn() {
-  try {
-    const token = await SecureStore.getItemAsync('authToken');
-    return !!token;
-  } catch (e) {
-    return false;
   }
 }
