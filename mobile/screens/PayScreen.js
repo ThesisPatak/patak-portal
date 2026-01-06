@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
-import QRCode from 'qrcode.react';
+import QRCode from 'react-native-qrcode-svg';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
@@ -46,8 +46,6 @@ export default function PayScreen({ payInfo, onBack }) {
               size={200}
               color={COLORS.primary}
               backgroundColor="white"
-              level="H"
-              includeMargin={false}
             />
           </View>
         ) : (
