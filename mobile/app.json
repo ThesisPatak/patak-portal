@@ -7,15 +7,23 @@
       "ios",
       "android"
     ],
+    "icon": "./assets/icon.svg",
     "splash": {
+      "image": "./assets/icon.svg",
+      "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "android": {
       "package": "com.patak.mobile",
       "versionCode": 1,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.svg",
         "backgroundColor": "#ffffff"
       }
+    },
+    "ios": {
+      "supportsTabletOS": true,
+      "bundleIdentifier": "com.patak.mobile"
     },
     "extra": {
       "eas": {
