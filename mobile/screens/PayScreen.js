@@ -18,12 +18,36 @@ export default function PayScreen({ payInfo, onBack }) {
     setQrValue(paypalLink);
   }, [amount]);
 
-  const handlePayPalPress = () => {
-    if (PAYPAL_ID === 'YOUR_PAYPAL_ID') {
-      alert('Please update PAYPAL_ID in PayScreen.js with your PayPal.Me username');
-      return;
+  const handlePayPalPress = async () => {
+    try {
+      if (PAYPAL_ID === 'YOUR_PAYPAL_ID') {
+        alert('Please update PAYPAL_ID in PayScreen.js with your PayPal.Me username');
+        return;
+      }
+      if (!qrValue) {
+        alert('QR code is still loading. Please wait.');
+        return;
+      }
+      const url = qrValue.trim();
+      if (!url.startsWith('http')) {
+        alert('Invalid payment URL');
+        return;
+      }
+      
+      // Check if URL can be opened
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        console.warn('Cannot open URL:', url);
+        // Fallback: copy to clipboard or show alternate message
+        alert('Your PayPal link is ready:\n' + url + '\n\nPlease open in your browser.');
+        return;
+      }
+      
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error('Error opening PayPal:', error);
+      alert('Failed to open PayPal. Please check your internet connection.');
     }
-    Linking.openURL(qrValue);
   };
 
   return (

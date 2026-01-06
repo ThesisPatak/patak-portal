@@ -84,6 +84,8 @@ const BillingTable: React.FC = () => {
                     return `₱${amt.toFixed(2)}`;
                   })()}</td>
                   <td style={{ padding: '10px 12px' }}>{(() => {
+                    const num = Number(usageRaw || 0);
+                    if (num === 0) return 'Not yet active';
                     const d = new Date();
                     d.setMonth(d.getMonth() + 1);
                     return d.toISOString().slice(0,10);
