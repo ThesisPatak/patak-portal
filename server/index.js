@@ -76,6 +76,11 @@ function adminOnly(req, res, next) {
 ensureDataFiles();
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Health check endpoint (for keep-alive pings to prevent server sleep)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Admin-only endpoint to list all users (for deployment/admin verification)
 app.get('/admin/users', adminOnly, (req, res) => {
   const users = readJSON(USERS_FILE);

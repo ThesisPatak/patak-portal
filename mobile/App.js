@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity } from 'react-native';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -8,6 +8,7 @@ import BillingScreen from './screens/BillingScreen';
 import PayScreen from './screens/PayScreen';
 import DeviceScreen from './screens/DeviceScreen';
 import styles from './screens/styles';
+import { startKeepAlive, stopKeepAlive } from './api/keepAlive';
 
 
 export default function App() {
@@ -16,6 +17,12 @@ export default function App() {
   const [selectedHouse, setSelectedHouse] = useState(null);
   const [payInfo, setPayInfo] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
+
+  // Start keep-alive service on app load
+  useEffect(() => {
+    startKeepAlive();
+    return () => stopKeepAlive();
+  }, []);
 
   console.log('App state token=', token, 'screen=', screen);
 
