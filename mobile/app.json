@@ -7,9 +7,15 @@
       "ios",
       "android"
     ],
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
     "android": {
       "package": "com.patak.mobile",
-      "versionCode": 1
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
     },
     "extra": {
       "eas": {
