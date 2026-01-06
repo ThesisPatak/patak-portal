@@ -1,18 +1,25 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-  <!-- Water drop icon -->
+  <!-- Water drop icon - Teal blue gradient -->
   <defs>
-    <style>
-      .drop-outer { fill: #0b5fa5; }
-      .drop-inner { fill: #00bfff; }
-    </style>
+    <linearGradient id="dropGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00D4FF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0099CC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#006699;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="shineGradient">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+    </radialGradient>
   </defs>
   
-  <!-- Outer drop outline (dark blue) -->
-  <path class="drop-outer" d="M 512 100 C 512 100, 350 300, 350 450 C 350 600, 420 680, 512 680 C 604 680, 674 600, 674 450 C 674 300, 512 100, 512 100 Z" />
+  <!-- Main water drop body -->
+  <path d="M 512 80 C 512 80, 280 320, 280 520 C 280 720, 380 820, 512 920 C 644 820, 744 720, 744 520 C 744 320, 512 80, 512 80 Z" 
+        fill="url(#dropGradient)" 
+        stroke="none"/>
   
-  <!-- Inner drop highlight (light blue) -->
-  <ellipse class="drop-inner" cx="480" cy="380" rx="80" ry="120" />
+  <!-- Shine/highlight overlay -->
+  <ellipse cx="400" cy="380" rx="120" ry="160" fill="url(#shineGradient)" opacity="0.5"/>
   
-  <!-- Shine effect -->
-  <ellipse cx="440" cy="320" rx="35" ry="50" fill="white" opacity="0.3" />
+  <!-- White sparkle -->
+  <circle cx="380" cy="300" r="50" fill="white" opacity="0.4"/>
 </svg>
