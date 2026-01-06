@@ -111,8 +111,9 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               const s = summary.summary[primaryHouse] || {};
               const usage = Number(s.cubicMeters ?? (s.last && s.last.cubicMeters) ?? s.totalLiters ?? 0);
               
-              // Calculate due date from readingStartDate
+              // Calculate due date from readingStartDate (only show if usage > 0)
               const due = (() => {
+                if (usage === 0) return null; // No usage yet, show "Not yet active"
                 if (!s.readingStartDate) return null; // No readings yet
                 const startDate = new Date(s.readingStartDate);
                 const dueDate = new Date(startDate);
