@@ -110,7 +110,16 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             (() => {
               const s = summary.summary[primaryHouse] || {};
               const usage = Number(s.cubicMeters ?? (s.last && s.last.cubicMeters) ?? s.totalLiters ?? 0);
-              const due = (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.toISOString().slice(0,10); })();
+              
+              // Calculate due date from readingStartDate
+              const due = (() => {
+                if (!s.readingStartDate) return null; // No readings yet
+                const startDate = new Date(s.readingStartDate);
+                const dueDate = new Date(startDate);
+                dueDate.setMonth(dueDate.getMonth() + 1);
+                return dueDate.toISOString().slice(0, 10);
+              })();
+              
               return (
                 <View style={styles.cardLatest}> 
                   <Text style={{ fontWeight: '800', color: COLORS.primary, fontSize: TYPO.subtitleSize + 3 }}>{primaryHouse.toUpperCase()}</Text>
@@ -123,8 +132,14 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
 
                   <View style={{ height: SPACING.small }} />
                   <Text style={{ fontSize: TYPO.bodySize, fontWeight: '800', color: COLORS.link }}>Amount Due (₱)</Text>
-                  <Text style={{ fontSize: TYPO.bodySize + 2, fontWeight: '800', color: COLORS.link }}>₱{Number(computeResidentialBill(usage)).toFixed(2)}</Text>
-                  <Text style={[styles.subtitle, { marginTop: SPACING.base }]}>Due Date: {due}</Text>
+                  {due ? (
+                    <>
+                      <Text style={{ fontSize: TYPO.bodySize + 2, fontWeight: '800', color: COLORS.link }}>₱{Number(computeResidentialBill(usage)).toFixed(2)}</Text>
+                      <Text style={[styles.subtitle, { marginTop: SPACING.base }]}>Due Date: {due}</Text>
+                    </>
+                  ) : (
+                    <Text style={{ fontSize: TYPO.bodySize + 2, fontWeight: '700', color: COLORS.warning }}>Not yet active</Text>
+                  )}
 
                   {/* Expanded metrics for mobile monitoring */}
                   <View style={{ height: SPACING.base }} />

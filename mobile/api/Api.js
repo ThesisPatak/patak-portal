@@ -72,6 +72,18 @@ const Api = {
       throw err;
     }
     return res.json();
+  },
+
+  // Reset readings for a house (admin function)
+  resetReadings: async (authToken, house) => {
+    const baseUrl = await Api.getServerUrl();
+    const res = await fetch(`${baseUrl}/api/reset-readings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+      body: JSON.stringify({ house })
+    });
+    if (!res.ok) throw new Error('Failed to reset readings');
+    return res.json();
   }
 };
 

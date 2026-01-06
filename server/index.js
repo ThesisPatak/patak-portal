@@ -99,6 +99,17 @@ app.post('/api/readings', (req, res) => {
     receivedAt: new Date().toISOString()
   };
   readings.push(reading);
+  
+  // Track reading start date per house (initialize only once)
+  const houseMeta = readJSON(path.join(DATA_DIR, 'house_meta.json')) || {};
+  if (!houseMeta[house]) {
+    houseMeta[house] = {
+      readingStartDate: reading.receivedAt,
+      createdAt: new Date().toISOString()
+    };
+    writeJSON(path.join(DATA_DIR, 'house_meta.json'), houseMeta);
+  }
+  
   writeJSON(READINGS_FILE, readings);
   res.json({ ok: true, reading });
 });
@@ -153,6 +164,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   const userId = req.user.userId;
   const devices = readJSON(DEVICES_FILE);
   const readings = readJSON(READINGS_FILE);
+  const houseMeta = readJSON(path.join(DATA_DIR, 'house_meta.json')) || {};
   
   // Get all devices owned by this user
   const userDevices = devices.filter(d => d.ownerUserId === userId);
@@ -167,7 +179,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
         cubicMeters: 0,
         totalLiters: 0,
         last: null,
-        lastUpdated: null
+        lastUpdated: null,
+        readingStartDate: houseMeta[houseId]?.readingStartDate || new Date().toISOString()
       };
     }
     
@@ -365,6 +378,33 @@ app.delete('/api/admin/users/:userId', adminOnly, (req, res) => {
   writeJSON(READINGS_FILE, readings);
   
   res.json({ success: true, message: `User ${username} and all associated data deleted` });
+});
+
+// Reset readings for a house and update start date
+app.post('/api/reset-readings', authMiddleware, (req, res) => {
+  const { house } = req.body || {};
+  if (!house) return res.status(400).json({ error: 'house required' });
+  
+  const readings = readJSON(READINGS_FILE);
+  const devices = readJSON(DEVICES_FILE);
+  const houseMeta = readJSON(path.join(DATA_DIR, 'house_meta.json')) || {};
+  
+  // Verify user owns this house
+  const userDevices = devices.filter(d => d.ownerUserId === req.user.userId);
+  const hasAccess = userDevices.some(d => (d.houseId || d.ownerUserId) === house);
+  if (!hasAccess) return res.status(403).json({ error: 'No access to this house' });
+  
+  // Clear readings for this house
+  const newReadings = readings.filter(r => (r.deviceId || r.houseId) !== house);
+  writeJSON(READINGS_FILE, newReadings);
+  
+  // Reset the start date
+  if (!houseMeta[house]) houseMeta[house] = {};
+  houseMeta[house].readingStartDate = new Date().toISOString();
+  houseMeta[house].lastReset = new Date().toISOString();
+  writeJSON(path.join(DATA_DIR, 'house_meta.json'), houseMeta);
+  
+  res.json({ success: true, message: 'Readings reset', newStartDate: houseMeta[house].readingStartDate });
 });
 
 const PORT = process.env.PORT || 4000;
