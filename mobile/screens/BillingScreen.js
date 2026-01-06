@@ -60,7 +60,12 @@ export default function BillingScreen({ onBack }) {
             const usageRaw = Number(s.cubicMeters || s.totalLiters || 0);
             const usage = (s.cubicMeters ?? (s.last && s.last.cubicMeters) ?? 0);
             const amount = computeResidentialBill(Number(usage || 0));
-            const due = (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.toISOString().slice(0,10); })();
+            const due = (() => { 
+              if (Number(usageRaw) === 0) return 'Not yet active';
+              const d = new Date(); 
+              d.setMonth(d.getMonth() + 1); 
+              return d.toISOString().slice(0,10); 
+            })();
             const status = Number(usageRaw) === 0 ? 'No data' : 'Unpaid';
             return (
               <View style={styles.card}>
