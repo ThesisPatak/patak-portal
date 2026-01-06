@@ -7,9 +7,9 @@
       "ios",
       "android"
     ],
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Wicon.png",
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/Wicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,7 +17,7 @@
       "package": "com.patak.mobile",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/Wicon.png",
         "backgroundColor": "#ffffff"
       }
     },
