@@ -124,8 +124,8 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
                 <View style={styles.cardLatest}> 
                   <Text style={{ fontWeight: '800', color: COLORS.primary, fontSize: TYPO.subtitleSize + 3 }}>{primaryHouse.toUpperCase()}</Text>
                   <Text style={[styles.subtitle, { marginTop: SPACING.base, fontSize: TYPO.smallSize + 2 }]}>Last reading</Text>
-                  <Text style={[styles.subtitle, { marginTop: 2 }]}>{s.last ? new Date(s.last.timestamp).toLocaleString() : '—'}</Text>
-                  <Text style={[styles.smallText, { marginTop: 4 }]}>Updated {lastAge}s ago</Text>
+                  <Text style={[styles.subtitle, { marginTop: 2 }]}>{s.last ? new Date(s.last.timestamp).toLocaleString() : 'Not yet active'}</Text>
+                  {s.last && <Text style={[styles.smallText, { marginTop: 4 }]}>Updated {lastAge}s ago</Text>}
                   <View style={{ height: SPACING.small }} />
                   <Text style={[styles.subtitle, { fontSize: TYPO.subtitleSize + 2 }]}>Usage</Text>
                   <Animated.Text style={[styles.latestValue, { transform: [{ scale: usageAnim }] }]}>{usage ? usage.toFixed(3) : '—'} m³</Animated.Text>
@@ -177,7 +177,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               return (
                 <TouchableOpacity key={item} style={styles.cardSmall} onPress={() => onOpenUsage(item)}>
                   <Text style={{ fontWeight: '700', color: COLORS.primary }}>{item}</Text>
-                  <Text style={styles.subtitle}>Last reading: {s.last ? new Date(s.last.timestamp).toLocaleString() : '—'}</Text>
+                  <Text style={styles.subtitle}>Last reading: {s.last ? new Date(s.last.timestamp).toLocaleString() : 'Not yet active'}</Text>
                   <Text style={styles.subtitle}>Total Liters: {s.totalLiters ?? '—'}</Text>
                 </TouchableOpacity>
               );
