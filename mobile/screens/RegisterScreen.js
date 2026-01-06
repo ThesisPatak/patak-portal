@@ -20,7 +20,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
     try {
       const serverUrl = await Api.getServerUrl();
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
       const res = await fetch(`${serverUrl}/auth/register`, {
         method: 'POST',
@@ -39,7 +39,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
     } catch (e) {
       console.error('Registration error:', e);
       if (e.name === 'AbortError') {
-        setError('Request timeout — server is too slow');
+        setError('Server is taking too long. Please try again.');
       } else {
         setError(e.message || 'Network error');
       }

@@ -24,7 +24,7 @@ const Api = {
   login: async (username, password, customServerUrl) => {
     const baseUrl = customServerUrl || (await Api.getServerUrl());
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
     try {
       const res = await fetch(`${baseUrl}/auth/login`, {
@@ -53,7 +53,7 @@ const Api = {
   getDashboard: async (token) => {
     const baseUrl = await Api.getServerUrl();
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
     
     try {
       const res = await fetch(`${baseUrl}/api/houses`, {
