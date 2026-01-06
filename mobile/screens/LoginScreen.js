@@ -16,7 +16,11 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
   useEffect(() => {
     const detectServer = async () => {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
         const url = await Api.getServerUrl();
+        clearTimeout(timeoutId);
         setServerUrl(url);
       } catch (e) {
         setError('Could not auto-detect server. Check if backend is running.');

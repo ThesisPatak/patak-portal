@@ -19,11 +19,17 @@ export default function RegisterScreen({ onRegister, onBack }) {
     setLoading(true);
     try {
       const serverUrl = await Api.getServerUrl();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
       const res = await fetch(`${serverUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
+      
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'Registration failed');
@@ -32,7 +38,11 @@ export default function RegisterScreen({ onRegister, onBack }) {
       }
     } catch (e) {
       console.error('Registration error:', e);
-      setError(e.message || 'Network error');
+      if (e.name === 'AbortError') {
+        setError('Request timeout — server is too slow');
+      } else {
+        setError(e.message || 'Network error');
+      }
     } finally {
       setLoading(false);
     }

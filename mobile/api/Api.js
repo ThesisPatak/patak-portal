@@ -23,29 +23,51 @@ const Api = {
   // Attempt to login with username and password
   login: async (username, password, customServerUrl) => {
     const baseUrl = customServerUrl || (await Api.getServerUrl());
-    const res = await fetch(`${baseUrl}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    if (!res.ok) {
-      const error = new Error('Login failed');
-      error.status = res.status;
-      throw error;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    
+    try {
+      const res = await fetch(`${baseUrl}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        const error = new Error('Login failed');
+        error.status = res.status;
+        throw error;
+      }
+      if (customServerUrl) Api.setServerUrl(customServerUrl);
+      const data = await res.json();
+      return { token: data.token, user: data.user };
+    } catch (e) {
+      clearTimeout(timeoutId);
+      throw e;
     }
-    if (customServerUrl) Api.setServerUrl(customServerUrl);
-    const data = await res.json();
-    return { token: data.token, user: data.user };
   },
 
   // Dashboard: return overall summary (requires token)
   getDashboard: async (token) => {
     const baseUrl = await Api.getServerUrl();
-    const res = await fetch(`${baseUrl}/api/houses`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('Failed to load dashboard');
-    return res.json();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    try {
+      const res = await fetch(`${baseUrl}/api/houses`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) throw new Error('Failed to load dashboard');
+      return res.json();
+    } catch (e) {
+      clearTimeout(timeoutId);
+      throw e;
+    }
   },
 
   // Usage for a specific house (token = houseId)
