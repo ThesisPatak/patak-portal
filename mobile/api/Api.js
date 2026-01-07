@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 // Configure your server URL here or via environment variable
-const DEFAULT_SERVER_URL = process.env.REACT_APP_API_URL || 'https://patak-portal.onrender.com';
+const DEFAULT_SERVER_URL = process.env.REACT_APP_API_URL || 'https://patak-portal-production.up.railway.app';
 
 // Allow manual override of server URL (stored in memory for session)
 let serverBaseUrl = null;
