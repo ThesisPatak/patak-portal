@@ -143,7 +143,20 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             borderLeftWidth: 4,
             borderLeftColor: COLORS.warning
           }}>
-            <Text style={{ fontSize: TYPO.bodySize, color: COLORS.muted, textAlign: 'center' }}>No houses found. Please configure your account.</Text>
+            <Text style={{ fontSize: TYPO.bodySize, color: COLORS.muted, textAlign: 'center', marginBottom: SPACING.base }}>No devices linked yet</Text>
+            <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted, textAlign: 'center', marginBottom: SPACING.large }}>Link your first water meter to get started</Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: COLORS.primary,
+                paddingHorizontal: SPACING.large,
+                paddingVertical: SPACING.base,
+                borderRadius: RADIUS.md,
+                marginTop: SPACING.base
+              }}
+              onPress={() => onOpenDevices && onOpenDevices()}
+            >
+              <Text style={{ color: '#fff', fontWeight: '600', fontSize: TYPO.bodySize }}>+ Add Device</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <>
