@@ -1,8 +1,8 @@
 // Keep-Alive Service: Prevents Render free tier server from sleeping
-// Pings the backend every 12 minutes to keep it warm and responsive
+// Pings the backend every 5 minutes to keep it warm and responsive
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-const KEEP_ALIVE_INTERVAL = 12 * 60 * 1000; // 12 minutes in milliseconds
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://patak-portal-production.up.railway.app';
+const KEEP_ALIVE_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds (keeps server warm without hitting Render limits)
 let keepAliveTimer = null;
 
 export function startKeepAlive() {
@@ -11,9 +11,9 @@ export function startKeepAlive() {
   // Ping immediately on start
   pingBackend();
 
-  // Then ping every 12 minutes
+  // Then ping every 5 minutes
   keepAliveTimer = setInterval(pingBackend, KEEP_ALIVE_INTERVAL);
-  console.log('[KeepAlive] Service started - will ping backend every 12 minutes');
+  console.log('[KeepAlive] Service started - will ping backend every 5 minutes to prevent cold-start');
 }
 
 export function stopKeepAlive() {
@@ -35,7 +35,10 @@ async function pingBackend() {
       const data = await response.json();
       console.log('[KeepAlive] Ping successful at', data.timestamp);
     } else {
-      console.warn('[KeepAlive] Ping failed with status', response.status);
+      // Silently fail on 404 - not critical if endpoint doesn't exist on all servers
+      if (response.status !== 404) {
+        console.warn('[KeepAlive] Ping failed with status', response.status);
+      }
     }
   } catch (error) {
     // Silently fail - don't disrupt user experience

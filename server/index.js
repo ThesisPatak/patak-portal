@@ -4,6 +4,7 @@ import path from 'path'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import cors from 'cors'
+import compression from 'compression'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -32,6 +33,7 @@ ensureDataFiles()
 
 const app = express()
 app.use(cors())
+app.use(compression())
 app.use(express.json())
 
 // Lightweight health endpoint for uptime checks and keepalive pings

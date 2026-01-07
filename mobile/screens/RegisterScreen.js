@@ -19,16 +19,24 @@ export default function RegisterScreen({ onRegister, onBack }) {
     setLoading(true);
     try {
       const serverUrl = await Api.getServerUrl();
+      console.log('Attempting registration at', serverUrl);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for registration
+      const timeoutId = setTimeout(() => {
+        console.log('Request timeout triggered');
+        controller.abort();
+      }, 30000); // Reduced to 30 seconds for faster feedback
       
+      const startTime = Date.now();
       const res = await fetch(`${serverUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
         signal: controller.signal
       });
+      const elapsed = Date.now() - startTime;
       clearTimeout(timeoutId);
+      
+      console.log(`Registration request took ${elapsed}ms, status: ${res.status}`);
       
       const data = await res.json();
       if (!res.ok) {
@@ -39,9 +47,9 @@ export default function RegisterScreen({ onRegister, onBack }) {
     } catch (e) {
       console.error('Registration error:', e);
       if (e.name === 'AbortError') {
-        setError('Server is taking too long. Please try again.');
+        setError('Connection timeout. Check your internet and try again.');
       } else {
-        setError(e.message || 'Network error');
+        setError(e.message || 'Network error. Please try again.');
       }
     } finally {
       setLoading(false);

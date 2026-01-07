@@ -10,4 +10,4 @@ jobs:
     steps:
       - name: Curl health endpoint
         run: |
-          curl -fsS https://patak-portal.onrender.com/health || true
+          curl -fsS https://patak-portal-production.up.railway.app/health || true

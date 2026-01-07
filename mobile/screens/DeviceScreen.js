@@ -23,7 +23,7 @@ export default function DeviceScreen({ token, onBack }) {
   const loadDevices = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://patak-portal.onrender.com/devices/list', {
+      const response = await fetch('https://patak-portal-production.up.railway.app/devices/list', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {

@@ -12,7 +12,7 @@ interface UserData {
   devices: Array<{ deviceId: string; status: string; lastSeen: string | null }>;
 }
 
-const API_URL = "https://patak-portal.onrender.com";
+const API_URL = "https://patak-portal-production.up.railway.app";
 
 const AdminDashboard: React.FC = () => {
   const [token, setToken] = useState(() => {
