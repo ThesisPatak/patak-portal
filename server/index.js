@@ -39,9 +39,13 @@ app.use(express.json({ limit: '10mb' }))
 // JSON error handler
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: 'Invalid JSON in request body' })
+    return res.status(400).json({ error: 'Invalid JSON in request body', details: err.message })
   }
-  next(err)
+  if (err) {
+    console.error('Server error:', err)
+    return res.status(500).json({ error: 'Internal server error', message: err.message })
+  }
+  next()
 })
 
 // Lightweight health endpoint for uptime checks and keepalive pings
@@ -142,6 +146,18 @@ app.post('/admin/clear-users', (req, res) => {
 // Serve a minimal web UI for account and device management (must be AFTER API routes)
 app.use(express.static(path.join(__dirname, 'public')))
 
+// 404 catch-all handler (must be AFTER all other routes and static files)
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found', path: req.path, method: req.method })
+})
+
 const PORT = process.env.PORT || 4000
-app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`))
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n========================================`)
+  console.log(`✅ Server started successfully`)
+  console.log(`📡 Listening on http://0.0.0.0:${PORT}`)
+  console.log(`🔐 JWT Secret: ${JWT_SECRET !== 'dev_secret_change_me' ? 'Production' : 'Development'}`)
+  console.log(`📁 Data directory: ${DATA_DIR}`)
+  console.log(`========================================\n`)
+})
 
