@@ -34,9 +34,6 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// Serve a minimal web UI for account and device management
-app.use(express.static(path.join(__dirname, 'public')))
-
 // Lightweight health endpoint for uptime checks and keepalive pings
 app.get('/health', (req, res) => {
   res.set('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -131,6 +128,9 @@ app.post('/admin/clear-users', (req, res) => {
   writeJSON(USERS_FILE, [])
   res.json({ ok: true, message: 'All users cleared' })
 })
+
+// Serve a minimal web UI for account and device management (must be AFTER API routes)
+app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT || 4000
 app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`))
