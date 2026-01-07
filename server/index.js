@@ -47,7 +47,7 @@ app.use((err, req, res, next) => {
 // Lightweight health endpoint for uptime checks and keepalive pings
 app.get('/health', (req, res) => {
   res.set('Cache-Control', 'no-cache, no-store, must-revalidate')
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '2.0-json-fix' })
 })
 
 function generateId(prefix = 'id') {
