@@ -34,7 +34,15 @@ ensureDataFiles()
 const app = express()
 app.use(cors())
 app.use(compression())
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
+
+// JSON error handler
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'Invalid JSON in request body' })
+  }
+  next(err)
+})
 
 // Lightweight health endpoint for uptime checks and keepalive pings
 app.get('/health', (req, res) => {
