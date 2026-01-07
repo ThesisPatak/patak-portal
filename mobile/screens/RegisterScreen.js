@@ -20,7 +20,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
     try {
       const serverUrl = await Api.getServerUrl();
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for registration
       
       const res = await fetch(`${serverUrl}/auth/register`, {
         method: 'POST',

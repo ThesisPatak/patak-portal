@@ -126,5 +126,12 @@ app.post('/devices/heartbeat', async (req, res) => {
   res.json({ ok: true })
 })
 
+// Admin endpoint to clear all users (dev only)
+app.post('/admin/clear-users', (req, res) => {
+  writeJSON(USERS_FILE, [])
+  res.json({ ok: true, message: 'All users cleared' })
+})
+
 const PORT = process.env.PORT || 4000
 app.listen(PORT, '0.0.0.0', () => console.log(`Server listening on http://0.0.0.0:${PORT}`))
+
