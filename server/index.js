@@ -105,6 +105,28 @@ app.get('/users/:id/devices', authMiddleware, (req, res) => {
   res.json({ devices: mine })
 })
 
+// Dashboard: Return user's houses/devices summary
+app.get('/api/houses', authMiddleware, (req, res) => {
+  const userId = req.user.userId
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === userId)
+  
+  // Build summary for each device
+  const summary = {}
+  userDevices.forEach(device => {
+    summary[device.deviceId] = {
+      deviceId: device.deviceId,
+      status: device.status,
+      lastSeen: device.lastSeen,
+      cubicMeters: 0,
+      totalLiters: 0,
+      last: null
+    }
+  })
+  
+  res.json({ summary })
+})
+
 app.post('/devices/register', authMiddleware, async (req, res) => {
   const { deviceId, deviceKey } = req.body || {}
   if (!deviceId || !deviceKey) return res.status(400).json({ error: 'deviceId and deviceKey required' })
