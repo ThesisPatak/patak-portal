@@ -111,6 +111,26 @@ app.post('/auth/admin-login', async (req, res) => {
   res.json({ token, user: { id: user.id, username: user.username } })
 })
 
+// Change password endpoint (requires authentication)
+app.post('/auth/change-password', authMiddleware, async (req, res) => {
+  const { currentPassword, newPassword } = req.body || {}
+  if (!currentPassword || !newPassword) return res.status(400).json({ error: 'currentPassword and newPassword required' })
+  if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' })
+  
+  const users = readJSON(USERS_FILE)
+  const user = users.find(u => u.id === req.user.userId)
+  if (!user) return res.status(401).json({ error: 'User not found' })
+  
+  const ok = await bcrypt.compare(currentPassword, user.passwordHash)
+  if (!ok) return res.status(401).json({ error: 'Current password is incorrect' })
+  
+  user.passwordHash = await bcrypt.hash(newPassword, 10)
+  user.lastPasswordChange = new Date().toISOString()
+  writeJSON(USERS_FILE, users)
+  
+  res.json({ message: 'Password changed successfully' })
+})
+
 app.get('/users/:id/devices', authMiddleware, (req, res) => {
   const { id } = req.params
   if (req.user.userId !== id) return res.status(403).json({ error: 'Forbidden' })

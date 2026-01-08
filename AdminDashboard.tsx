@@ -37,6 +37,13 @@ const AdminDashboard: React.FC = () => {
   const [readingsLoading, setReadingsLoading] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   // Handle admin login
   const handleLogin = (newToken: string, username: string) => {
@@ -123,6 +130,59 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Change admin password
+  const handleChangePassword = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!currentPassword) {
+      setPasswordError("Current password is required");
+      return;
+    }
+    if (!newPassword) {
+      setPasswordError("New password is required");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError("New password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/change-password`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token 
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to change password");
+      }
+
+      setPasswordSuccess("Password changed successfully!");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => {
+        setShowPasswordChange(false);
+        setPasswordSuccess("");
+      }, 2000);
+    } catch (err: any) {
+      setPasswordError(err.message || "Failed to change password");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadDashboard();
     const interval = setInterval(loadDashboard, 5000); // Refresh every 5 seconds
@@ -184,26 +244,40 @@ const AdminDashboard: React.FC = () => {
             <p style={{ margin: "0.25rem 0 0 0", fontSize: isMobile ? "0.75rem" : "0.9rem" }}>
               Revolutionizing water management through IoT. Monitor consumption, automate billing, and empower communities.
             </p>
-            <button
-              onClick={handleLogout}
-              style={{
-                position: "absolute",
-                right: isMobile ? "1rem" : "2rem",
-                top: "50%",
-                transform: "translateY(-50%)",
-                padding: isMobile ? "0.4rem 1rem" : "0.6rem 1.5rem",
-                background: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: isMobile ? "0.8rem" : "0.95rem",
-                color: "#0057b8",
-                fontWeight: 600,
-                whiteSpace: "nowrap",
-              }}
-            >
-              Log out
-            </button>
+            <div style={{ position: "absolute", right: isMobile ? "1rem" : "2rem", top: "50%", transform: "translateY(-50%)", display: "flex", gap: "0.5rem", flexDirection: isMobile ? "column" : "row" }}>
+              <button
+                onClick={() => setShowPasswordChange(true)}
+                style={{
+                  padding: isMobile ? "0.4rem 0.8rem" : "0.6rem 1.2rem",
+                  background: "#ffc107",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: isMobile ? "0.75rem" : "0.9rem",
+                  color: "#333",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Change Password
+              </button>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: isMobile ? "0.4rem 0.8rem" : "0.6rem 1.2rem",
+                  background: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: isMobile ? "0.75rem" : "0.9rem",
+                  color: "#0057b8",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Log out
+              </button>
+            </div>
           </header>
 
           {/* Main Content */}
@@ -443,6 +517,160 @@ const AdminDashboard: React.FC = () => {
               &copy; 2026 PATAK. Guard every drop.
             </div>
           </footer>
+        </div>
+      )}
+
+      {/* Password Change Modal */}
+      {showPasswordChange && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            padding: "1rem",
+            boxSizing: "border-box",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: isMobile ? "1.5rem" : "2rem",
+              borderRadius: "12px",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+              maxWidth: "400px",
+              width: "100%",
+            }}
+          >
+            <h2 style={{ color: "#333", marginBottom: "1.5rem", fontSize: isMobile ? "1.1rem" : "1.3rem", fontWeight: 600 }}>
+              Change Admin Password
+            </h2>
+
+            {passwordError && (
+              <div style={{ background: "#f8d7da", color: "#721c24", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" }}>
+                {passwordError}
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div style={{ background: "#d4edda", color: "#155724", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" }}>
+                {passwordSuccess}
+              </div>
+            )}
+
+            <input
+              type="password"
+              placeholder="Current Password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.75rem 1rem",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                marginBottom: "1rem",
+                fontSize: "0.95rem",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.75rem 1rem",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                marginBottom: "1rem",
+                fontSize: "0.95rem",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm New Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.75rem 1rem",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                marginBottom: "1.5rem",
+                fontSize: "0.95rem",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: isMobile ? "0.75rem" : "1rem",
+            }}>
+              <button
+                onClick={() => {
+                  setShowPasswordChange(false);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  setPasswordError("");
+                  setPasswordSuccess("");
+                }}
+                style={{
+                  padding: "0.7rem 1.5rem",
+                  background: "#f5f5f5",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: isMobile ? "0.9rem" : "0.95rem",
+                  fontWeight: 600,
+                  color: "#333",
+                  transition: "background 0.2s",
+                  minHeight: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleChangePassword}
+                disabled={passwordLoading}
+                style={{
+                  padding: "0.7rem 1.5rem",
+                  background: passwordLoading ? "#cccccc" : "#0057b8",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: passwordLoading ? "not-allowed" : "pointer",
+                  fontSize: isMobile ? "0.9rem" : "0.95rem",
+                  fontWeight: 600,
+                  color: "#fff",
+                  transition: "background 0.2s",
+                  minHeight: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onMouseEnter={(e) => !passwordLoading && (e.currentTarget.style.background = "#004499")}
+                onMouseLeave={(e) => !passwordLoading && (e.currentTarget.style.background = "#0057b8")}
+              >
+                {passwordLoading ? "Changing..." : "Change Password"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
