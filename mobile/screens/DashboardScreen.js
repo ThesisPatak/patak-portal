@@ -382,7 +382,17 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             alignItems: 'center',
             borderTopWidth: 3,
             borderTopColor: '#e74c3c'
-          }} onPress={() => onLogout && onLogout()}>
+          }} onPress={() => {
+            Alert.alert(
+              'Confirm Logout',
+              'Are you sure you want to log out?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Log out', style: 'destructive', onPress: () => onLogout && onLogout() }
+              ],
+              { cancelable: true }
+            );
+          }}>
             <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>🚪</Text>
             <Text style={{ fontSize: TYPO.captionSize, color: COLORS.text, textAlign: 'center', fontWeight: '600' }}>Logout</Text>
           </TouchableOpacity>

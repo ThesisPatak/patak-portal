@@ -289,7 +289,9 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     console.error('Failed to load readings:', e)
   }
 
-  const userList = users.map(user => {
+  const userList = users
+    .filter(user => !user.isAdmin) // Exclude admin account from user list
+    .map(user => {
     const userDevices = devices.filter(d => d.ownerUserId === user.id)
     const deviceReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
     const monthlyReadings = deviceReadings.filter(r => {
