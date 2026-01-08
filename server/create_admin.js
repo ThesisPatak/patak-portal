@@ -29,6 +29,7 @@ async function createOrResetAdmin() {
     // Reset existing admin password
     users[existingAdminIndex].passwordHash = passwordHash
     users[existingAdminIndex].lastPasswordChange = new Date().toISOString()
+    users[existingAdminIndex].isAdmin = true // Ensure isAdmin flag is set
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2))
     console.log('✓ Admin password reset successfully!')
     console.log('Username: ' + adminUsername)
@@ -44,6 +45,7 @@ async function createOrResetAdmin() {
       email: null,
       username: adminUsername,
       passwordHash: passwordHash,
+      isAdmin: true,
       createdAt: new Date().toISOString()
     }
     
