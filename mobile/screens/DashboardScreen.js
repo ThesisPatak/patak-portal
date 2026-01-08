@@ -1,22 +1,33 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Alert, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Alert, Animated, RefreshControl } from 'react-native';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING, RADIUS, ELEVATION } from './variables';
 
 export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, onOpenDevices, username }) {
   const [summary, setSummary] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const loadDashboard = async () => {
+    try {
+      const data = await Api.getDashboard(token);
+      setSummary(data);
+    } catch (err) {
+      console.warn('getDashboard error', err);
+      setSummary(null);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboard();
+    setRefreshing(false);
+  };
   
   useEffect(() => {
     let mounted = true;
     async function load() {
-      try {
-        const data = await Api.getDashboard(token);
-        if (mounted) setSummary(data);
-      } catch (err) {
-        console.warn('getDashboard error', err);
-        if (mounted) setSummary(null);
-      }
+      await loadDashboard();
     }
     load();
     return () => { mounted = false; };
@@ -35,7 +46,11 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   const hasDevices = devices.length > 0;
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }} contentContainerStyle={{ paddingVertical: SPACING.base }}>
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: COLORS.bg }} 
+      contentContainerStyle={{ paddingVertical: SPACING.base }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+    >
       {/* Header with User Greeting */}
       <View style={{ paddingHorizontal: SPACING.base, marginBottom: SPACING.large, marginTop: SPACING.small }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.large }}>
@@ -72,9 +87,10 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           elevation: ELEVATION.high
         }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.base }}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted, marginBottom: SPACING.small }}>Monthly Bill</Text>
               <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.primary }}>₱{summary.totalBill}</Text>
+              <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted, marginTop: SPACING.small }}>Est. ₱{summary.estimatedTotalBill} by month end</Text>
             </View>
             <View style={{
               backgroundColor: COLORS.primary,
@@ -85,7 +101,6 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               <Text style={{ fontSize: 20 }}>📈</Text>
             </View>
           </View>
-          <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted, marginBottom: SPACING.base }}>Est. ₱{summary.estimatedTotalBill} by month end</Text>
           <TouchableOpacity style={{
             backgroundColor: COLORS.primary,
             paddingVertical: SPACING.small,
@@ -132,6 +147,53 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted, marginTop: SPACING.small }}>m³</Text>
           </View>
         </View>
+      </View>
+
+      {/* Devices Section */}
+      <View style={{ paddingHorizontal: SPACING.base }}>
+        <View style={{ marginBottom: SPACING.base }}>
+          <Text style={{ fontSize: TYPO.bodySize, color: COLORS.text, fontWeight: '700' }}>
+            {hasDevices ? '📊 Billing Details' : 'Getting Started'}
+          </Text>
+          <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted, marginTop: SPACING.small }}>
+            {hasDevices ? 'View charges per device' : 'Link your first meter'}
+          </Text>
+        </View>
+
+        {hasDevices && (
+          <View style={{ marginBottom: SPACING.large }}>
+            {devices.map((device, idx) => (
+              <View key={idx} style={{
+                backgroundColor: COLORS.cardBg,
+                borderRadius: RADIUS.lg,
+                padding: SPACING.base,
+                marginBottom: SPACING.small,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderLeftWidth: 4,
+                borderLeftColor: device.monthlyUsage > 100 ? COLORS.danger : COLORS.success
+              }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.small }}>
+                    {device.deviceId.toUpperCase()}
+                  </Text>
+                  <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted }}>
+                    {device.monthlyUsage.toFixed(2)} m³ → ₱{device.monthlyBill.toFixed(0)}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.primary }}>
+                    ₱{device.monthlyBill.toFixed(0)}
+                  </Text>
+                  <Text style={{ fontSize: TYPO.captionSize, color: device.hasAlert ? COLORS.danger : COLORS.success, fontWeight: '600', marginTop: SPACING.small }}>
+                    {device.hasAlert ? '⚠️ High Usage' : '✓ Normal'}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Devices Section */}

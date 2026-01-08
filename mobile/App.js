@@ -4,7 +4,6 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import UsageScreen from './screens/UsageScreen';
-import BillingScreen from './screens/BillingScreen';
 import PayScreen from './screens/PayScreen';
 import DeviceScreen from './screens/DeviceScreen';
 import styles from './screens/styles';
@@ -50,9 +49,6 @@ export default function App() {
               onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
               onOpenDevices={() => setScreen('devices')}
             />
-          )}
-          {screen === 'billing' && (
-            <BillingScreen onBack={() => setScreen('dashboard')} />
           )}
           {screen === 'usage' && (
             <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />
