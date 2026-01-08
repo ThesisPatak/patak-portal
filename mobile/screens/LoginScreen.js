@@ -40,7 +40,7 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
       const data = await Api.login(username, password, serverUrl || undefined);
       if (data && data.token) {
         console.log('Login success, token=', data.token);
-        onLogin(data.token);
+        onLogin(data.token, username);
       } else setError('Invalid credentials');
     } catch (e) {
       if (e.status === 401) {

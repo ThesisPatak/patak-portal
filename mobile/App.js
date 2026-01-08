@@ -13,6 +13,7 @@ import { startKeepAlive, stopKeepAlive } from './api/keepAlive';
 
 export default function App() {
   const [token, setToken] = useState(null);
+  const [username, setUsername] = useState(null);
   const [screen, setScreen] = useState('dashboard');
   const [selectedHouse, setSelectedHouse] = useState(null);
   const [payInfo, setPayInfo] = useState(null);
@@ -28,9 +29,9 @@ export default function App() {
 
   if (!token) {
     if (showRegister) {
-      return <RegisterScreen onRegister={(token) => { setToken(token); setShowRegister(false); setScreen('dashboard'); }} onBack={() => setShowRegister(false)} />;
+      return <RegisterScreen onRegister={(token, user) => { setToken(token); setUsername(user); setShowRegister(false); setScreen('dashboard'); }} onBack={() => setShowRegister(false)} />;
     }
-    return <LoginScreen onLogin={(token) => { setToken(token); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
+    return <LoginScreen onLogin={(token, user) => { setToken(token); setUsername(user); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
   }
 
   return (
@@ -43,8 +44,9 @@ export default function App() {
           {screen === 'dashboard' && (
             <DashboardScreen
               token={token}
+              username={username}
               onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
-              onLogout={() => setToken(null)}
+              onLogout={() => { setToken(null); setUsername(null); }}
               onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
               onOpenDevices={() => setScreen('devices')}
             />

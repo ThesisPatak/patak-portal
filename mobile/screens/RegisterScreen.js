@@ -42,7 +42,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
       if (!res.ok) {
         setError(data.error || 'Registration failed');
       } else {
-        onRegister && onRegister(data.token);
+        onRegister && onRegister(data.token, username);
       }
     } catch (e) {
       console.error('Registration error:', e);
