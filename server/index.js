@@ -105,26 +105,100 @@ app.get('/users/:id/devices', authMiddleware, (req, res) => {
   res.json({ devices: mine })
 })
 
-// Dashboard: Return user's houses/devices summary
+// Dashboard: Return comprehensive user dashboard with devices, readings, and billing
 app.get('/api/houses', authMiddleware, (req, res) => {
   const userId = req.user.userId
   const devices = readJSON(DEVICES_FILE)
   const userDevices = devices.filter(d => d.ownerUserId === userId)
   
-  // Build summary for each device
+  // Mock readings file path
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let allReadings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('Failed to load readings:', e)
+  }
+  
+  // Build comprehensive summary for each device
   const summary = {}
+  let totalBill = 0
+  
   userDevices.forEach(device => {
+    const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    const lastReading = deviceReadings[0]
+    const readingsThisMonth = deviceReadings.filter(r => {
+      const date = new Date(r.timestamp)
+      const now = new Date()
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+    })
+    
+    const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
+    const monthlyUsage = readingsThisMonth.reduce((sum, r) => sum + (r.cubicMeters || 0), 0)
+    const ratePerCubicMeter = 50 // PHP per m³
+    const monthlyBill = monthlyUsage * ratePerCubicMeter
+    const estimatedMonthlyBill = monthlyBill * (30 / (new Date().getDate()))
+    
+    const isOnline = device.lastSeen && (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 60 * 1000 // 5 min threshold
+    const abnormalUsage = monthlyUsage > 100 // Alert if usage > 100 m³
+    
     summary[device.deviceId] = {
       deviceId: device.deviceId,
-      status: device.status,
+      status: isOnline ? 'online' : 'offline',
       lastSeen: device.lastSeen,
-      cubicMeters: 0,
-      totalLiters: 0,
-      last: null
+      isOnline: isOnline,
+      cubicMeters: currentUsage,
+      totalLiters: currentUsage * 1000,
+      monthlyUsage: monthlyUsage,
+      monthlyBill: monthlyBill,
+      estimatedMonthlyBill: Math.ceil(estimatedMonthlyBill),
+      hasAlert: abnormalUsage,
+      alertMessage: abnormalUsage ? 'High water consumption detected' : null,
+      lastReading: lastReading ? {
+        timestamp: lastReading.timestamp,
+        cubicMeters: lastReading.cubicMeters,
+        liters: (lastReading.cubicMeters || 0) * 1000
+      } : null,
+      readingsCount: deviceReadings.length
     }
+    
+    totalBill += monthlyBill
   })
   
-  res.json({ summary })
+  res.json({
+    summary,
+    totalBill: Math.ceil(totalBill),
+    estimatedTotalBill: Math.ceil(Object.values(summary).reduce((sum, s) => sum + s.estimatedMonthlyBill, 0)),
+    deviceCount: userDevices.length,
+    daysInMonth: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(),
+    currentDay: new Date().getDate()
+  })
+})
+
+// Endpoint to get historical readings for charts
+app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
+  const { deviceId } = req.params
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId)
+  
+  if (!device || device.ownerUserId !== req.user.userId) {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let readings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      readings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('Failed to load readings:', e)
+  }
+  
+  const deviceReadings = readings.filter(r => r.deviceId === deviceId)
+  res.json({ readings: deviceReadings })
 })
 
 app.post('/devices/register', authMiddleware, async (req, res) => {
