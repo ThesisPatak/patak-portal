@@ -34,26 +34,6 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   const devices = Object.values(summary.summary || {});
   const hasDevices = devices.length > 0;
 
-  if (!hasDevices) {
-    return (
-      <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }} contentContainerStyle={{ paddingVertical: SPACING.large, paddingHorizontal: SPACING.base }}>
-        <View style={{ alignItems: 'center', marginTop: SPACING.large * 2 }}>
-          <Text style={{ fontSize: 48, marginBottom: SPACING.large }}>📱</Text>
-          <Text style={{ fontSize: TYPO.headingSize, color: COLORS.text, marginBottom: SPACING.base, textAlign: 'center' }}>No Devices</Text>
-          <Text style={{ fontSize: TYPO.bodySize, color: COLORS.muted, textAlign: 'center', marginBottom: SPACING.large }}>Link your first water meter to get started</Text>
-          <TouchableOpacity style={{
-            backgroundColor: COLORS.primary,
-            paddingHorizontal: SPACING.large,
-            paddingVertical: SPACING.base,
-            borderRadius: RADIUS.md
-          }} onPress={() => onOpenDevices && onOpenDevices()}>
-            <Text style={{ color: '#fff', fontWeight: '600', fontSize: TYPO.bodySize }}>+ Add Device</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    );
-  }
-
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }} contentContainerStyle={{ paddingVertical: SPACING.base }}>
       {/* Summary Cards */}
@@ -117,10 +97,43 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
         </View>
       </View>
 
-      {/* Device Cards */}
+      {/* Devices or Onboarding Section */}
       <View style={{ paddingHorizontal: SPACING.base }}>
-        <Text style={{ fontSize: TYPO.bodySize, color: COLORS.muted, marginBottom: SPACING.base, fontWeight: '600' }}>Your Devices</Text>
-        {devices.map((device, idx) => (
+        <Text style={{ fontSize: TYPO.bodySize, color: COLORS.muted, marginBottom: SPACING.base, fontWeight: '600' }}>
+          {hasDevices ? 'Your Devices' : 'Getting Started'}
+        </Text>
+        
+        {!hasDevices ? (
+          <View style={{
+            backgroundColor: COLORS.cardBg,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.large,
+            marginBottom: SPACING.large,
+            borderLeftWidth: 4,
+            borderLeftColor: COLORS.warning,
+            alignItems: 'center'
+          }}>
+            <Text style={{ fontSize: 48, marginBottom: SPACING.base }}>🌊</Text>
+            <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, textAlign: 'center', marginBottom: SPACING.small }}>
+              No Devices Linked
+            </Text>
+            <Text style={{ fontSize: TYPO.captionSize, color: COLORS.muted, textAlign: 'center', marginBottom: SPACING.large }}>
+              Link your first water meter to begin tracking consumption
+            </Text>
+            <TouchableOpacity style={{
+              backgroundColor: COLORS.primary,
+              paddingHorizontal: SPACING.large,
+              paddingVertical: SPACING.base,
+              borderRadius: RADIUS.md,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }} onPress={() => onOpenDevices && onOpenDevices()}>
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: TYPO.bodySize }}>🔗 Link Your First Device</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          devices.map((device, idx) => (
           <View key={idx} style={{
             backgroundColor: COLORS.cardBg,
             borderRadius: RADIUS.lg,
@@ -207,6 +220,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             )}
           </View>
         ))}
+        )}
       </View>
 
       {/* Quick Actions */}
