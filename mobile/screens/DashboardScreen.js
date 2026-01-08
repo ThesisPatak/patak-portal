@@ -220,7 +220,6 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             )}
           </View>
         ))}
-        )}
       </View>
 
       {/* Quick Actions */}
