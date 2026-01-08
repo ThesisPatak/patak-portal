@@ -97,6 +97,20 @@ app.post('/auth/login', async (req, res) => {
   res.json({ token, user: { id: user.id, email: user.email, username: user.username } })
 })
 
+// Admin login endpoint (same as regular login, but with admin role checking)
+app.post('/auth/admin-login', async (req, res) => {
+  const { username, password } = req.body || {}
+  if (!username || !password) return res.status(400).json({ error: 'username and password required' })
+  const users = readJSON(USERS_FILE)
+  const user = users.find(u => u.username === username)
+  if (!user) return res.status(401).json({ error: 'Invalid credentials' })
+  const ok = await bcrypt.compare(password, user.passwordHash)
+  if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
+  // For now, any user can be admin. In production, add an isAdmin flag to users
+  const token = jwt.sign({ userId: user.id, username: user.username, isAdmin: true }, JWT_SECRET, { expiresIn: '24h' })
+  res.json({ token, user: { id: user.id, username: user.username } })
+})
+
 app.get('/users/:id/devices', authMiddleware, (req, res) => {
   const { id } = req.params
   if (req.user.userId !== id) return res.status(403).json({ error: 'Forbidden' })
@@ -237,6 +251,93 @@ app.post('/devices/heartbeat', async (req, res) => {
 app.post('/admin/clear-users', (req, res) => {
   writeJSON(USERS_FILE, [])
   res.json({ ok: true, message: 'All users cleared' })
+})
+
+// Admin dashboard endpoint
+app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  
+  const users = readJSON(USERS_FILE)
+  const devices = readJSON(DEVICES_FILE)
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let allReadings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('Failed to load readings:', e)
+  }
+
+  const userList = users.map(user => {
+    const userDevices = devices.filter(d => d.ownerUserId === user.id)
+    const deviceReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+    const monthlyReadings = deviceReadings.filter(r => {
+      const date = new Date(r.timestamp)
+      const now = new Date()
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+    })
+
+    const totalUsage = monthlyReadings.reduce((sum, r) => sum + (r.cubicMeters || 0), 0)
+    const totalBill = totalUsage * 50 // PHP per m³
+
+    return {
+      id: user.id,
+      username: user.username,
+      cubicMeters: totalUsage,
+      totalLiters: totalUsage * 1000,
+      deviceCount: userDevices.length,
+      lastReading: deviceReadings[0] ? deviceReadings[0].timestamp : null,
+      devices: userDevices.map(d => ({
+        deviceId: d.deviceId,
+        status: d.status,
+        lastSeen: d.lastSeen
+      })),
+      monthlyBill: totalBill
+    }
+  })
+
+  res.json({ users: userList })
+})
+
+// Admin: Get user readings
+app.get('/api/admin/users/:userId/readings', authMiddleware, (req, res) => {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  
+  const { userId } = req.params
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === userId)
+  
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let allReadings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('Failed to load readings:', e)
+  }
+
+  const readings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+  res.json({ readings })
+})
+
+// Admin: Delete user
+app.delete('/api/admin/users/:userId', authMiddleware, (req, res) => {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  
+  const { userId } = req.params
+  const users = readJSON(USERS_FILE)
+  const devices = readJSON(DEVICES_FILE)
+  
+  const filtered = users.filter(u => u.id !== userId)
+  writeJSON(USERS_FILE, filtered)
+  
+  // Also remove their devices
+  const userDevices = devices.filter(d => d.ownerUserId !== userId)
+  writeJSON(DEVICES_FILE, userDevices)
+  
+  res.json({ ok: true, message: 'User deleted' })
 })
 
 // Serve a minimal web UI for account and device management (must be AFTER API routes)

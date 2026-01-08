@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 interface AdminLoginProps {
-  onLogin: (token: string) => void;
+  onLogin: (token: string, username: string) => void;
 }
 
 const API_URL = "https://patak-portal-production.up.railway.app";
@@ -40,7 +40,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
 
       const data = await res.json();
       localStorage.setItem("adminToken", data.token);
-      onLogin(data.token);
+      localStorage.setItem("adminUsername", username);
+      onLogin(data.token, username);
     } catch (err: any) {
       setError(err.message || "Login error");
     } finally {

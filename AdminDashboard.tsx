@@ -22,6 +22,13 @@ const AdminDashboard: React.FC = () => {
       return "";
     }
   });
+  const [adminUsername, setAdminUsername] = useState(() => {
+    try {
+      return localStorage.getItem("adminUsername") || "";
+    } catch {
+      return "";
+    }
+  });
 
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,14 +39,17 @@ const AdminDashboard: React.FC = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Handle admin login
-  const handleLogin = (newToken: string) => {
+  const handleLogin = (newToken: string, username: string) => {
     setToken(newToken);
+    setAdminUsername(username);
   };
 
   // Confirm logout
   const confirmLogout = () => {
     localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUsername");
     setToken("");
+    setAdminUsername("");
     setUsers([]);
     setSelectedUserId(null);
     setShowLogoutConfirm(false);
@@ -165,6 +175,9 @@ const AdminDashboard: React.FC = () => {
               position: "relative",
             }}
           >
+            <div style={{ marginBottom: "0.5rem", fontSize: isMobile ? "0.8rem" : "0.9rem", opacity: 0.9 }}>
+              Admin Panel • {adminUsername}
+            </div>
             <h1 style={{ margin: 0, fontSize: isMobile ? "1.3rem" : "2rem", fontWeight: 700 }}>
               PATAK Supplier Portal
             </h1>
