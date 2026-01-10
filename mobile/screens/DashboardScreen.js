@@ -91,7 +91,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
 
   return (
     <ScrollView 
-      style={{ flex: 1, backgroundColor: '#0f1419' }}
+      style={{ flex: 1, backgroundColor: COLORS.background }}
       scrollIndicatorInsets={{ right: 1 }}
       contentContainerStyle={{ paddingBottom: SPACING.large * 2, paddingHorizontal: 0 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}

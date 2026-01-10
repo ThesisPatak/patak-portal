@@ -7,6 +7,7 @@ import UsageScreen from './screens/UsageScreen';
 import PayScreen from './screens/PayScreen';
 import DeviceScreen from './screens/DeviceScreen';
 import styles from './screens/styles';
+import { COLORS } from './screens/variables';
 import { startKeepAlive, stopKeepAlive } from './api/keepAlive';
 
 
@@ -36,9 +37,9 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.appShell}>
-        <View style={styles.contentCard}>
+    <SafeAreaView style={[styles.container, { backgroundColor: COLORS.background }]}>
+      <View style={[styles.appShell, { backgroundColor: COLORS.background }]}>
+        <View style={[styles.contentCard, { backgroundColor: COLORS.background }]}>
           <View style={styles.titleBar}>
             <Text style={styles.headerTitleSmall}>PATAK MOBILE</Text>
           </View>
