@@ -71,7 +71,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-            <Text style={{ fontSize: 24 }}>💧</Text>
+            <Text style={{ fontSize: 24 }}>⚡</Text>
           </View>
         </View>
       </View>
@@ -136,7 +136,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               paddingHorizontal: 16,
               borderRadius: RADIUS.md,
             }}>
-              <Text style={{ fontSize: 20 }}>📊</Text>
+              <Text style={{ fontSize: 20 }}>�</Text>
             </View>
           </View>
           <TouchableOpacity style={{
@@ -146,7 +146,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             alignItems: 'center',
             marginTop: SPACING.base
           }} onPress={() => onPay && onPay()}>
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: TYPO.bodySize }}>💳 Pay Now</Text>
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: TYPO.bodySize }}>� Pay Now</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -263,7 +263,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             borderColor: 'rgba(255, 255, 255, 0.05)',
             alignItems: 'center'
           }}>
-            <Text style={{ fontSize: 56, marginBottom: SPACING.base }}>🌊</Text>
+            <Text style={{ fontSize: 56, marginBottom: SPACING.base }}>📡</Text>
             <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: '#ffffff', textAlign: 'center', marginBottom: SPACING.small }}>
               No Devices Connected
             </Text>
@@ -300,7 +300,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             borderWidth: 1,
             borderColor: 'rgba(255, 255, 255, 0.05)',
           }} onPress={() => onOpenUsage && onOpenUsage()}>
-            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>📊</Text>
+            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>�</Text>
             <Text style={{ fontSize: TYPO.captionSize, color: '#ffffff', textAlign: 'center', fontWeight: '600' }}>Usage</Text>
           </TouchableOpacity>
           <TouchableOpacity style={{
@@ -315,7 +315,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             borderWidth: 1,
             borderColor: 'rgba(255, 255, 255, 0.05)',
           }} onPress={() => onOpenDevices && onOpenDevices()}>
-            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>⚙️</Text>
+            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>🔧</Text>
             <Text style={{ fontSize: TYPO.captionSize, color: '#ffffff', textAlign: 'center', fontWeight: '600' }}>Devices</Text>
           </TouchableOpacity>
           <TouchableOpacity style={{
@@ -339,7 +339,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               { cancelable: true }
             );
           }}>
-            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>🚪</Text>
+            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>🔐</Text>
             <Text style={{ fontSize: TYPO.captionSize, color: '#ffffff', textAlign: 'center', fontWeight: '600' }}>Logout</Text>
           </TouchableOpacity>
         </View>
