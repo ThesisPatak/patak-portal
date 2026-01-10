@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, StatusBar } from 'react-native';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS } from './variables';
@@ -7,6 +7,11 @@ import { COLORS } from './variables';
 const { width, height } = Dimensions.get('window');
 
 export default function RegisterScreen({ onRegister, onBack }) {
+  useEffect(() => {
+    StatusBar.setBackgroundColor('#0a1628', true);
+    StatusBar.setBarStyle('light-content');
+  }, []);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

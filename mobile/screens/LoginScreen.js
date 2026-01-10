@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StatusBar } from 'react-native';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS } from './variables';
@@ -12,7 +12,12 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
   const [loading, setLoading] = useState(false);
   const [detecting, setDetecting] = useState(true);
 
-  // Auto-detect server on component mount
+  // Configure status bar and auto-detect server on component mount
+  useEffect(() => {
+    StatusBar.setBackgroundColor('#0a1628', true);
+    StatusBar.setBarStyle('light-content');
+  }, []);
+
   useEffect(() => {
     const detectServer = async () => {
       try {
@@ -153,13 +158,13 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
 
         <TouchableOpacity
           style={{
-            backgroundColor: COLORS.glowGreen,
+            backgroundColor: COLORS.glowBlue,
             paddingVertical: 14,
             borderRadius: 12,
             marginBottom: 16,
             borderWidth: 1,
-            borderColor: COLORS.glowGreen,
-            shadowColor: COLORS.glowGreen,
+            borderColor: COLORS.glowBlue,
+            shadowColor: COLORS.glowBlue,
             shadowOpacity: 0.7,
             shadowRadius: 12,
             shadowOffset: { width: 0, height: 4 },

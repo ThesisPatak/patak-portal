@@ -35,13 +35,15 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   }, [token]);
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(glowAnim, { toValue: 1, duration: 1500, useNativeDriver: false }),
         Animated.timing(glowAnim, { toValue: 0, duration: 1500, useNativeDriver: false })
       ])
-    ).start();
-  }, []);
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [glowAnim]);
 
   if (!summary) {
     return (
@@ -116,11 +118,12 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
               justifyContent: 'center',
               alignItems: 'center',
-              shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
-              shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 20] }),
-              elevation: 5,
               backgroundColor: 'rgba(15, 36, 56, 0.6)',
               shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
+              shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 20] }),
+              elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
             }}>
               <View style={{ alignItems: 'center' }}>
                 <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.text }}>
@@ -292,7 +295,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             elevation: 5,
             alignItems: 'center'
           }}>
-            <Text style={{ fontSize: 56, marginBottom: SPACING.base }}>🖥️</Text>
+            <Text style={{ fontSize: 56, marginBottom: SPACING.base }}>🎛️</Text>
             <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, textAlign: 'center', marginBottom: SPACING.small }}>
               No Devices Connected
             </Text>
@@ -356,7 +359,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             shadowRadius: 8,
             elevation: 5
           }} onPress={() => onOpenDevices && onOpenDevices()}>
-            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>🖥️</Text>
+            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>🎛️</Text>
             <Text style={{ fontSize: TYPO.captionSize, color: COLORS.text, textAlign: 'center', fontWeight: '600' }}>Devices</Text>
           </TouchableOpacity>
           <TouchableOpacity style={{

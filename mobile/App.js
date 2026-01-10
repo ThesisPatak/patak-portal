@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreen';
@@ -20,6 +20,8 @@ export default function App() {
 
   // Start keep-alive service on app load
   useEffect(() => {
+    StatusBar.setBackgroundColor('#0a1628', true);
+    StatusBar.setBarStyle('light-content');
     startKeepAlive();
     return () => stopKeepAlive();
   }, []);
