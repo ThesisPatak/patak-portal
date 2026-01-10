@@ -49,8 +49,9 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
 
   return (
     <ScrollView 
-      style={{ flex: 1, backgroundColor: '#0f1419' }} 
-      contentContainerStyle={{ paddingBottom: SPACING.large * 2 }}
+      style={{ flex: 1, backgroundColor: '#0f1419' }}
+      scrollIndicatorInsets={{ right: 1 }}
+      contentContainerStyle={{ paddingBottom: SPACING.large * 2, paddingHorizontal: 0 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
     >
       {/* Header Section */}
@@ -78,33 +79,32 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
       {/* Total Usage Circular Progress Card */}
       <View style={{ paddingHorizontal: SPACING.base, marginBottom: SPACING.large }}>
         <View style={{
-          backgroundColor: 'rgba(52, 152, 219, 0.15)',
-          borderRadius: RADIUS.lg,
+          backgroundColor: '#1a2332',
+          borderRadius: 20,
           padding: SPACING.large,
           alignItems: 'center',
           borderWidth: 1,
-          borderColor: 'rgba(52, 152, 219, 0.4)',
+          borderColor: 'rgba(52, 152, 219, 0.3)',
         }}>
           <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginBottom: SPACING.base }}>Total Usage</Text>
           
           {/* Circular Progress */}
           <View style={{ width: 180, height: 180, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
-            {/* SVG Circle would go here in a real app - for now using visual indicator */}
             <View style={{
               width: 160,
               height: 160,
               borderRadius: 80,
               borderWidth: 8,
-              borderColor: usagePercentage > 80 ? '#FF6B6B' : '#3498db',
+              borderColor: totalUsage > 100 ? '#FF6B6B' : '#3498db',
               justifyContent: 'center',
               alignItems: 'center',
               backgroundColor: 'rgba(15, 20, 25, 0.5)',
             }}>
               <View style={{ alignItems: 'center' }}>
                 <Text style={{ fontSize: 40, fontWeight: '900', color: '#ffffff' }}>
-                  {usagePercentage.toFixed(0)}%
+                  {totalUsage.toFixed(1)}
                 </Text>
-                <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginTop: SPACING.small }}>Usage</Text>
+                <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginTop: SPACING.small }}>m³</Text>
               </View>
             </View>
           </View>
@@ -112,15 +112,14 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           <Text style={{ fontSize: 28, fontWeight: '900', color: '#ffffff', marginBottom: SPACING.small }}>
             {totalUsage.toFixed(1)} m³
           </Text>
-          <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6' }}>Across all devices</Text>
         </View>
       </View>
 
       {/* Monthly Bill Card */}
       <View style={{ paddingHorizontal: SPACING.base, marginBottom: SPACING.large }}>
         <View style={{
-          backgroundColor: 'rgba(66, 165, 245, 0.1)',
-          borderRadius: RADIUS.lg,
+          backgroundColor: '#1a2332',
+          borderRadius: 20,
           padding: SPACING.large,
           borderWidth: 1,
           borderColor: 'rgba(66, 165, 245, 0.3)',
@@ -165,7 +164,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           {devices.map((device, idx) => (
             <View key={idx} style={{
               backgroundColor: '#1a2332',
-              borderRadius: RADIUS.lg,
+              borderRadius: 20,
               padding: SPACING.large,
               marginBottom: SPACING.base,
               borderLeftWidth: 4,
@@ -292,7 +291,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           <TouchableOpacity style={{
             flex: 1,
             backgroundColor: '#1a2332',
-            borderRadius: RADIUS.lg,
+            borderRadius: 16,
             paddingVertical: SPACING.large,
             marginRight: SPACING.small,
             alignItems: 'center',
@@ -307,7 +306,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           <TouchableOpacity style={{
             flex: 1,
             backgroundColor: '#1a2332',
-            borderRadius: RADIUS.lg,
+            borderRadius: 16,
             paddingVertical: SPACING.large,
             marginRight: SPACING.small,
             alignItems: 'center',
@@ -322,7 +321,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           <TouchableOpacity style={{
             flex: 1,
             backgroundColor: '#1a2332',
-            borderRadius: RADIUS.lg,
+            borderRadius: 16,
             paddingVertical: SPACING.large,
             alignItems: 'center',
             borderTopWidth: 3,
