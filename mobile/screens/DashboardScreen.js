@@ -69,7 +69,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
 
   if (!summary) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.bg }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background }}>
         <ActivityIndicator size="large" color={COLORS.glowBlue} />
         <Text style={[styles.subtitle, { marginTop: SPACING.base }]}>Loading dashboard…</Text>
       </View>

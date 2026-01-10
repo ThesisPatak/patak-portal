@@ -43,25 +43,27 @@ export default function App() {
           <View style={styles.titleBar}>
             <Text style={styles.headerTitleSmall}>PATAK MOBILE</Text>
           </View>
-          {screen === 'dashboard' && (
-            <DashboardScreen
-              token={token}
-              username={username}
-              onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
-              onLogout={() => { setToken(null); setUsername(null); }}
-              onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
-              onOpenDevices={() => setScreen('devices')}
-            />
-          )}
-          {screen === 'usage' && (
-            <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />
-          )}
-          {screen === 'pay' && (
-            <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />
-          )}
-          {screen === 'devices' && (
-            <DeviceScreen token={token} onBack={() => setScreen('dashboard')} />
-          )}
+          <View style={{ flex: 1, width: '100%', backgroundColor: COLORS.background }}>
+            {screen === 'dashboard' && (
+              <DashboardScreen
+                token={token}
+                username={username}
+                onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
+                onLogout={() => { setToken(null); setUsername(null); }}
+                onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
+                onOpenDevices={() => setScreen('devices')}
+              />
+            )}
+            {screen === 'usage' && (
+              <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />
+            )}
+            {screen === 'pay' && (
+              <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />
+            )}
+            {screen === 'devices' && (
+              <DeviceScreen token={token} onBack={() => setScreen('dashboard')} />
+            )}
+          </View>
         </View>
         <View style={styles.footer} pointerEvents="none">
           <Text style={styles.footerText}>© 2025 PATAK. Guard every drop.</Text>
