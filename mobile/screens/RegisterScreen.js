@@ -197,7 +197,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
 
         <TouchableOpacity onPress={onBack}>
           <Text style={{
-            color: COLORS.glowBlue,
+            color: 'white',
             textAlign: 'center',
             fontSize: 13,
             fontWeight: '600',
