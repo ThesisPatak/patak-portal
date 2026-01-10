@@ -8,6 +8,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   const [summary, setSummary] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [prevUsage, setPrevUsage] = useState(null);
+  const [loadError, setLoadError] = useState(null);
   const glowAnim = React.useRef(new Animated.Value(0)).current;
   const dropAnim = React.useRef(new Animated.Value(0)).current;
   const rotateAnim = React.useRef(new Animated.Value(0)).current;
@@ -15,12 +16,15 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   const loadDashboard = async () => {
     try {
       console.log('DashboardScreen: API call starting');
+      setLoadError(null);
       const data = await Api.getDashboard(token);
       console.log('DashboardScreen: API call success', data);
-      setSummary(data);
+      setSummary(data || { summary: {} });
     } catch (err) {
       console.warn('getDashboard error', err);
-      setSummary(null);
+      setLoadError(err.message || 'Failed to load dashboard');
+      // Set empty data so we don't stay stuck loading
+      setSummary({ summary: {} });
     }
   };
 
@@ -72,9 +76,17 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
 
   if (!summary) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background, padding: SPACING.large }}>
         <ActivityIndicator size="large" color={COLORS.glowBlue} />
         <Text style={[styles.subtitle, { marginTop: SPACING.base }]}>Loading dashboard…</Text>
+        {loadError && (
+          <View style={{ marginTop: SPACING.large, padding: SPACING.base, backgroundColor: '#ff0055', borderRadius: 8 }}>
+            <Text style={{ color: 'white', fontSize: 12, textAlign: 'center' }}>Error: {loadError}</Text>
+            <TouchableOpacity style={{ marginTop: SPACING.small, padding: 8, backgroundColor: COLORS.glowBlue, borderRadius: 6 }} onPress={loadDashboard}>
+              <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   }

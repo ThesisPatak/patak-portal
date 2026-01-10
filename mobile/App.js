@@ -48,44 +48,39 @@ export default function App() {
       );
     }
 
-    try {
-      switch (screen) {
-        case 'dashboard':
-          return (
-            <DashboardScreen
-              token={token}
-              username={username}
-              onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
-              onLogout={() => { setToken(null); setUsername(null); setScreen('dashboard'); }}
-              onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
-              onOpenDevices={() => setScreen('devices')}
-            />
-          );
-        case 'usage':
-          return <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />;
-        case 'pay':
-          return <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />;
-        case 'devices':
-          return <DeviceScreen token={token} onBack={() => setScreen('dashboard')} />;
-        default:
-          return (
-            <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ color: COLORS.glowBlue }}>Loading...</Text>
-            </View>
-          );
-      }
-    } catch (e) {
-      console.error('Screen render error:', e);
+    if (screen === 'dashboard') {
       return (
-        <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <Text style={{ color: COLORS.danger, fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Error loading screen</Text>
-          <Text style={{ color: COLORS.text, fontSize: 14, marginTop: 10, textAlign: 'center' }}>{e.message}</Text>
-          <TouchableOpacity style={{ marginTop: 20, padding: 10, backgroundColor: COLORS.glowBlue, borderRadius: 8 }} onPress={() => setScreen('dashboard')}>
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>Back to Dashboard</Text>
-          </TouchableOpacity>
-        </View>
+        <DashboardScreen
+          token={token}
+          username={username}
+          onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
+          onLogout={() => { setToken(null); setUsername(null); setScreen('dashboard'); }}
+          onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
+          onOpenDevices={() => setScreen('devices')}
+        />
       );
     }
+
+    if (screen === 'usage') {
+      return <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />;
+    }
+
+    if (screen === 'pay') {
+      return <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />;
+    }
+
+    if (screen === 'devices') {
+      return <DeviceScreen token={token} onBack={() => setScreen('dashboard')} />;
+    }
+
+    return (
+      <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: COLORS.glowBlue, fontSize: 16 }}>Unknown Screen: {screen}</Text>
+        <TouchableOpacity style={{ marginTop: 20, padding: 10, backgroundColor: COLORS.glowBlue, borderRadius: 8 }} onPress={() => setScreen('dashboard')}>
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Dashboard</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   return (
