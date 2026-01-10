@@ -308,9 +308,11 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
   try {
     if (fs.existsSync(READINGS_FILE)) {
       allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+      if (!Array.isArray(allReadings)) allReadings = []
     }
   } catch (e) {
     console.error('Failed to load readings:', e)
+    allReadings = []
   }
 
   const userList = users
