@@ -12,8 +12,8 @@ export default StyleSheet.create({
   },
   appShell: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
     padding: 0,
     paddingTop: 0,
     backgroundColor: COLORS.background
@@ -30,9 +30,9 @@ export default StyleSheet.create({
   },
   contentCard: {
     width: '100%',
-    padding: SPACING.large,
+    padding: 0,
     flex: 1,
-    alignSelf: 'center',
+    alignSelf: 'stretch',
     marginTop: 0,
     borderRadius: 0,
     backgroundColor: COLORS.background,
@@ -41,11 +41,11 @@ export default StyleSheet.create({
   },
   titleBar: {
     width: '100%',
-    paddingVertical: SPACING.small,
+    paddingVertical: SPACING.base,
     paddingHorizontal: SPACING.base,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent'
+    backgroundColor: COLORS.background
   },
   headerTitleSmall: {
     fontSize: TYPO.titleSize + 10,
