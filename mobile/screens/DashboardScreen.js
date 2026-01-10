@@ -83,10 +83,14 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           borderRadius: 20,
           padding: SPACING.large,
           alignItems: 'center',
-          borderWidth: 1,
-          borderColor: 'rgba(52, 152, 219, 0.3)',
+          borderWidth: 2,
+          borderColor: '#3498db',
+          shadowColor: '#3498db',
+          shadowOpacity: 0.5,
+          shadowRadius: 15,
+          elevation: 8,
         }}>
-          <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginBottom: SPACING.base }}>Total Usage</Text>
+          <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginBottom: SPACING.base, fontWeight: '600', letterSpacing: 1 }}>TOTAL USAGE</Text>
           
           {/* Circular Progress */}
           <View style={{ width: 180, height: 180, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
@@ -98,6 +102,10 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               borderColor: totalUsage > 100 ? '#FF6B6B' : '#3498db',
               justifyContent: 'center',
               alignItems: 'center',
+              shadowColor: totalUsage > 100 ? '#FF6B6B' : '#3498db',
+              shadowOpacity: 0.6,
+              shadowRadius: 10,
+              elevation: 5,
               backgroundColor: 'rgba(15, 20, 25, 0.5)',
             }}>
               <View style={{ alignItems: 'center' }}>
@@ -121,12 +129,16 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           backgroundColor: '#1a2332',
           borderRadius: 20,
           padding: SPACING.large,
-          borderWidth: 1,
-          borderColor: 'rgba(66, 165, 245, 0.3)',
+          borderWidth: 2,
+          borderColor: '#42A5F5',
+          shadowColor: '#42A5F5',
+          shadowOpacity: 0.4,
+          shadowRadius: 12,
+          elevation: 8,
         }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.base }}>
             <View>
-              <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginBottom: SPACING.small }}>Monthly Bill</Text>
+              <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginBottom: SPACING.small, fontWeight: '600', letterSpacing: 1 }}>MONTHLY BILL</Text>
               <Text style={{ fontSize: 40, fontWeight: '900', color: '#ffffff' }}>₱{summary.totalBill}</Text>
               <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginTop: SPACING.small }}>Est. ₱{summary.estimatedTotalBill} by month end</Text>
             </View>
@@ -134,7 +146,11 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               backgroundColor: '#3498db',
               paddingVertical: 12,
               paddingHorizontal: 16,
-              borderRadius: RADIUS.md,
+              borderRadius: 12,
+              shadowColor: '#3498db',
+              shadowOpacity: 0.6,
+              shadowRadius: 8,
+              elevation: 5,
             }}>
               <Text style={{ fontSize: 20 }}>�</Text>
             </View>
@@ -142,11 +158,15 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           <TouchableOpacity style={{
             backgroundColor: '#3498db',
             paddingVertical: SPACING.base,
-            borderRadius: RADIUS.md,
+            borderRadius: 12,
             alignItems: 'center',
-            marginTop: SPACING.base
+            marginTop: SPACING.base,
+            shadowColor: '#3498db',
+            shadowOpacity: 0.6,
+            shadowRadius: 10,
+            elevation: 5,
           }} onPress={() => onPay && onPay()}>
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: TYPO.bodySize }}>� Pay Now</Text>
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: TYPO.bodySize, letterSpacing: 0.5 }}>💰 PAY NOW</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -155,7 +175,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
       {hasDevices ? (
         <View style={{ paddingHorizontal: SPACING.base }}>
           <View style={{ marginBottom: SPACING.base }}>
-            <Text style={{ fontSize: TYPO.bodySize, color: '#ffffff', fontWeight: '700' }}>Your Devices</Text>
+            <Text style={{ fontSize: TYPO.bodySize, color: '#ffffff', fontWeight: '700', letterSpacing: 0.5 }}>YOUR DEVICES</Text>
             <Text style={{ fontSize: TYPO.captionSize, color: '#64B5F6', marginTop: SPACING.small }}>
               {devices.length} device{devices.length !== 1 ? 's' : ''} tracked
             </Text>
@@ -170,7 +190,11 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               borderLeftWidth: 4,
               borderLeftColor: device.isOnline ? '#42A5F5' : '#FFA726',
               borderWidth: 1,
-              borderColor: 'rgba(255, 255, 255, 0.05)',
+              borderColor: device.isOnline ? 'rgba(66, 165, 245, 0.3)' : 'rgba(255, 167, 38, 0.2)',
+              shadowColor: device.isOnline ? '#42A5F5' : '#FFA726',
+              shadowOpacity: device.isOnline ? 0.3 : 0.2,
+              shadowRadius: 10,
+              elevation: 5,
             }}>
               {/* Device Header */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.base }}>
