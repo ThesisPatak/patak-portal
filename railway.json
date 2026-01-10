@@ -5,6 +5,12 @@
   },
   "deploy": {
     "restartPolicyCondition": "on-failure",
-    "restartPolicyMaxRetries": 5
+    "restartPolicyMaxRetries": 5,
+    "volumes": [
+      {
+        "name": "data",
+        "mountPath": "/app/data"
+      }
+    ]
   }
 }
