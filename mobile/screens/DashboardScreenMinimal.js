@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl, Animated } from 'react-native';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING } from './variables';
@@ -9,12 +9,25 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const glowAnim = React.useRef(new Animated.Value(0)).current;
 
   // Load dashboard data
   useEffect(() => {
     console.log('DashboardScreen: Mounting with token=', token);
     loadDashboard();
   }, [token]);
+
+  // Glow animation
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, { toValue: 1, duration: 1500, useNativeDriver: false }),
+        Animated.timing(glowAnim, { toValue: 0, duration: 1500, useNativeDriver: false })
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [glowAnim]);
 
   const loadDashboard = async () => {
     try {
@@ -74,12 +87,64 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
       </View>
 
       {/* Total Usage Card */}
-      <View style={[styles.card, { marginBottom: SPACING.large, alignItems: 'center' }]}>
+      <View style={[styles.card, { marginBottom: SPACING.large, borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.large, alignItems: 'center' }]}>
         <Text style={{ fontSize: 14, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.base }}>TOTAL USAGE</Text>
-        <Text style={{ fontSize: 48, fontWeight: '900', color: COLORS.text, marginBottom: SPACING.small }}>
-          {totalUsage.toFixed(1)}
-        </Text>
-        <Text style={{ fontSize: 16, color: COLORS.glowBlue }}>m³</Text>
+        
+        {/* Circular Progress */}
+        <View style={{ width: 160, height: 160, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
+          {/* Background circle */}
+          <View style={{
+            position: 'absolute',
+            width: 140,
+            height: 140,
+            borderRadius: 70,
+            borderWidth: 6,
+            borderColor: 'rgba(0, 180, 255, 0.2)',
+            backgroundColor: 'rgba(15, 36, 56, 0.6)',
+          }} />
+          
+          {/* Progress arc */}
+          <Animated.View style={{
+            position: 'absolute',
+            width: 140,
+            height: 140,
+            borderRadius: 70,
+            borderWidth: 6,
+            borderColor: 'transparent',
+            borderTopColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+            borderRightColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+            transform: [
+              {
+                rotate: `${(totalUsage / 100) * 360}deg`
+              }
+            ],
+            opacity: 0.8
+          }} />
+          
+          {/* Main circle with glow */}
+          <Animated.View style={{
+            width: 140,
+            height: 140,
+            borderRadius: 70,
+            borderWidth: 6,
+            borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(15, 36, 56, 0.6)',
+            shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
+            shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 20] }),
+            elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
+          }}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.text }}>
+                {totalUsage.toFixed(1)}
+              </Text>
+              <Text style={{ fontSize: 14, color: COLORS.glowBlue, marginTop: 4 }}>m³</Text>
+            </View>
+          </Animated.View>
+        </View>
       </View>
 
       {/* Estimated Bill */}
