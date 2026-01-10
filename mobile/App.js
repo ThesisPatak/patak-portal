@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreen';
@@ -37,6 +37,57 @@ export default function App() {
     return <LoginScreen onLogin={(token, user) => { console.log('Logging in user:', user); setToken(token); setUsername(user); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
   }
 
+  // Show loading screen after login while dashboard loads
+  const renderContent = () => {
+    if (!screen) {
+      return (
+        <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: COLORS.glowBlue, fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Loading Dashboard...</Text>
+          <ActivityIndicator size="large" color={COLORS.glowBlue} />
+        </View>
+      );
+    }
+
+    try {
+      switch (screen) {
+        case 'dashboard':
+          return (
+            <DashboardScreen
+              token={token}
+              username={username}
+              onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
+              onLogout={() => { setToken(null); setUsername(null); setScreen('dashboard'); }}
+              onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
+              onOpenDevices={() => setScreen('devices')}
+            />
+          );
+        case 'usage':
+          return <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />;
+        case 'pay':
+          return <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />;
+        case 'devices':
+          return <DeviceScreen token={token} onBack={() => setScreen('dashboard')} />;
+        default:
+          return (
+            <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ color: COLORS.glowBlue }}>Loading...</Text>
+            </View>
+          );
+      }
+    } catch (e) {
+      console.error('Screen render error:', e);
+      return (
+        <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ color: COLORS.danger, fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Error loading screen</Text>
+          <Text style={{ color: COLORS.text, fontSize: 14, marginTop: 10, textAlign: 'center' }}>{e.message}</Text>
+          <TouchableOpacity style={{ marginTop: 20, padding: 10, backgroundColor: COLORS.glowBlue, borderRadius: 8 }} onPress={() => setScreen('dashboard')}>
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Back to Dashboard</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: COLORS.background }]}>
       <View style={[styles.appShell, { backgroundColor: COLORS.background }]}>
@@ -50,25 +101,7 @@ export default function App() {
                 <Text style={{ color: 'white', fontWeight: 'bold' }}>Error: {error}</Text>
               </View>
             )}
-            {screen === 'dashboard' && (
-              <DashboardScreen
-                token={token}
-                username={username}
-                onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
-                onLogout={() => { setToken(null); setUsername(null); }}
-                onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
-                onOpenDevices={() => setScreen('devices')}
-              />
-            )}
-            {screen === 'usage' && (
-              <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />
-            )}
-            {screen === 'pay' && (
-              <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />
-            )}
-            {screen === 'devices' && (
-              <DeviceScreen token={token} onBack={() => setScreen('dashboard')} />
-            )}
+            {renderContent()}
           </View>
         </View>
         <View style={styles.footer} pointerEvents="none">
