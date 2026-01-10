@@ -39,7 +39,7 @@ export default function App() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: COLORS.background }]}>
       <View style={[styles.appShell, { backgroundColor: COLORS.background }]}>
-        <View style={[styles.contentCard, { backgroundColor: COLORS.background }]}>
+        <View style={[styles.contentCard, { backgroundColor: COLORS.background, flex: 1, minHeight: '100%' }]}>
           <View style={styles.titleBar}>
             <Text style={styles.headerTitleSmall}>PATAK MOBILE</Text>
           </View>

@@ -40,7 +40,7 @@ export default function UsageScreen({ token, onBack }) {
   };
 
   return (
-    <View style={{ padding: SPACING.base, flex: 1 }}>
+    <View style={{ padding: SPACING.base, flex: 1, backgroundColor: COLORS.background }}>
       <TouchableOpacity onPress={onBack} style={{ marginBottom: SPACING.small }}>
         <Text style={{ color: COLORS.link }}>← Back</Text>
       </TouchableOpacity>

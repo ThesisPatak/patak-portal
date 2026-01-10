@@ -43,7 +43,7 @@ export default function PayScreen({ payInfo, onBack }) {
   };
 
   return (
-    <View style={{ flex: 1, padding: SPACING.base }}>
+    <View style={{ flex: 1, padding: SPACING.base, backgroundColor: COLORS.background }}>
       <TouchableOpacity onPress={onBack} style={[styles.secondaryButton, { alignSelf: 'flex-start', marginBottom: SPACING.small }]}>
         <Text style={styles.secondaryButtonText}>← Back</Text>
       </TouchableOpacity>

@@ -78,7 +78,7 @@ export default function DeviceScreen({ token, onBack }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: SPACING.base, paddingBottom: SPACING.xlarge }}>
+    <ScrollView contentContainerStyle={{ padding: SPACING.base, paddingBottom: SPACING.xlarge, backgroundColor: COLORS.background }} style={{ backgroundColor: COLORS.background }}>
       <View style={{ marginBottom: SPACING.large }}>
         <TouchableOpacity onPress={onBack} style={{ marginBottom: SPACING.base }}>
           <Text style={{ color: COLORS.glowBlue, fontSize: TYPO.bodySize, fontWeight: '600' }}>← Back</Text>
