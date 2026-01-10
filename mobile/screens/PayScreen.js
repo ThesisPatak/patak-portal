@@ -49,15 +49,15 @@ export default function PayScreen({ payInfo, onBack }) {
       </TouchableOpacity>
 
       <View style={[styles.card, { alignItems: 'center' }]}>
-        <Text style={{ fontWeight: '800', color: COLORS.primary, fontSize: TYPO.subtitleSize + 3 }}>{house}</Text>
+        <Text style={{ fontWeight: '800', color: COLORS.glowBlue, fontSize: TYPO.subtitleSize + 3 }}>{house}</Text>
         <Text style={[styles.subtitle, { marginTop: SPACING.base }]}>Amount Due</Text>
-        <Text style={{ fontSize: TYPO.bodySize + 8, fontWeight: '900', color: COLORS.link, marginTop: SPACING.small }}>₱{Number(amount).toFixed(2)}</Text>
+        <Text style={{ fontSize: TYPO.bodySize + 8, fontWeight: '900', color: COLORS.glowBlue, marginTop: SPACING.small }}>₱{Number(amount).toFixed(2)}</Text>
 
         <View style={{ height: SPACING.base * 2 }} />
         
         {/* PayPal Payment Info */}
         <View style={{ width: '100%', padding: SPACING.base, backgroundColor: '#f0f7ff', borderRadius: 12, marginVertical: SPACING.base }}>
-          <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.primary, textAlign: 'center', marginBottom: SPACING.small }}>PayPal Payment</Text>
+          <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.glowBlue, textAlign: 'center', marginBottom: SPACING.small }}>PayPal Payment</Text>
           <Text style={{ fontSize: TYPO.bodySize - 2, color: '#666', textAlign: 'center', marginBottom: SPACING.small }}>
             Click below to open PayPal and complete your payment
           </Text>

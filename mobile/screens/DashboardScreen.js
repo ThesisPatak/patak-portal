@@ -70,7 +70,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   if (!summary) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.bg }}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <ActivityIndicator size="large" color={COLORS.glowBlue} />
         <Text style={[styles.subtitle, { marginTop: SPACING.base }]}>Loading dashboard…</Text>
       </View>
     );
@@ -94,7 +94,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
       style={{ flex: 1, backgroundColor: COLORS.background }}
       scrollIndicatorInsets={{ right: 1 }}
       contentContainerStyle={{ paddingBottom: SPACING.large * 2, paddingHorizontal: 0 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.glowBlue} />}
     >
       {/* Header Section */}
       <View style={{ paddingHorizontal: SPACING.base, paddingTop: SPACING.large, marginBottom: SPACING.large }}>
@@ -179,7 +179,9 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
                 borderWidth: 8,
                 borderColor: 'transparent',
                 borderTopColor: COLORS.glowBlue,
-                borderRightColor: 'rgba(0, 180, 255, 0.5)',
+                borderRightColor: 'rgba(255, 255, 255, 0.6)',
+                borderBottomColor: 'rgba(0, 180, 255, 0.3)',
+                borderLeftColor: 'rgba(0, 180, 255, 0.2)',
                 transform: [
                   {
                     rotate: rotateAnim.interpolate({

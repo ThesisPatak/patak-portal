@@ -50,10 +50,10 @@ export default StyleSheet.create({
   headerTitleSmall: {
     fontSize: TYPO.titleSize + 10,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: COLORS.glowBlue,
     textAlign: 'center',
     alignSelf: 'center',
-    textShadowColor: COLORS.primary,
+    textShadowColor: COLORS.glowBlue,
     textShadowRadius: 10
   },
   center: {
@@ -72,7 +72,7 @@ export default StyleSheet.create({
     marginVertical: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: COLORS.glowCyan,
+    shadowColor: COLORS.glowBlue,
     shadowOpacity: 0.3,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 0 },
@@ -108,7 +108,7 @@ export default StyleSheet.create({
     marginVertical: 10,
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: COLORS.glowCyan,
+    shadowColor: COLORS.glowBlue,
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
@@ -151,7 +151,7 @@ export default StyleSheet.create({
   sectionHeader: {
     fontSize: TYPO.h4,
     fontWeight: '800',
-    color: COLORS.primaryLight,
+    color: COLORS.glowBlue,
     marginBottom: SPACING.base,
     letterSpacing: 1,
     textTransform: 'uppercase'
@@ -159,7 +159,7 @@ export default StyleSheet.create({
   title: {
     fontSize: TYPO.titleSize + 6,
     fontWeight: '700',
-    color: COLORS.primary,
+    color: COLORS.glowBlue,
     marginBottom: 8,
     textAlign: 'center'
   },
@@ -180,7 +180,7 @@ export default StyleSheet.create({
   latestValue: {
     fontSize: TYPO.bodySize + 10,
     fontWeight: '900',
-    color: COLORS.primary
+    color: COLORS.glowBlue
   },
   smallText: {
     fontSize: TYPO.smallSize,
@@ -195,7 +195,7 @@ export default StyleSheet.create({
     marginBottom: 12,
     backgroundColor: COLORS.cardBg,
     color: COLORS.text,
-    shadowColor: COLORS.glowCyan,
+    shadowColor: COLORS.glowBlue,
     shadowOpacity: 0.1,
     shadowRadius: 4
   },
@@ -225,7 +225,7 @@ export default StyleSheet.create({
   },
   secondaryButton: {
     backgroundColor: 'transparent',
-    borderColor: COLORS.primary,
+    borderColor: COLORS.glowBlue,
     borderWidth: 2,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -233,13 +233,13 @@ export default StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'stretch',
     width: '100%',
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.glowBlue,
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6
   },
   secondaryButtonText: {
-    color: COLORS.primary,
+    color: COLORS.glowBlue,
     fontWeight: '700',
     fontSize: 16
   },

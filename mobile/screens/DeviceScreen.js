@@ -81,14 +81,14 @@ export default function DeviceScreen({ token, onBack }) {
     <ScrollView contentContainerStyle={{ padding: SPACING.base, paddingBottom: SPACING.xlarge }}>
       <View style={{ marginBottom: SPACING.large }}>
         <TouchableOpacity onPress={onBack} style={{ marginBottom: SPACING.base }}>
-          <Text style={{ color: COLORS.primary, fontSize: TYPO.bodySize, fontWeight: '600' }}>← Back</Text>
+          <Text style={{ color: COLORS.glowBlue, fontSize: TYPO.bodySize, fontWeight: '600' }}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>My Devices</Text>
       </View>
 
       {/* Register New Device Section */}
       <View style={[styles.card, { marginBottom: SPACING.large }]}>
-        <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.primary, marginBottom: SPACING.base }}>
+        <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.glowBlue, marginBottom: SPACING.base }}>
           Register New Device
         </Text>
         
@@ -135,13 +135,13 @@ export default function DeviceScreen({ token, onBack }) {
 
       {/* Registered Devices Section */}
       <View>
-        <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.primary, marginBottom: SPACING.base }}>
+        <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.glowBlue, marginBottom: SPACING.base }}>
           Registered Devices ({devices.length})
         </Text>
 
         {loading ? (
           <View style={{ alignItems: 'center', paddingVertical: SPACING.large }}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+            <ActivityIndicator size="large" color={COLORS.glowBlue} />
           </View>
         ) : devices.length === 0 ? (
           <View style={[styles.card, { alignItems: 'center', paddingVertical: SPACING.large }]}>
@@ -160,7 +160,7 @@ export default function DeviceScreen({ token, onBack }) {
             renderItem={({ item }) => (
               <View style={[styles.card, { marginBottom: SPACING.base }]}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.base }}>
-                  <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.primary }}>
+                  <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.glowBlue }}>
                     {item.deviceId}
                   </Text>
                   <View style={{ paddingHorizontal: SPACING.small, paddingVertical: 4, backgroundColor: item.lastSeen ? COLORS.success : COLORS.warning, borderRadius: 8 }}>
@@ -189,7 +189,7 @@ export default function DeviceScreen({ token, onBack }) {
                 {item.status && (
                   <View style={{ marginTop: SPACING.base, paddingTop: SPACING.base, borderTopWidth: 1, borderTopColor: COLORS.border }}>
                     <Text style={{ fontSize: TYPO.smallSize, color: COLORS.text }}>
-                      Status: <Text style={{ fontWeight: '600', color: COLORS.primary }}>{item.status}</Text>
+                      Status: <Text style={{ fontWeight: '600', color: COLORS.glowBlue }}>{item.status}</Text>
                     </Text>
                   </View>
                 )}
@@ -201,7 +201,7 @@ export default function DeviceScreen({ token, onBack }) {
 
       {/* Instructions Card */}
       <View style={[styles.card, { marginTop: SPACING.large, backgroundColor: COLORS.infoBg }]}>
-        <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.primary, marginBottom: SPACING.base }}>
+        <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.glowBlue, marginBottom: SPACING.base }}>
           📱 How to Set Up Your Device
         </Text>
         <Text style={{ fontSize: TYPO.smallSize, color: COLORS.text, lineHeight: 20 }}>
