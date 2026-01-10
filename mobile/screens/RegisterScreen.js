@@ -65,85 +65,130 @@ export default function RegisterScreen({ onRegister, onBack }) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}
+      style={{ flex: 1, backgroundColor: '#0f1419', justifyContent: 'center', alignItems: 'center' }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={{
-        backgroundColor: COLORS.cardBg,
-        borderRadius: 18,
+        backgroundColor: '#1a2332',
+        borderRadius: 24,
         padding: containerPadding,
         width: cardWidth,
-        shadowColor: COLORS.shadow,
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 6,
+        borderWidth: 2,
+        borderColor: '#3498db',
+        shadowColor: '#3498db',
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 10,
         alignItems: 'center',
       }}>
         <Text style={{
           fontSize: titleFontSize,
-          fontWeight: 'bold',
-          color: COLORS.primary,
+          fontWeight: '900',
+          color: '#ffffff',
           marginBottom: 18,
-          letterSpacing: 0.5,
+          letterSpacing: 1,
+          textTransform: 'uppercase',
         }}>Register</Text>
+        <Text style={{
+          fontSize: 13,
+          color: '#64B5F6',
+          textAlign: 'center',
+          marginBottom: 24,
+          fontWeight: '500',
+          lineHeight: 18,
+        }}>Create your account</Text>
+        
         <TextInput
+          placeholder="Username"
+          placeholderTextColor="#64B5F6"
           style={{
             borderWidth: 1,
-            borderColor: COLORS.border,
+            borderColor: '#42A5F5',
             padding: 12,
-            borderRadius: 10,
+            borderRadius: 12,
             width: '100%',
-            marginBottom: 14,
-            backgroundColor: COLORS.surface,
+            marginBottom: 12,
+            backgroundColor: 'rgba(52, 152, 219, 0.05)',
             fontSize: inputFontSize,
+            color: '#ffffff',
+            fontWeight: '500',
           }}
-          placeholder="Username"
-          autoCapitalize="none"
           value={username}
           onChangeText={setUsername}
+          autoCapitalize="none"
         />
+        
         <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: COLORS.border,
-            padding: 12,
-            borderRadius: 10,
-            width: '100%',
-            marginBottom: 14,
-            backgroundColor: COLORS.surface,
-            fontSize: inputFontSize,
-          }}
           placeholder="Password"
-          secureTextEntry
+          placeholderTextColor="#64B5F6"
           value={password}
           onChangeText={setPassword}
+          secureTextEntry
+          style={{
+            borderWidth: 1,
+            borderColor: '#42A5F5',
+            padding: 12,
+            borderRadius: 12,
+            width: '100%',
+            marginBottom: 18,
+            backgroundColor: 'rgba(52, 152, 219, 0.05)',
+            fontSize: inputFontSize,
+            color: '#ffffff',
+            fontWeight: '500',
+          }}
+          autoCapitalize="none"
         />
-        {error ? <Text style={{ color: COLORS.danger, marginBottom: 10, fontSize: 15 }}>{error}</Text> : null}
+
+        {error ? (
+          <Text style={{
+            color: '#FF6B6B',
+            marginBottom: 12,
+            textAlign: 'center',
+            fontSize: 13,
+            fontWeight: '600',
+          }}>
+            {error}
+          </Text>
+        ) : null}
+
         <TouchableOpacity
           style={{
-            backgroundColor: COLORS.primary,
+            backgroundColor: '#3498db',
+            paddingVertical: buttonHeight * 0.4,
             borderRadius: 12,
-            height: buttonHeight,
-            alignItems: 'center',
-            justifyContent: 'center',
             width: '100%',
-            marginTop: 4,
-            marginBottom: 6,
-            shadowColor: COLORS.primary,
-            shadowOpacity: 0.12,
-            shadowRadius: 6,
-            shadowOffset: { width: 0, height: 2 },
-            elevation: 2,
-            opacity: loading ? 0.7 : 1,
+            alignItems: 'center',
+            marginBottom: 12,
+            shadowColor: '#3498db',
+            shadowOpacity: 0.6,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 6,
           }}
           onPress={handleRegister}
           disabled={loading}
         >
-          <Text style={{ color: COLORS.onPrimary, fontWeight: '700', fontSize: inputFontSize }}>{loading ? 'Registering...' : 'Register'}</Text>
+          <Text style={{
+            fontSize: inputFontSize,
+            fontWeight: '800',
+            color: '#fff',
+            textTransform: 'uppercase',
+            letterSpacing: 0.8,
+          }}>
+            {loading ? 'Registering...' : 'Register'}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onBack} style={{ marginTop: 10 }}>
-          <Text style={{ color: COLORS.link, fontSize: 15, fontWeight: '600' }}>Back to Login</Text>
+
+        <TouchableOpacity onPress={onBack}>
+          <Text style={{
+            color: '#64B5F6',
+            textAlign: 'center',
+            fontSize: 13,
+            fontWeight: '600',
+          }}>
+            Already have an account? Back to Login
+          </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

@@ -56,35 +56,129 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
   };
 
   return (
-    <View style={styles.center}>
-      <View style={[styles.card, { width: '100%', maxWidth: 420, minHeight: 420, justifyContent: 'center', paddingVertical: 44, marginTop: -20 }]}>
-        <Text style={[styles.title, { textAlign: 'center', textTransform: 'uppercase' }]}>Welcome to PATAK</Text>
-        <Text style={[styles.subtitle, { textAlign: 'center', marginTop: 12, lineHeight: 20, marginBottom: 24 }]}>A modern IoT-based water consumption and billing system. This portal enables suppliers to monitor water usage, manage automated billing, and provide actionable insights for efficient and sustainable water management.</Text>
+    <View style={{ flex: 1, backgroundColor: '#0f1419', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 }}>
+      <View style={{
+        backgroundColor: '#1a2332',
+        borderRadius: 24,
+        padding: 36,
+        width: '100%',
+        maxWidth: 420,
+        minHeight: 480,
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#3498db',
+        shadowColor: '#3498db',
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 10,
+      }}>
+        <Text style={{
+          fontSize: 28,
+          fontWeight: '900',
+          color: '#ffffff',
+          textAlign: 'center',
+          textTransform: 'uppercase',
+          letterSpacing: 2,
+          marginBottom: 12,
+        }}>PATAK</Text>
+        <Text style={{
+          fontSize: 13,
+          color: '#64B5F6',
+          textAlign: 'center',
+          lineHeight: 18,
+          marginBottom: 32,
+          fontWeight: '500',
+          letterSpacing: 0.3,
+        }}>IoT-based water monitoring and automated billing system</Text>
+        
         <TextInput
           placeholder="Username"
+          placeholderTextColor="#64B5F6"
           value={username}
           onChangeText={setUsername}
-          style={[styles.input, { marginTop: 24 }]}
+          style={{
+            borderWidth: 1,
+            borderColor: '#42A5F5',
+            padding: 14,
+            borderRadius: 12,
+            marginBottom: 12,
+            backgroundColor: 'rgba(52, 152, 219, 0.05)',
+            color: '#ffffff',
+            fontSize: 16,
+            fontWeight: '500',
+          }}
           autoCapitalize="none"
         />
+        
         <TextInput
           placeholder="Password"
+          placeholderTextColor="#64B5F6"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          style={[styles.input, { marginTop: 12 }]}
+          style={{
+            borderWidth: 1,
+            borderColor: '#42A5F5',
+            padding: 14,
+            borderRadius: 12,
+            marginBottom: 20,
+            backgroundColor: 'rgba(52, 152, 219, 0.05)',
+            color: '#ffffff',
+            fontSize: 16,
+            fontWeight: '500',
+          }}
           autoCapitalize="none"
         />
 
+        {error ? (
+          <Text style={{
+            color: '#FF6B6B',
+            marginBottom: 16,
+            textAlign: 'center',
+            fontSize: 13,
+            fontWeight: '600',
+          }}>
+            {error}
+          </Text>
+        ) : null}
 
-        {error ? <Text style={{ color: COLORS.danger, marginBottom: 8 }}>{error}</Text> : null}
-
-        <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} disabled={loading}>
-          <Text style={styles.primaryButtonText}>{loading ? 'Logging in...' : 'Login'}</Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#3498db',
+            paddingVertical: 14,
+            borderRadius: 12,
+            marginBottom: 16,
+            shadowColor: '#3498db',
+            shadowOpacity: 0.6,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 6,
+          }}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={{
+            color: '#fff',
+            textAlign: 'center',
+            fontWeight: '800',
+            fontSize: 16,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}>
+            {loading ? 'Logging in...' : 'Login'}
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onShowRegister} style={{ marginTop: 16 }}>
-          <Text style={{ color: COLORS.primary, textAlign: 'center' }}>Don't have an account? Register</Text>
+        <TouchableOpacity onPress={onShowRegister}>
+          <Text style={{
+            color: '#64B5F6',
+            textAlign: 'center',
+            fontSize: 13,
+            fontWeight: '600',
+          }}>
+            Don't have an account? Register
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
