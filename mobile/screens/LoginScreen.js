@@ -56,9 +56,9 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0f1419', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 }}>
       <View style={{
-        backgroundColor: '#1a2332',
+        backgroundColor: COLORS.cardBg,
         borderRadius: 24,
         padding: 36,
         width: '100%',
@@ -66,8 +66,8 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
         minHeight: 480,
         justifyContent: 'center',
         borderWidth: 2,
-        borderColor: '#3498db',
-        shadowColor: '#3498db',
+        borderColor: COLORS.glowCyan,
+        shadowColor: COLORS.glowCyan,
         shadowOpacity: 0.5,
         shadowRadius: 20,
         shadowOffset: { width: 0, height: 8 },
@@ -76,15 +76,17 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
         <Text style={{
           fontSize: 28,
           fontWeight: '900',
-          color: '#ffffff',
+          color: COLORS.text,
           textAlign: 'center',
           textTransform: 'uppercase',
           letterSpacing: 2,
           marginBottom: 12,
+          textShadowColor: COLORS.glowCyan,
+          textShadowRadius: 8
         }}>PATAK</Text>
         <Text style={{
           fontSize: 13,
-          color: '#64B5F6',
+          color: COLORS.glowCyan,
           textAlign: 'center',
           lineHeight: 18,
           marginBottom: 32,
@@ -94,46 +96,52 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
         
         <TextInput
           placeholder="Username"
-          placeholderTextColor="#64B5F6"
+          placeholderTextColor={COLORS.glowCyan}
           value={username}
           onChangeText={setUsername}
           style={{
             borderWidth: 1,
-            borderColor: '#42A5F5',
+            borderColor: COLORS.glowCyan,
             padding: 14,
             borderRadius: 12,
             marginBottom: 12,
-            backgroundColor: 'rgba(52, 152, 219, 0.05)',
-            color: '#ffffff',
+            backgroundColor: 'rgba(0, 249, 255, 0.08)',
+            color: COLORS.text,
             fontSize: 16,
             fontWeight: '500',
+            shadowColor: COLORS.glowCyan,
+            shadowOpacity: 0.2,
+            shadowRadius: 4
           }}
           autoCapitalize="none"
         />
         
         <TextInput
           placeholder="Password"
-          placeholderTextColor="#64B5F6"
+          placeholderTextColor={COLORS.glowCyan}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           style={{
             borderWidth: 1,
-            borderColor: '#42A5F5',
+            borderColor: COLORS.glowCyan,
             padding: 14,
             borderRadius: 12,
             marginBottom: 20,
-            backgroundColor: 'rgba(52, 152, 219, 0.05)',
-            color: '#ffffff',
+            backgroundColor: 'rgba(0, 249, 255, 0.08)',
+            color: COLORS.text,
             fontSize: 16,
             fontWeight: '500',
+            shadowColor: COLORS.glowCyan,
+            shadowOpacity: 0.2,
+            shadowRadius: 4
           }}
           autoCapitalize="none"
         />
 
         {error ? (
           <Text style={{
-            color: '#FF6B6B',
+            color: COLORS.danger,
             marginBottom: 16,
             textAlign: 'center',
             fontSize: 13,
@@ -145,21 +153,23 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
 
         <TouchableOpacity
           style={{
-            backgroundColor: '#3498db',
+            backgroundColor: COLORS.glowGreen,
             paddingVertical: 14,
             borderRadius: 12,
             marginBottom: 16,
-            shadowColor: '#3498db',
-            shadowOpacity: 0.6,
+            borderWidth: 1,
+            borderColor: COLORS.glowGreen,
+            shadowColor: COLORS.glowGreen,
+            shadowOpacity: 0.7,
             shadowRadius: 12,
             shadowOffset: { width: 0, height: 4 },
-            elevation: 6,
+            elevation: 8,
           }}
           onPress={handleLogin}
           disabled={loading}
         >
           <Text style={{
-            color: '#fff',
+            color: COLORS.onPrimary,
             textAlign: 'center',
             fontWeight: '800',
             fontSize: 16,
@@ -172,7 +182,7 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
 
         <TouchableOpacity onPress={onShowRegister}>
           <Text style={{
-            color: '#64B5F6',
+            color: COLORS.glowCyan,
             textAlign: 'center',
             fontSize: 13,
             fontWeight: '600',

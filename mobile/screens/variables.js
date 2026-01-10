@@ -1,36 +1,42 @@
 export const COLORS = {
-  // Professional gradient blues
-  primary: '#0055cc',      // Deep professional blue
-  primaryLight: '#0066ff', // Bright accent blue
-  primaryDark: '#003d99',  // Dark blue for emphasis
+  // Neon crypto aesthetic
+  primary: '#00f9ff',      // Neon cyan
+  primaryLight: '#00ffff', // Bright cyan
+  primaryDark: '#00d4d4',  // Dark cyan
   
   // Semantic colors
-  success: '#1a9d3c',      // Green for active/paid
-  warning: '#d67700',      // Orange for alerts
-  danger: '#c01818',       // Red for critical
-  info: '#0055cc',         // Info color
+  success: '#00ff88',      // Neon green
+  warning: '#ffeb00',      // Neon yellow
+  danger: '#ff0055',       // Neon pink/red
+  info: '#00d4ff',         // Cyan info
   
   // Text hierarchy
-  text: '#1a202c',         // Primary text (very dark)
-  textSecondary: '#4a5568', // Secondary text
-  muted: '#718096',        // Muted/hint text
-  disabled: '#cbd5e0',     // Disabled state
+  text: '#e0f2f1',         // Light text for dark bg
+  textSecondary: '#b0bec5', // Secondary text
+  muted: '#78909c',        // Muted/hint text
+  disabled: '#455a64',     // Disabled state
   
   // Background & Surface
-  background: '#f8f9fa',   // Light professional background
-  surface: '#ffffff',      // Card surfaces
-  cardBg: '#ffffff',       // Card background
-  overlay: 'rgba(26, 32, 44, 0.7)', // Dark overlay
+  background: '#0a1628',   // Dark teal background
+  surface: '#0f2438',      // Card surfaces (slightly lighter)
+  cardBg: '#0f2438',       // Card background with transparency
+  overlay: 'rgba(10, 22, 40, 0.8)', // Dark teal overlay
   
   // UI Elements
-  border: '#cbd5e0',       // Professional gray border
-  divider: '#e2e8f0',      // Light divider
-  shadow: 'rgba(0, 0, 0, 0.08)', // Subtle shadow
+  border: '#1a3a52',       // Dark cyan border
+  divider: '#1a3a52',      // Dark divider
+  shadow: 'rgba(0, 249, 255, 0.15)', // Cyan glow shadow
   
   // Utility
-  accent: '#0066ff',       // Accent color
-  link: '#0055cc',         // Link color
-  onPrimary: '#ffffff'     // Text on primary color
+  accent: '#00ff88',       // Green accent
+  link: '#00f9ff',         // Cyan link
+  onPrimary: '#0a1628',    // Dark text on neon
+  
+  // Glow colors
+  glowCyan: '#00f9ff',
+  glowGreen: '#00ff88',
+  glowYellow: '#ffeb00',
+  glowPink: '#ff0055'
 };
 
 export const SPACING = {

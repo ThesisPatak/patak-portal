@@ -65,17 +65,17 @@ export default function RegisterScreen({ onRegister, onBack }) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#0f1419', justifyContent: 'center', alignItems: 'center' }}
+      style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={{
-        backgroundColor: '#1a2332',
+        backgroundColor: COLORS.cardBg,
         borderRadius: 24,
         padding: containerPadding,
         width: cardWidth,
         borderWidth: 2,
-        borderColor: '#3498db',
-        shadowColor: '#3498db',
+        borderColor: COLORS.glowGreen,
+        shadowColor: COLORS.glowGreen,
         shadowOpacity: 0.5,
         shadowRadius: 20,
         shadowOffset: { width: 0, height: 8 },
@@ -85,14 +85,16 @@ export default function RegisterScreen({ onRegister, onBack }) {
         <Text style={{
           fontSize: titleFontSize,
           fontWeight: '900',
-          color: '#ffffff',
+          color: COLORS.text,
           marginBottom: 18,
           letterSpacing: 1,
           textTransform: 'uppercase',
+          textShadowColor: COLORS.glowGreen,
+          textShadowRadius: 8
         }}>Register</Text>
         <Text style={{
           fontSize: 13,
-          color: '#64B5F6',
+          color: COLORS.glowGreen,
           textAlign: 'center',
           marginBottom: 24,
           fontWeight: '500',
@@ -101,18 +103,21 @@ export default function RegisterScreen({ onRegister, onBack }) {
         
         <TextInput
           placeholder="Username"
-          placeholderTextColor="#64B5F6"
+          placeholderTextColor={COLORS.glowGreen}
           style={{
             borderWidth: 1,
-            borderColor: '#42A5F5',
+            borderColor: COLORS.glowGreen,
             padding: 12,
             borderRadius: 12,
             width: '100%',
             marginBottom: 12,
-            backgroundColor: 'rgba(52, 152, 219, 0.05)',
+            backgroundColor: 'rgba(0, 255, 136, 0.08)',
             fontSize: inputFontSize,
-            color: '#ffffff',
+            color: COLORS.text,
             fontWeight: '500',
+            shadowColor: COLORS.glowGreen,
+            shadowOpacity: 0.2,
+            shadowRadius: 4
           }}
           value={username}
           onChangeText={setUsername}
@@ -121,28 +126,31 @@ export default function RegisterScreen({ onRegister, onBack }) {
         
         <TextInput
           placeholder="Password"
-          placeholderTextColor="#64B5F6"
+          placeholderTextColor={COLORS.glowGreen}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           style={{
             borderWidth: 1,
-            borderColor: '#42A5F5',
+            borderColor: COLORS.glowGreen,
             padding: 12,
             borderRadius: 12,
             width: '100%',
             marginBottom: 18,
-            backgroundColor: 'rgba(52, 152, 219, 0.05)',
+            backgroundColor: 'rgba(0, 255, 136, 0.08)',
             fontSize: inputFontSize,
-            color: '#ffffff',
+            color: COLORS.text,
             fontWeight: '500',
+            shadowColor: COLORS.glowGreen,
+            shadowOpacity: 0.2,
+            shadowRadius: 4
           }}
           autoCapitalize="none"
         />
 
         {error ? (
           <Text style={{
-            color: '#FF6B6B',
+            color: COLORS.danger,
             marginBottom: 12,
             textAlign: 'center',
             fontSize: 13,
@@ -154,17 +162,19 @@ export default function RegisterScreen({ onRegister, onBack }) {
 
         <TouchableOpacity
           style={{
-            backgroundColor: '#3498db',
+            backgroundColor: COLORS.glowCyan,
             paddingVertical: buttonHeight * 0.4,
             borderRadius: 12,
             width: '100%',
             alignItems: 'center',
             marginBottom: 12,
-            shadowColor: '#3498db',
-            shadowOpacity: 0.6,
+            borderWidth: 1,
+            borderColor: COLORS.glowCyan,
+            shadowColor: COLORS.glowCyan,
+            shadowOpacity: 0.7,
             shadowRadius: 12,
             shadowOffset: { width: 0, height: 4 },
-            elevation: 6,
+            elevation: 8,
           }}
           onPress={handleRegister}
           disabled={loading}
@@ -172,7 +182,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
           <Text style={{
             fontSize: inputFontSize,
             fontWeight: '800',
-            color: '#fff',
+            color: COLORS.onPrimary,
             textTransform: 'uppercase',
             letterSpacing: 0.8,
           }}>
@@ -182,7 +192,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
 
         <TouchableOpacity onPress={onBack}>
           <Text style={{
-            color: '#64B5F6',
+            color: COLORS.glowCyan,
             textAlign: 'center',
             fontSize: 13,
             fontWeight: '600',

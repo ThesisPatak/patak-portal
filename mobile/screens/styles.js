@@ -3,7 +3,7 @@ import { COLORS, SPACING, TYPO } from './variables';
 import { RADIUS, ELEVATION } from './variables';
 
 const ANDROID_STATUS_PADDING = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
-const EXTRA_HEADER_OFFSET = 0; // keep small extra offset; header will use safe padding instead
+const EXTRA_HEADER_OFFSET = 0;
 
 export default StyleSheet.create({
   container: {
@@ -18,7 +18,6 @@ export default StyleSheet.create({
     paddingTop: 0,
     backgroundColor: COLORS.background
   },
-  // footer in normal flow so it doesn't overlay app content
   footer: {
     alignItems: 'center',
     paddingVertical: 6,
@@ -31,13 +30,12 @@ export default StyleSheet.create({
   },
   contentCard: {
     width: '100%',
-    maxWidth: 880,
     padding: SPACING.large,
     flex: 1,
     alignSelf: 'center',
     marginTop: 0,
     borderRadius: 0,
-    backgroundColor: COLORS.cardBg,
+    backgroundColor: COLORS.background,
     overflow: 'hidden',
     elevation: 0
   },
@@ -54,7 +52,9 @@ export default StyleSheet.create({
     fontWeight: '900',
     color: COLORS.primary,
     textAlign: 'center',
-    alignSelf: 'center'
+    alignSelf: 'center',
+    textShadowColor: COLORS.primary,
+    textShadowRadius: 10
   },
   center: {
     flex: 1,
@@ -62,81 +62,98 @@ export default StyleSheet.create({
     justifyContent: 'center',
     padding: 20
   },
+  // Neon glow card with animated effect
   card: {
     backgroundColor: COLORS.cardBg,
     width: '100%',
     alignSelf: 'stretch',
     borderRadius: RADIUS.large,
     padding: SPACING.large,
-    marginVertical: 8,
-    shadowColor: COLORS.shadow,
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: COLORS.glowCyan,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+    overflow: 'hidden'
   },
+  // Card with green glow accent
   cardLatest: {
     backgroundColor: COLORS.cardBg,
     width: '100%',
     alignSelf: 'stretch',
     borderRadius: RADIUS.large,
     padding: SPACING.large + 6,
-    marginVertical: 10,
-    borderLeftWidth: 6,
-    borderLeftColor: COLORS.primary,
-    shadowColor: COLORS.shadow,
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6
+    marginVertical: 12,
+    borderWidth: 2,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.glowGreen,
+    borderColor: COLORS.glowGreen,
+    shadowColor: COLORS.glowGreen,
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 10,
+    overflow: 'hidden'
   },
   cardSmall: {
     backgroundColor: COLORS.cardBg,
     width: '100%',
     alignSelf: 'stretch',
-    borderRadius: RADIUS.sm,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginVertical: 8,
-    shadowColor: COLORS.shadow,
-    shadowOpacity: 1,
-    shadowRadius: 4,
-    elevation: ELEVATION.low,
+    borderRadius: RADIUS.lg,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: COLORS.glowCyan,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    overflow: 'hidden'
   },
   
-  // Professional metric card
   metricCard: {
     backgroundColor: COLORS.cardBg,
-    borderRadius: RADIUS.base,
-    padding: SPACING.base,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.base + 4,
+    borderWidth: 1,
     borderLeftWidth: 3,
-    borderLeftColor: COLORS.primary,
-    marginBottom: SPACING.small,
-    shadowColor: COLORS.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: ELEVATION.low
+    borderLeftColor: COLORS.glowYellow,
+    borderColor: COLORS.border,
+    marginBottom: SPACING.base + 4,
+    shadowColor: COLORS.glowYellow,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    overflow: 'hidden'
   },
   
-  // Status badge
   statusBadge: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: RADIUS.pill,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.glowGreen,
+    backgroundColor: COLORS.cardBg,
+    shadowColor: COLORS.glowGreen,
+    shadowOpacity: 0.3,
+    shadowRadius: 6
   },
   
-  // Section header
   sectionHeader: {
     fontSize: TYPO.h4,
     fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.primaryLight,
     marginBottom: SPACING.base,
-    letterSpacing: 0.5,
+    letterSpacing: 1,
     textTransform: 'uppercase'
   },
   title: {
@@ -172,48 +189,63 @@ export default StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: COLORS.border,
-    padding: 10,
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: RADIUS.base,
     width: '100%',
     marginBottom: 12,
-    backgroundColor: COLORS.cardBg
+    backgroundColor: COLORS.cardBg,
+    color: COLORS.text,
+    shadowColor: COLORS.glowCyan,
+    shadowOpacity: 0.1,
+    shadowRadius: 4
   },
+  // Neon glow primary button with pulse effect
   primaryButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.glowGreen,
     paddingVertical: 14,
     paddingHorizontal: 18,
-    borderRadius: RADIUS.base,
+    borderRadius: RADIUS.lg,
     alignItems: 'center',
     alignSelf: 'stretch',
     width: '100%',
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: ELEVATION.high
+    shadowColor: COLORS.glowGreen,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: COLORS.glowGreen,
+    overflow: 'hidden'
   },
   primaryButtonText: {
     color: COLORS.onPrimary,
     fontWeight: '700',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontSize: 16
   },
   secondaryButton: {
     backgroundColor: 'transparent',
     borderColor: COLORS.primary,
-    borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    borderWidth: 2,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: RADIUS.lg,
     alignItems: 'center',
     alignSelf: 'stretch',
-    width: '100%'
+    width: '100%',
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6
   },
   secondaryButtonText: {
     color: COLORS.primary,
-    fontWeight: '700'
+    fontWeight: '700',
+    fontSize: 16
   },
   linkText: {
     color: COLORS.link,
-    marginTop: 8
+    marginTop: 8,
+    fontSize: 14
   }
 });
