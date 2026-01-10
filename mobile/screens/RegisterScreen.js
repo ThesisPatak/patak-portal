@@ -167,15 +167,15 @@ export default function RegisterScreen({ onRegister, onBack }) {
 
         <TouchableOpacity
           style={{
-            backgroundColor: COLORS.glowBlue,
+            backgroundColor: COLORS.glowGreen,
             paddingVertical: buttonHeight * 0.4,
             borderRadius: 12,
             width: '100%',
             alignItems: 'center',
             marginBottom: 12,
             borderWidth: 1,
-            borderColor: COLORS.glowBlue,
-            shadowColor: COLORS.glowBlue,
+            borderColor: COLORS.glowGreen,
+            shadowColor: COLORS.glowGreen,
             shadowOpacity: 0.7,
             shadowRadius: 12,
             shadowOffset: { width: 0, height: 4 },
