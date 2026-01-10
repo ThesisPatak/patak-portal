@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+const API_URL = "https://patak-portal-production.up.railway.app";
+
 interface LoginDashboardProps {
   onLogin: (token: string, username: string) => void;
 }
@@ -25,7 +27,7 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      const res = await fetch("/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
