@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, RefreshControl, ActivityIndicator, Animated } from 'react-native';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING, RADIUS, ELEVATION } from './variables';
@@ -7,6 +7,7 @@ import { COLORS, TYPO, SPACING, RADIUS, ELEVATION } from './variables';
 export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, onOpenDevices, username }) {
   const [summary, setSummary] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const glowAnim = React.useRef(new Animated.Value(0)).current;
   
   const loadDashboard = async () => {
     try {
@@ -32,6 +33,15 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
     load();
     return () => { mounted = false; };
   }, [token]);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, { toValue: 1, duration: 1500, useNativeDriver: false }),
+        Animated.timing(glowAnim, { toValue: 0, duration: 1500, useNativeDriver: false })
+      ])
+    ).start();
+  }, []);
 
   if (!summary) {
     return (
@@ -59,23 +69,23 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
             <Text style={{ fontSize: TYPO.captionSize, color: '#8b92a9', marginBottom: SPACING.small }}>Welcome back</Text>
-            <Text style={{ fontSize: TYPO.headingSize, color: '#ffffff', fontWeight: '900' }}>
-              {username ? username.charAt(0).toUpperCase() + username.slice(1) : 'User'}
+            <Text style={{ fontSize: 32, color: COLORS.glowBlue, fontWeight: '900', letterSpacing: 1.5, textShadowColor: COLORS.glowBlue, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 }}>
+              {username ? username.charAt(0).toUpperCase() + username.slice(1) : 'USER'}
             </Text>
           </View>
           <View style={{
             width: 56,
             height: 56,
             borderRadius: 28,
-            backgroundColor: COLORS.glowGreen,
+            backgroundColor: COLORS.glowBlue,
             justifyContent: 'center',
             alignItems: 'center',
-            shadowColor: COLORS.glowGreen,
+            shadowColor: COLORS.glowBlue,
             shadowOpacity: 0.8,
             shadowRadius: 12,
             elevation: 8
           }}>
-            <Text style={{ fontSize: 28 }}>⚡</Text>
+            <Text style={{ fontSize: 28 }}>💧</Text>
           </View>
         </View>
       </View>
@@ -88,42 +98,38 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           padding: SPACING.large,
           alignItems: 'center',
           borderWidth: 2,
-          borderColor: COLORS.glowCyan,
-          shadowColor: COLORS.glowCyan,
+          borderColor: COLORS.glowBlue,
+          shadowColor: COLORS.glowBlue,
           shadowOpacity: 0.5,
           shadowRadius: 15,
           elevation: 8,
         }}>
-          <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan, marginBottom: SPACING.base, fontWeight: '600', letterSpacing: 1 }}>TOTAL USAGE</Text>
+          <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginBottom: SPACING.base, fontWeight: '600', letterSpacing: 1 }}>TOTAL USAGE</Text>
           
           {/* Circular Progress */}
           <View style={{ width: 180, height: 180, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
-            <View style={{
+            <Animated.View style={{
               width: 160,
               height: 160,
               borderRadius: 80,
               borderWidth: 8,
-              borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowCyan,
+              borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
               justifyContent: 'center',
               alignItems: 'center',
-              shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowCyan,
-              shadowOpacity: 0.6,
-              shadowRadius: 10,
+              shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
+              shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 20] }),
               elevation: 5,
               backgroundColor: 'rgba(15, 36, 56, 0.6)',
+              shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
             }}>
               <View style={{ alignItems: 'center' }}>
                 <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.text }}>
                   {totalUsage.toFixed(1)}
                 </Text>
-                <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan, marginTop: SPACING.small }}>m³</Text>
+                <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginTop: SPACING.small }}>m³</Text>
               </View>
-            </View>
+            </Animated.View>
           </View>
-
-          <Text style={{ fontSize: 28, fontWeight: '900', color: COLORS.text, marginBottom: SPACING.small }}>
-            {totalUsage.toFixed(1)} m³
-          </Text>
         </View>
       </View>
 
@@ -134,38 +140,27 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           borderRadius: 20,
           padding: SPACING.large,
           borderWidth: 2,
-          borderColor: COLORS.glowGreen,
-          shadowColor: COLORS.glowGreen,
+          borderColor: COLORS.glowBlue,
+          shadowColor: COLORS.glowBlue,
           shadowOpacity: 0.4,
           shadowRadius: 12,
           elevation: 8,
         }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.base }}>
             <View>
-              <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowGreen, marginBottom: SPACING.small, fontWeight: '600', letterSpacing: 1 }}>MONTHLY BILL</Text>
+              <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginBottom: SPACING.small, fontWeight: '600', letterSpacing: 1 }}>MONTHLY BILL</Text>
               <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.text }}>₱{summary.totalBill}</Text>
-              <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowGreen, marginTop: SPACING.small }}>Est. ₱{summary.estimatedTotalBill} by month end</Text>
+              <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginTop: SPACING.small }}>Est. ₱{summary.estimatedTotalBill} by month end</Text>
             </View>
-            <View style={{
-              backgroundColor: COLORS.glowYellow,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderRadius: 12,
-              shadowColor: COLORS.glowYellow,
-              shadowOpacity: 0.6,
-              shadowRadius: 8,
-              elevation: 5,
-            }}>
-              <Text style={{ fontSize: 20 }}>�</Text>
-            </View>
+
           </View>
           <TouchableOpacity style={{
-            backgroundColor: COLORS.glowGreen,
+            backgroundColor: COLORS.glowBlue,
             paddingVertical: SPACING.base,
             borderRadius: 12,
             alignItems: 'center',
             marginTop: SPACING.base,
-            shadowColor: COLORS.glowGreen,
+            shadowColor: COLORS.glowBlue,
             shadowOpacity: 0.6,
             shadowRadius: 10,
             elevation: 5,
@@ -180,7 +175,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
         <View style={{ paddingHorizontal: SPACING.base }}>
           <View style={{ marginBottom: SPACING.base }}>
             <Text style={{ fontSize: TYPO.bodySize, color: COLORS.text, fontWeight: '700', letterSpacing: 0.5 }}>YOUR DEVICES</Text>
-            <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan, marginTop: SPACING.small }}>
+            <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginTop: SPACING.small }}>
               {devices.length} device{devices.length !== 1 ? 's' : ''} tracked
             </Text>
           </View>
@@ -222,7 +217,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
                     </View>
                   </View>
                   {device.lastReading && (
-                    <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan }}>
+                    <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue }}>
                       Updated {new Date(device.lastReading.timestamp).toLocaleString()}
                     </Text>
                   )}
@@ -237,12 +232,12 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               {/* Usage Info */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.large }}>
                 <View>
-                  <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan, marginBottom: SPACING.small }}>Usage</Text>
+                  <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginBottom: SPACING.small }}>Usage</Text>
                   <Text style={{ fontSize: 24, fontWeight: '900', color: COLORS.text }}>{device.cubicMeters.toFixed(2)}</Text>
-                  <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan }}>m³</Text>
+                  <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue }}>m³</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan, marginBottom: SPACING.small }}>This Month</Text>
+                  <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginBottom: SPACING.small }}>This Month</Text>
                   <Text style={{ fontSize: 24, fontWeight: '900', color: COLORS.text }}>₱{device.monthlyBill.toFixed(0)}</Text>
                 </View>
               </View>
@@ -252,13 +247,13 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
                 <View style={{
                   height: '100%',
                   width: Math.min(100, (device.monthlyUsage / 50) * 100) + '%',
-                  backgroundColor: device.monthlyUsage > 100 ? COLORS.danger : COLORS.glowCyan,
+                  backgroundColor: device.monthlyUsage > 100 ? COLORS.danger : COLORS.glowBlue,
                   borderRadius: RADIUS.pill
                 }} />
               </View>
 
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan }}>0 m³</Text>
+                <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue }}>0 m³</Text>
                 <Text style={{ fontSize: TYPO.captionSize, color: device.monthlyUsage > 100 ? COLORS.danger : COLORS.glowGreen, fontWeight: '600' }}>
                   {device.monthlyUsage > 100 ? '⚠️ High Usage' : '✓ Normal'}
                 </Text>
@@ -290,26 +285,26 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             borderRadius: RADIUS.lg,
             padding: SPACING.large,
             borderWidth: 2,
-            borderColor: COLORS.glowCyan,
-            shadowColor: COLORS.glowCyan,
+            borderColor: COLORS.glowBlue,
+            shadowColor: COLORS.glowBlue,
             shadowOpacity: 0.2,
             shadowRadius: 10,
             elevation: 5,
             alignItems: 'center'
           }}>
-            <Text style={{ fontSize: 56, marginBottom: SPACING.base }}>📡</Text>
+            <Text style={{ fontSize: 56, marginBottom: SPACING.base }}>🖥️</Text>
             <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, textAlign: 'center', marginBottom: SPACING.small }}>
               No Devices Connected
             </Text>
-            <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan, textAlign: 'center', marginBottom: SPACING.large }}>
+            <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, textAlign: 'center', marginBottom: SPACING.large }}>
               Start tracking water consumption by linking your first meter
             </Text>
             <TouchableOpacity style={{
-              backgroundColor: COLORS.glowGreen,
+              backgroundColor: COLORS.glowBlue,
               paddingHorizontal: SPACING.large,
               paddingVertical: SPACING.base,
               borderRadius: RADIUS.lg,
-              shadowColor: COLORS.glowGreen,
+              shadowColor: COLORS.glowBlue,
               shadowOpacity: 0.5,
               shadowRadius: 8,
               elevation: 5
@@ -322,7 +317,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
 
       {/* Quick Actions Footer */}
       <View style={{ paddingHorizontal: SPACING.base, marginTop: SPACING.large }}>
-        <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowCyan, marginBottom: SPACING.base, fontWeight: '600' }}>
+        <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginBottom: SPACING.base, fontWeight: '600' }}>
           Quick Actions
         </Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -334,10 +329,10 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             marginRight: SPACING.small,
             alignItems: 'center',
             borderTopWidth: 3,
-            borderTopColor: COLORS.glowCyan,
+            borderTopColor: COLORS.glowBlue,
             borderWidth: 1,
-            borderColor: COLORS.glowCyan,
-            shadowColor: COLORS.glowCyan,
+            borderColor: COLORS.glowBlue,
+            shadowColor: COLORS.glowBlue,
             shadowOpacity: 0.3,
             shadowRadius: 8,
             elevation: 5
@@ -361,7 +356,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             shadowRadius: 8,
             elevation: 5
           }} onPress={() => onOpenDevices && onOpenDevices()}>
-            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>⚙️</Text>
+            <Text style={{ fontSize: 28, marginBottom: SPACING.small }}>🖥️</Text>
             <Text style={{ fontSize: TYPO.captionSize, color: COLORS.text, textAlign: 'center', fontWeight: '600' }}>Devices</Text>
           </TouchableOpacity>
           <TouchableOpacity style={{

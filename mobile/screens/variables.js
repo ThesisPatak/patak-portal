@@ -36,7 +36,8 @@ export const COLORS = {
   glowCyan: '#00f9ff',
   glowGreen: '#00ff88',
   glowYellow: '#ffeb00',
-  glowPink: '#ff0055'
+  glowPink: '#ff0055',
+  glowBlue: '#00b4ff'
 };
 
 export const SPACING = {
