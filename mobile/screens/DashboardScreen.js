@@ -7,8 +7,10 @@ import { COLORS, TYPO, SPACING, RADIUS, ELEVATION } from './variables';
 export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, onOpenDevices, username }) {
   const [summary, setSummary] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [prevUsage, setPrevUsage] = useState(null);
   const glowAnim = React.useRef(new Animated.Value(0)).current;
   const dropAnim = React.useRef(new Animated.Value(0)).current;
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
   
   const loadDashboard = async () => {
     try {
@@ -57,6 +59,14 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
     return () => dropAnimation.stop();
   }, [dropAnim]);
 
+  useEffect(() => {
+    const rotateAnimation = Animated.loop(
+      Animated.timing(rotateAnim, { toValue: 1, duration: 3000, useNativeDriver: true })
+    );
+    rotateAnimation.start();
+    return () => rotateAnimation.stop();
+  }, [rotateAnim]);
+
   if (!summary) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.bg }}>
@@ -70,6 +80,14 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   const hasDevices = devices.length > 0;
   const totalUsage = devices.reduce((sum, d) => sum + d.monthlyUsage, 0);
   const usagePercentage = Math.min(100, (totalUsage / 100) * 100); // Assume 100m³ = 100%
+  
+  // Detect if usage has changed (for idle animation)
+  const isIdle = prevUsage === totalUsage && prevUsage !== null;
+  
+  // Track usage changes
+  useEffect(() => {
+    setPrevUsage(totalUsage);
+  }, [totalUsage]);
 
   return (
     <ScrollView 
@@ -140,6 +158,60 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           
           {/* Circular Progress */}
           <View style={{ width: 180, height: 180, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
+            {/* Background circle */}
+            <View style={{
+              position: 'absolute',
+              width: 160,
+              height: 160,
+              borderRadius: 80,
+              borderWidth: 8,
+              borderColor: 'rgba(0, 180, 255, 0.2)',
+              backgroundColor: 'rgba(15, 36, 56, 0.6)',
+            }} />
+            
+            {/* Idle rotating shimmer ring */}
+            {isIdle && (
+              <Animated.View style={{
+                position: 'absolute',
+                width: 160,
+                height: 160,
+                borderRadius: 80,
+                borderWidth: 8,
+                borderColor: 'transparent',
+                borderTopColor: COLORS.glowBlue,
+                borderRightColor: 'rgba(0, 180, 255, 0.5)',
+                transform: [
+                  {
+                    rotate: rotateAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '360deg']
+                    })
+                  }
+                ]
+              }} />
+            )}
+            
+            {/* Progress arc (active state) */}
+            {!isIdle && (
+              <Animated.View style={{
+                position: 'absolute',
+                width: 160,
+                height: 160,
+                borderRadius: 80,
+                borderWidth: 8,
+                borderColor: 'transparent',
+                borderTopColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+                borderRightColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+                transform: [
+                  {
+                    rotate: `${(totalUsage / 100) * 360}deg`
+                  }
+                ],
+                opacity: 0.8
+              }} />
+            )}
+            
+            {/* Main animated circle with glow */}
             <Animated.View style={{
               width: 160,
               height: 160,
