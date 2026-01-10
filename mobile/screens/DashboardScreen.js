@@ -8,6 +8,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   const [summary, setSummary] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const glowAnim = React.useRef(new Animated.Value(0)).current;
+  const dropAnim = React.useRef(new Animated.Value(0)).current;
   
   const loadDashboard = async () => {
     try {
@@ -45,6 +46,17 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
     return () => animation.stop();
   }, [glowAnim]);
 
+  useEffect(() => {
+    const dropAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(dropAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(dropAnim, { toValue: 0, duration: 200, useNativeDriver: true })
+      ])
+    );
+    dropAnimation.start();
+    return () => dropAnimation.stop();
+  }, [dropAnim]);
+
   if (!summary) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.bg }}>
@@ -75,7 +87,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               {username ? username.charAt(0).toUpperCase() + username.slice(1) : 'USER'}
             </Text>
           </View>
-          <View style={{
+          <Animated.View style={{
             width: 56,
             height: 56,
             borderRadius: 28,
@@ -85,10 +97,28 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             shadowColor: COLORS.glowBlue,
             shadowOpacity: 0.8,
             shadowRadius: 12,
-            elevation: 8
+            elevation: 8,
+            transform: [
+              {
+                translateY: dropAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 15]
+                })
+              },
+              {
+                scale: dropAnim.interpolate({
+                  inputRange: [0, 0.7, 1],
+                  outputRange: [1, 0.95, 0.8]
+                })
+              }
+            ],
+            opacity: dropAnim.interpolate({
+              inputRange: [0, 0.8, 1],
+              outputRange: [1, 1, 0.3]
+            })
           }}>
             <Text style={{ fontSize: 28 }}>💧</Text>
-          </View>
+          </Animated.View>
         </View>
       </View>
 
