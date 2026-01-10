@@ -14,7 +14,9 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   
   const loadDashboard = async () => {
     try {
+      console.log('DashboardScreen: API call starting');
       const data = await Api.getDashboard(token);
+      console.log('DashboardScreen: API call success', data);
       setSummary(data);
     } catch (err) {
       console.warn('getDashboard error', err);
@@ -31,6 +33,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   useEffect(() => {
     let mounted = true;
     async function load() {
+      console.log('DashboardScreen: Loading data with token=', token);
       await loadDashboard();
     }
     load();

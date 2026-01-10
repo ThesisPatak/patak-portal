@@ -18,6 +18,7 @@ export default function App() {
   const [selectedHouse, setSelectedHouse] = useState(null);
   const [payInfo, setPayInfo] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
+  const [error, setError] = useState(null);
 
   // Start keep-alive service on app load
   useEffect(() => {
@@ -27,13 +28,13 @@ export default function App() {
     return () => stopKeepAlive();
   }, []);
 
-  console.log('App state token=', token, 'screen=', screen);
+  console.log('App state token=', token, 'screen=', screen, 'error=', error);
 
   if (!token) {
     if (showRegister) {
-      return <RegisterScreen onRegister={(token, user) => { setToken(token); setUsername(user); setShowRegister(false); setScreen('dashboard'); }} onBack={() => setShowRegister(false)} />;
+      return <RegisterScreen onRegister={(token, user) => { console.log('Registering user:', user); setToken(token); setUsername(user); setShowRegister(false); setScreen('dashboard'); }} onBack={() => setShowRegister(false)} />;
     }
-    return <LoginScreen onLogin={(token, user) => { setToken(token); setUsername(user); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
+    return <LoginScreen onLogin={(token, user) => { console.log('Logging in user:', user); setToken(token); setUsername(user); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
   }
 
   return (
@@ -44,6 +45,11 @@ export default function App() {
             <Text style={styles.headerTitleSmall}>PATAK MOBILE</Text>
           </View>
           <View style={{ flex: 1, width: '100%', backgroundColor: COLORS.background }}>
+            {error && (
+              <View style={{ backgroundColor: '#ff0055', padding: 12, margin: 8, borderRadius: 8 }}>
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Error: {error}</Text>
+              </View>
+            )}
             {screen === 'dashboard' && (
               <DashboardScreen
                 token={token}
