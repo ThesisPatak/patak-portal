@@ -15,10 +15,34 @@ const DEVICES_FILE = path.join(DATA_DIR, 'devices.json')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
+function initializeData() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true })
+  }
+
+  // Initialize users with admin if not exists
+  if (!fs.existsSync(USERS_FILE)) {
+    const adminUser = {
+      id: 'user-1767835763822',
+      email: null,
+      username: 'adminpatak',
+      passwordHash: '$2a$10$Sb5a67yeKmDZU2x50ZTxh.6UAV8UIoGPQfDq51jIT9ifzxc6r.uCy',
+      isAdmin: true,
+      createdAt: '2026-01-08T01:29:23.822Z',
+      lastPasswordChange: '2026-01-08T01:53:31.451Z'
+    }
+    fs.writeFileSync(USERS_FILE, JSON.stringify([adminUser], null, 2))
+    console.log('✓ Initialized admin user')
+  }
+
+  // Initialize devices if not exists
+  if (!fs.existsSync(DEVICES_FILE)) {
+    fs.writeFileSync(DEVICES_FILE, JSON.stringify([], null, 2))
+  }
+}
+
 function ensureDataFiles() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
-  if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, JSON.stringify([]))
-  if (!fs.existsSync(DEVICES_FILE)) fs.writeFileSync(DEVICES_FILE, JSON.stringify([]))
+  initializeData()
 }
 
 function readJSON(file) {
