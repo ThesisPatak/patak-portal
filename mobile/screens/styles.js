@@ -201,20 +201,20 @@ export default StyleSheet.create({
   },
   // Neon glow primary button with pulse effect
   primaryButton: {
-    backgroundColor: COLORS.glowGreen,
+    backgroundColor: COLORS.glowBlue,
     paddingVertical: 14,
     paddingHorizontal: 18,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
     alignSelf: 'stretch',
     width: '100%',
-    shadowColor: COLORS.glowGreen,
+    shadowColor: COLORS.glowBlue,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 12,
     elevation: 12,
     borderWidth: 1,
-    borderColor: COLORS.glowGreen,
+    borderColor: COLORS.glowBlue,
     overflow: 'hidden'
   },
   primaryButtonText: {
