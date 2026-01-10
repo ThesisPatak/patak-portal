@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import DashboardScreen from './screens/DashboardScreen';
+import DashboardScreen from './screens/DashboardScreenMinimal';
 import UsageScreen from './screens/UsageScreen';
 import PayScreen from './screens/PayScreen';
 import DeviceScreen from './screens/DeviceScreen';
