@@ -26,7 +26,7 @@ function initializeData() {
       id: 'user-1767835763822',
       email: null,
       username: 'adminpatak',
-      passwordHash: '$2a$10$Sb5a67yeKmDZU2x50ZTxh.6UAV8UIoGPQfDq51jIT9ifzxc6r.uCy',
+      passwordHash: '$2a$10$qDrVTftYp3wCLmhehP2xrOzDGItHkJXdI1Y0.ucQD0pksh6ZhLMOO',
       isAdmin: true,
       createdAt: '2026-01-08T01:29:23.822Z',
       lastPasswordChange: '2026-01-08T01:53:31.451Z'
