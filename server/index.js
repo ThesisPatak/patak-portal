@@ -140,13 +140,22 @@ app.post('/auth/login', async (req, res) => {
 app.post('/auth/admin-login', async (req, res) => {
   const { username, password } = req.body || {}
   if (!username || !password) return res.status(400).json({ error: 'username and password required' })
+  console.log(`[ADMIN-LOGIN] Attempting login for username: ${username}`)
   const users = readJSON(USERS_FILE)
+  console.log(`[ADMIN-LOGIN] Total users in file: ${users.length}`)
+  console.log(`[ADMIN-LOGIN] Users list:`, users.map(u => ({id: u.id, username: u.username})))
   const user = users.find(u => u.username === username)
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' })
+  if (!user) {
+    console.log(`[ADMIN-LOGIN] User ${username} not found`)
+    return res.status(401).json({ error: 'Invalid credentials' })
+  }
+  console.log(`[ADMIN-LOGIN] User found. Comparing password...`)
   const ok = await bcrypt.compare(password, user.passwordHash)
+  console.log(`[ADMIN-LOGIN] Password check result: ${ok}`)
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
   // For now, any user can be admin. In production, add an isAdmin flag to users
   const token = jwt.sign({ userId: user.id, username: user.username, isAdmin: true }, JWT_SECRET, { expiresIn: '24h' })
+  console.log(`[ADMIN-LOGIN] Admin login successful for ${username}`)
   res.json({ token, user: { id: user.id, username: user.username } })
 })
 
