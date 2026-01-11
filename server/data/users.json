@@ -3,9 +3,17 @@
     "id": "user-1767835763822",
     "email": null,
     "username": "adminpatak",
-    "passwordHash": "$2a$10$qDrVTftYp3wCLmhehP2xrOzDGItHkJXdI1Y0.ucQD0pksh6ZhLMOO",
+    "passwordHash": ".ucQD0pksh6ZhLMOO",
     "isAdmin": true,
     "createdAt": "2026-01-08T01:29:23.822Z",
     "lastPasswordChange": "2026-01-08T01:53:31.451Z"
+  },
+  {
+    "id": "user-test1",
+    "email": null,
+    "username": "Test1",
+    "passwordHash": "/tzO",
+    "isAdmin": false,
+    "createdAt": "2026-01-11T01:00:00.000Z"
   }
 ]

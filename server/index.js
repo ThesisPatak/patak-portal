@@ -98,15 +98,24 @@ function authMiddleware(req, res, next) {
 app.post('/auth/register', async (req, res) => {
   const { email, username, password } = req.body || {}
   if ((!email && !username) || !password) return res.status(400).json({ error: 'email or username, and password required' })
-  const users = readJSON(USERS_FILE)
-  const exists = users.find(u => (email && u.email === email) || (username && u.username === username))
-  if (exists) return res.status(409).json({ error: 'User exists' })
-  const passwordHash = await bcrypt.hash(password, 10)
-  const user = { id: generateId('user'), email: email || null, username: username || null, passwordHash, createdAt: new Date().toISOString() }
-  users.push(user)
-  writeJSON(USERS_FILE, users)
-  const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
-  res.status(201).json({ token, user: { id: user.id, email: user.email, username: user.username } })
+  
+  try {
+    const users = readJSON(USERS_FILE)
+    const exists = users.find(u => (email && u.email === email) || (username && u.username === username))
+    if (exists) return res.status(409).json({ error: 'User exists' })
+    
+    const passwordHash = await bcrypt.hash(password, 10)
+    const user = { id: generateId('user'), email: email || null, username: username || null, passwordHash, createdAt: new Date().toISOString() }
+    users.push(user)
+    writeJSON(USERS_FILE, users)
+    
+    const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
+    console.log(`✓ User registered: ${username} (${user.id})`)
+    res.status(201).json({ token, user: { id: user.id, email: user.email, username: user.username } })
+  } catch (err) {
+    console.error('Registration error:', err)
+    res.status(500).json({ error: 'Registration failed', message: err.message })
+  }
 })
 
 app.post('/auth/login', async (req, res) => {
