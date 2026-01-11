@@ -380,10 +380,10 @@ const AdminDashboard: React.FC = () => {
                         <div style={{ fontSize: isMobile ? "1.5rem" : "1.8rem", fontWeight: 700, color: "#0057b8", marginBottom: "0.75rem" }}>
                           {user.cubicMeters.toFixed(6)} m³
                         </div>
-                        <div style={{ background: "linear-gradient(90deg, #4CAF50 0%, #45a049 100%)", padding: "0.4rem 0.75rem", borderRadius: "6px", marginBottom: "0.5rem" }}>
-                          <div style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#fff", fontWeight: 600 }}>
+                        <div style={{ background: "linear-gradient(90deg, #4CAF50 0%, #45a049 100%)", padding: isMobile ? "0.35rem 0.6rem" : "0.45rem 0.75rem", borderRadius: "6px", marginBottom: "0.75rem", display: "block" }}>
+                          <span style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#fff", fontWeight: 600, whiteSpace: "nowrap" }}>
                             Registered: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
-                          </div>
+                          </span>
                         </div>
                         <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999" }}>
                           {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
