@@ -5,6 +5,7 @@ import AdminLogin from "./AdminLogin";
 interface UserData {
   id: string;
   username: string;
+  createdAt?: string;
   cubicMeters: number;
   totalLiters: number;
   deviceCount: number;
@@ -379,8 +380,13 @@ const AdminDashboard: React.FC = () => {
                         <div style={{ fontSize: isMobile ? "1.5rem" : "1.8rem", fontWeight: 700, color: "#0057b8" }}>
                           {user.cubicMeters.toFixed(6)} m³
                         </div>
-                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999", marginTop: "0.3rem" }}>
-                          {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
+                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#666", marginTop: "0.5rem", paddingTop: "0.5rem", borderTop: "1px solid #e0e0e0" }}>
+                          <div style={{ marginBottom: "0.3rem" }}>
+                            <span style={{ fontWeight: 600 }}>Registered:</span> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
+                          </div>
+                          <div style={{ color: "#999" }}>
+                            {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
+                          </div>
                         </div>
                       </div>
                     ))}

@@ -42,6 +42,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
       const data = await res.json();
       localStorage.setItem("adminToken", data.token);
       localStorage.setItem("adminUsername", username);
+      localStorage.setItem("adminCreatedAt", data.user.createdAt || new Date().toISOString());
       onLogin(data.token, username);
     } catch (err: any) {
       setError(err.message || "Login error");

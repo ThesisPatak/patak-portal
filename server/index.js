@@ -131,7 +131,7 @@ app.post('/auth/register', async (req, res) => {
     
     const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
     console.log(`✓ User registered: ${username} (${user.id})`)
-    res.status(201).json({ token, user: { id: user.id, email: user.email, username: user.username } })
+    res.status(201).json({ token, user: { id: user.id, email: user.email, username: user.username, createdAt: user.createdAt } })
   } catch (err) {
     console.error('Registration error:', err)
     res.status(500).json({ error: 'Registration failed', message: err.message })
@@ -147,7 +147,7 @@ app.post('/auth/login', async (req, res) => {
   const ok = await bcrypt.compare(password, user.passwordHash)
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
   const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
-  res.json({ token, user: { id: user.id, email: user.email, username: user.username } })
+  res.json({ token, user: { id: user.id, email: user.email, username: user.username, createdAt: user.createdAt } })
 })
 
 // Admin login endpoint (same as regular login, but with admin role checking)
@@ -170,7 +170,7 @@ app.post('/auth/admin-login', async (req, res) => {
   // For now, any user can be admin. In production, add an isAdmin flag to users
   const token = jwt.sign({ userId: user.id, username: user.username, isAdmin: true }, JWT_SECRET, { expiresIn: '24h' })
   console.log(`[ADMIN-LOGIN] Admin login successful for ${username}`)
-  res.json({ token, user: { id: user.id, username: user.username } })
+  res.json({ token, user: { id: user.id, username: user.username, createdAt: user.createdAt } })
 })
 
 // Change password endpoint (requires authentication)
@@ -533,6 +533,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     return {
       id: user.id,
       username: user.username,
+      createdAt: user.createdAt,
       cubicMeters: totalUsage,
       totalLiters: totalUsage * 1000,
       deviceCount: userDevices.length,

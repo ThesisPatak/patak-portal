@@ -42,6 +42,7 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
       const data = await res.json();
       localStorage.setItem("userToken", data.token);
       localStorage.setItem("username", data.user.username);
+      localStorage.setItem("userCreatedAt", data.user.createdAt || new Date().toISOString());
       onLogin(data.token, data.user.username);
     } catch (err: any) {
       setError(err.message || "Login error");
