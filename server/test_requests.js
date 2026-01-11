@@ -5,7 +5,7 @@ async function run() {
   }
   const fetch = fetchFn
   
-  const base = 'http://localhost:4000'
+  const base = 'https://patak-portal-production.up.railway.app'
   console.log('Registering user...')
   const r1 = await fetch(base + '/auth/register', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

@@ -154,16 +154,10 @@ console.log(`   Type: token ${device.deviceToken}`);
 console.log(`   This registers your device with the backend\n`);
 
 console.log('2. Test via curl:');
-console.log(`   curl -X POST http://localhost:4000/api/readings \\`);
+console.log(`   curl -X POST https://patak-portal-production.up.railway.app/api/readings \\`);
 console.log(`     -H "Content-Type: application/json" \\`);
 console.log(`     -H "Authorization: Bearer ${device.deviceToken}" \\`);
 console.log(`     -d '{"house":"house1","totalLiters":1500,"cubicMeters":1.5}'\n`);
 
 console.log('3. View readings via API:');
-console.log(`   curl http://localhost:4000/api/readings/${testDeviceId} \\`);
-console.log(`     -H "Authorization: Bearer <admin_token>"\n`);
-
-console.log('4. Check in Mobile App:');
-console.log(`   Device should appear in dashboard if user is linked\n`);
-
-console.log('===========================================\n');
+console.log(`   curl https://patak-portal-production.up.railway.app/api/readings/${testDeviceId} \\`);

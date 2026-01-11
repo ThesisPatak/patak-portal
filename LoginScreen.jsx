@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../App';
 
-const SERVER = 'http://localhost:4000'; // use local server
+const SERVER = 'https://patak-portal-production.up.railway.app'; // Production server
 
 export default function LoginScreen() {
   const { setUser } = useAuth();

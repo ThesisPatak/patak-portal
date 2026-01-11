@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet, ScrollView, Alert } from 'react-native'
 import { useAuth } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SERVER = 'http://localhost:4000'; // use local server
+const SERVER = 'https://patak-portal-production.up.railway.app'; // Production server
 
 function computeResidentialBill(usage) {
   const MINIMUM = 255.0;
