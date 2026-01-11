@@ -24,12 +24,12 @@ export default function RegisterScreen({ onRegister, onBack }) {
     setLoading(true);
     try {
       const serverUrl = await Api.getServerUrl();
-      console.log('Attempting registration at', serverUrl);
+      console.log('Registering at Railway production:', serverUrl);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         console.log('Request timeout triggered');
         controller.abort();
-      }, 30000); // Reduced to 30 seconds for faster feedback
+      }, 30000);
       
       const startTime = Date.now();
       const res = await fetch(`${serverUrl}/auth/register`, {

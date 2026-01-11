@@ -7,33 +7,13 @@ import { COLORS } from './variables';
 export default function LoginScreen({ onLogin, onShowRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [serverUrl, setServerUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [detecting, setDetecting] = useState(true);
 
-  // Configure status bar and auto-detect server on component mount
+  // Configure status bar on component mount
   useEffect(() => {
     StatusBar.setBackgroundColor('#0a1628', true);
     StatusBar.setBarStyle('light-content');
-  }, []);
-
-  useEffect(() => {
-    const detectServer = async () => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-        
-        const url = await Api.getServerUrl();
-        clearTimeout(timeoutId);
-        setServerUrl(url);
-      } catch (e) {
-        setError('Could not auto-detect server. Check if backend is running.');
-      } finally {
-        setDetecting(false);
-      }
-    };
-    detectServer();
   }, []);
 
   const handleLogin = async () => {
@@ -42,7 +22,8 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
     if (!password) return setError('Please enter a password');
     setLoading(true);
     try {
-      const data = await Api.login(username, password, serverUrl || undefined);
+      // Always use Railway production server (no manual override in production)
+      const data = await Api.login(username, password);
       if (data && data.token) {
         console.log('Login success, token=', data.token);
         onLogin(data.token, username);
@@ -51,7 +32,7 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
       if (e.status === 401) {
         setError('Wrong password');
       } else if (e.message && e.message.includes('fetch')) {
-        setError('Cannot reach server. Check server URL.');
+        setError('Cannot reach server. Check your internet connection.');
       } else {
         setError('Network error — check server connection');
       }

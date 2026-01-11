@@ -1,28 +1,17 @@
 import { Platform } from 'react-native';
 
-// Configure your server URL here or via environment variable
-const DEFAULT_SERVER_URL = process.env.REACT_APP_API_URL || 'https://patak-portal-production.up.railway.app';
-
-// Allow manual override of server URL (stored in memory for session)
-let serverBaseUrl = null;
+// Production server URL - locked to Railway
+const DEFAULT_SERVER_URL = 'https://patak-portal-production.up.railway.app';
 
 const Api = {
-  // Set custom server URL
-  setServerUrl: (url) => {
-    serverBaseUrl = url;
-    console.log('Server URL set to', url);
-  },
-
-  // Get current server URL
+  // Get production server URL (always returns Railway)
   getServerUrl: async () => {
-    if (serverBaseUrl) return serverBaseUrl;
-    serverBaseUrl = DEFAULT_SERVER_URL;
-    return serverBaseUrl;
+    return DEFAULT_SERVER_URL;
   },
 
-  // Attempt to login with username and password
-  login: async (username, password, customServerUrl) => {
-    const baseUrl = customServerUrl || (await Api.getServerUrl());
+  // Attempt to login with username and password (always uses Railway in production)
+  login: async (username, password) => {
+    const baseUrl = DEFAULT_SERVER_URL;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for auth operations
     
@@ -40,7 +29,6 @@ const Api = {
         error.status = res.status;
         throw error;
       }
-      if (customServerUrl) Api.setServerUrl(customServerUrl);
       const data = await res.json();
       return { token: data.token, user: data.user };
     } catch (e) {

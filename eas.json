@@ -12,7 +12,7 @@
       "distribution": "internal"
     },
     "production": {
-      "distribution": "store"
+      "distribution": "internal"
     }
   },
   "submit": {
