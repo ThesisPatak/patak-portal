@@ -12,7 +12,7 @@
     "id": "user-test1",
     "email": null,
     "username": "Test1",
-    "passwordHash": "/tzO",
+    "passwordHash": "$2a$10$.OFbCzESQLbw7nxa9JaY7.TpDVoifq7dMFhrsEVoMZNQm87vGauwK",
     "isAdmin": false,
     "createdAt": "2026-01-11T01:00:00.000Z"
   }
