@@ -471,6 +471,39 @@ app.delete('/api/admin/users/:userId', authMiddleware, (req, res) => {
 // Serve a minimal web UI for account and device management (must be AFTER API routes)
 app.use(express.static(path.join(__dirname, 'public')))
 
+// Admin: Reset all readings (admin only)
+app.post('/admin/reset-readings', authMiddleware, (req, res) => {
+  // Check if user is admin
+  const users = readJSON(USERS_FILE)
+  const user = users.find(u => u.id === req.user.userId)
+  if (!user || !user.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  writeJSON(READINGS_FILE, [])
+  res.json({ ok: true, message: 'All readings cleared' })
+})
+
+// Admin: Reset readings for a specific device
+app.post('/admin/reset-device-readings', authMiddleware, (req, res) => {
+  const { deviceId } = req.body || {}
+  if (!deviceId) return res.status(400).json({ error: 'deviceId required' })
+
+  // Check if user is admin
+  const users = readJSON(USERS_FILE)
+  const user = users.find(u => u.id === req.user.userId)
+  if (!user || !user.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let readings = readJSON(READINGS_FILE)
+  const filtered = readings.filter(r => r.deviceId !== deviceId)
+  writeJSON(READINGS_FILE, filtered)
+  res.json({ ok: true, message: `Readings cleared for device ${deviceId}` })
+})
+
 // 404 catch-all handler (must be AFTER all other routes and static files)
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.path, method: req.method })
