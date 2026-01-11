@@ -91,13 +91,13 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
         <Text style={{ fontSize: 14, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.base }}>TOTAL USAGE</Text>
         
         {/* Circular Progress */}
-        <View style={{ width: 160, height: 160, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
+        <View style={{ width: 200, height: 200, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
           {/* Background circle */}
           <View style={{
             position: 'absolute',
-            width: 140,
-            height: 140,
-            borderRadius: 70,
+            width: 180,
+            height: 180,
+            borderRadius: 90,
             borderWidth: 6,
             borderColor: 'rgba(0, 180, 255, 0.2)',
             backgroundColor: 'rgba(15, 36, 56, 0.6)',
@@ -106,9 +106,9 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
           {/* Progress arc */}
           <Animated.View style={{
             position: 'absolute',
-            width: 140,
-            height: 140,
-            borderRadius: 70,
+            width: 180,
+            height: 180,
+            borderRadius: 90,
             borderWidth: 6,
             borderColor: 'transparent',
             borderTopColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
@@ -123,9 +123,9 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
           
           {/* Main circle with glow */}
           <Animated.View style={{
-            width: 140,
-            height: 140,
-            borderRadius: 70,
+            width: 180,
+            height: 180,
+            borderRadius: 90,
             borderWidth: 6,
             borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
             justifyContent: 'center',
@@ -138,7 +138,7 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
             elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
           }}>
             <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 32, fontWeight: '900', color: COLORS.text }}>
+              <Text style={{ fontSize: 28, fontWeight: '900', color: COLORS.text }}>
                 {totalUsage.toFixed(6)}
               </Text>
               <Text style={{ fontSize: 14, color: COLORS.glowBlue, marginTop: 4 }}>m³</Text>
