@@ -293,6 +293,15 @@ app.post('/api/readings', async (req, res) => {
   
   readings.push(reading)
   writeJSON(READINGS_FILE, readings)
+  
+  // Update device's lastSeen timestamp to mark it as online
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId)
+  if (device) {
+    device.lastSeen = new Date().toISOString()
+    writeJSON(DEVICES_FILE, devices)
+  }
+  
   res.status(201).json({ ok: true, reading })
 })
 

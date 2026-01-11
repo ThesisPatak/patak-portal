@@ -479,7 +479,7 @@ const AdminDashboard: React.FC = () => {
                               <div>
                                 <div style={{ color: "#666", marginBottom: "0.2rem" }}>Amount Due</div>
                                 <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "#333" }}>
-                                  ₱{(user.cubicMeters * 5208.33).toFixed(2)}
+                                  ₱{user.monthlyBill.toFixed(2)}
                                 </div>
                               </div>
                               <div>
@@ -538,7 +538,7 @@ const AdminDashboard: React.FC = () => {
                                 {user.cubicMeters.toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
-                                ₱{(user.cubicMeters * 5208.33).toFixed(2)}
+                                ₱{user.monthlyBill.toFixed(2)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
                                 {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
