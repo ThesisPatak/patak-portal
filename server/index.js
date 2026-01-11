@@ -200,8 +200,10 @@ app.get('/users/:id/devices', authMiddleware, (req, res) => {
 // Dashboard: Return comprehensive user dashboard with devices, readings, and billing
 app.get('/api/houses', authMiddleware, (req, res) => {
   const userId = req.user.userId
+  console.log('[HOUSES] Request for user:', userId, 'username:', req.user.username)
   const devices = readJSON(DEVICES_FILE)
   const userDevices = devices.filter(d => d.ownerUserId === userId)
+  console.log('[HOUSES] Found devices for user:', userDevices.length, userDevices.map(d => d.deviceId))
   
   // Mock readings file path
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
@@ -209,6 +211,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   try {
     if (fs.existsSync(READINGS_FILE)) {
       allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+      console.log('[HOUSES] Total readings in file:', allReadings.length)
     }
   } catch (e) {
     console.error('Failed to load readings:', e)
@@ -220,6 +223,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   
   userDevices.forEach(device => {
     const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    console.log('[HOUSES] Device', device.deviceId, 'has', deviceReadings.length, 'readings')
     const lastReading = deviceReadings[0]
     const readingsThisMonth = deviceReadings.filter(r => {
       const date = new Date(r.timestamp)
@@ -260,6 +264,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     totalBill += monthlyBill
   })
   
+  console.log('[HOUSES] Returning summary for', Object.keys(summary).length, 'devices')
   res.json({
     summary,
     totalBill: Math.ceil(totalBill),
