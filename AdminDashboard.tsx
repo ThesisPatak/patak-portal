@@ -241,7 +241,7 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboard();
-    const interval = setInterval(loadDashboard, 5000); // Refresh every 5 seconds
+    const interval = setInterval(loadDashboard, 1000); // Refresh every 1 second
     
     // Handle window resize for mobile detection
     const handleResize = () => {
