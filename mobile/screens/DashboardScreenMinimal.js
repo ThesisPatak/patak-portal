@@ -60,8 +60,8 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
     );
   }
 
-  const devices = Object.values(summary.summary || {});
-  const totalUsage = devices.reduce((sum, d) => sum + (d.monthlyUsage || 0), 0);
+  const devices = Object.values(summary?.summary || summary || {});
+  const totalUsage = devices.reduce((sum, d) => sum + (d.cubicMeters || d.monthlyUsage || 0), 0);
 
   return (
     <ScrollView 

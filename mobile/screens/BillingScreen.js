@@ -30,14 +30,16 @@ function computeResidentialBill(usage) {
   return Number(total.toFixed(2));
 }
 
-export default function BillingScreen({ onBack }) {
+export default function BillingScreen({ onBack, token }) {
   const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     let mounted = true;
-    Api.getDashboard().then((data) => { if (mounted) setSummary(data.summary || {}); }).catch(()=>{});
+    if (token) {
+      Api.getDashboard(token).then((data) => { if (mounted) setSummary(data.summary || {}); }).catch(()=>{});
+    }
     return () => { mounted = false; };
-  }, []);
+  }, [token]);
 
   const houses = summary ? Object.keys(summary) : [];
 
@@ -52,32 +54,31 @@ export default function BillingScreen({ onBack }) {
       {houses.length === 0 ? (
         <Text style={styles.subtitle}>No billing data available.</Text>
       ) : (
-        <FlatList
-          data={houses}
-          keyExtractor={(h) => h}
-          renderItem={({ item }) => {
-            const s = summary[item] || {};
-            const usageRaw = Number(s.cubicMeters || s.totalLiters || 0);
-            const usage = (s.cubicMeters ?? (s.last && s.last.cubicMeters) ?? 0);
-            const amount = computeResidentialBill(Number(usage || 0));
-            const due = (() => { 
-              if (Number(usageRaw) === 0) return 'Not yet active';
-              const d = new Date(); 
-              d.setMonth(d.getMonth() + 1); 
-              return d.toISOString().slice(0,10); 
-            })();
-            const status = Number(usageRaw) === 0 ? 'No data' : 'Unpaid';
-            return (
-              <View style={styles.card}>
-                <Text style={{ fontWeight: '700', color: COLORS.primary }}>{item}</Text>
-                <Text style={styles.subtitle}>Usage (m³): {typeof usage === 'number' ? usage.toFixed(3) : usage}</Text>
-                <Text style={styles.subtitle}>Amount Due (₱): ₱{amount.toFixed(2)}</Text>
-                <Text style={styles.subtitle}>Due Date: {due}</Text>
-                <Text style={[styles.subtitle, { color: status === 'Unpaid' ? COLORS.danger : COLORS.muted }]}>{status}</Text>
-              </View>
-            );
-          }}
-        />
+          <FlatList
+            data={houses}
+            keyExtractor={(h) => h}
+            renderItem={({ item }) => {
+              const s = summary[item] || {};
+              const usage = s.cubicMeters ?? 0;
+              const amount = s.monthlyBill ?? 0;
+              const due = (() => { 
+                if (Number(usage) === 0) return 'Not yet active';
+                const d = new Date(); 
+                d.setMonth(d.getMonth() + 1); 
+                return d.toISOString().slice(0,10); 
+              })();
+              const status = Number(usage) === 0 ? 'No data' : 'Unpaid';
+              return (
+                <View style={styles.card}>
+                  <Text style={{ fontWeight: '700', color: COLORS.primary }}>{item}</Text>
+                  <Text style={styles.subtitle}>Usage (m³): {typeof usage === 'number' ? usage.toFixed(6) : usage}</Text>
+                  <Text style={styles.subtitle}>Amount Due (₱): ₱{amount.toFixed(2)}</Text>
+                  <Text style={styles.subtitle}>Due Date: {due}</Text>
+                  <Text style={[styles.subtitle, { color: status === 'Unpaid' ? COLORS.danger : COLORS.muted }]}>{status}</Text>
+                </View>
+              );
+            }}
+          />
       )}
     </View>
   );

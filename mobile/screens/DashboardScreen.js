@@ -91,9 +91,9 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
     );
   }
 
-  const devices = Object.values(summary.summary || {});
+  const devices = Object.values(summary.summary || summary || {});
   const hasDevices = devices.length > 0;
-  const totalUsage = devices.reduce((sum, d) => sum + d.monthlyUsage, 0);
+  const totalUsage = devices.reduce((sum, d) => sum + (d.cubicMeters || d.monthlyUsage || 0), 0);
   const usagePercentage = Math.min(100, (totalUsage / 100) * 100); // Assume 100m³ = 100%
   
   // Detect if usage has changed (for idle animation)
