@@ -33,9 +33,7 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
     try {
       setLoading(true);
       setError(null);
-      console.log('Loading dashboard data...');
       const data = await Api.getDashboard(token);
-      console.log('Dashboard data loaded:', data);
       setSummary(data || { summary: {} });
     } catch (err) {
       console.error('Dashboard load error:', err);
@@ -60,8 +58,10 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
     );
   }
 
-  const devices = Object.values(summary?.summary || summary || {});
-  const totalUsage = devices.reduce((sum, d) => sum + (d.cubicMeters || d.monthlyUsage || 0), 0);
+  // Use same logic as web app - access cubicMeters directly from summary
+  const summaryData = summary?.summary || summary || {};
+  const devices = Object.values(summaryData);
+  const totalUsage = devices.reduce((sum, d) => sum + (Number(d?.cubicMeters) || 0), 0);
 
   return (
     <ScrollView 
@@ -139,7 +139,7 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
           }}>
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.text }}>
-                {totalUsage.toFixed(1)}
+                {totalUsage.toFixed(6)}
               </Text>
               <Text style={{ fontSize: 14, color: COLORS.glowBlue, marginTop: 4 }}>m³</Text>
             </View>
