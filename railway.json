@@ -9,7 +9,7 @@
     "volumes": [
       {
         "name": "data",
-        "mountPath": "/app/data"
+        "mountPath": "/app/server/data"
       }
     ]
   }
