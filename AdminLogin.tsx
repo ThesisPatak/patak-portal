@@ -12,6 +12,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -186,9 +187,9 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             </div>
 
             {/* Password Field */}
-            <div style={{ marginBottom: "1rem", textAlign: "left" }}>
+            <div style={{ marginBottom: "1rem", textAlign: "left", position: "relative" }}>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
@@ -196,6 +197,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 style={{
                   width: "100%",
                   padding: "0.75rem",
+                  paddingRight: "2.5rem",
                   border: "2px solid #ddd",
                   borderRadius: "6px",
                   fontSize: "16px",
@@ -214,6 +216,37 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   e.currentTarget.style.boxShadow = "none";
                 }}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+                style={{
+                  position: "absolute",
+                  right: "0.75rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontSize: "1.2rem",
+                  opacity: loading ? 0.5 : 0.7,
+                  transition: "opacity 0.2s",
+                  padding: "0.25rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "44px",
+                  minWidth: "44px",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) e.currentTarget.style.opacity = "1";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = "0.7";
+                }}
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
             </div>
 
             {/* Error Message */}

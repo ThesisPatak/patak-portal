@@ -35,8 +35,17 @@ export default function BillingScreen({ onBack, token }) {
 
   useEffect(() => {
     let mounted = true;
+    let stopped = false;
+    async function load() {
+      try {
+        const data = await Api.getDashboard(token);
+        if (mounted) setSummary(data.summary || {});
+      } catch (e) {}
+    }
     if (token) {
-      Api.getDashboard(token).then((data) => { if (mounted) setSummary(data.summary || {}); }).catch(()=>{});
+      load();
+      const id = setInterval(() => { if (!stopped) load(); }, 1000);
+      return () => { stopped = true; mounted = false; clearInterval(id); };
     }
     return () => { mounted = false; };
   }, [token]);

@@ -16,6 +16,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = async () => {
     setError('');
@@ -134,11 +135,12 @@ export default function RegisterScreen({ onRegister, onBack }) {
           placeholderTextColor={COLORS.glowGreen}
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          secureTextEntry={!showPassword}
           style={{
             borderWidth: 1,
             borderColor: COLORS.glowGreen,
             padding: 12,
+            paddingRight: 45,
             borderRadius: 12,
             width: '100%',
             marginBottom: 18,
@@ -152,6 +154,20 @@ export default function RegisterScreen({ onRegister, onBack }) {
           }}
           autoCapitalize="none"
         />
+        
+        <TouchableOpacity 
+          onPress={() => setShowPassword(!showPassword)}
+          style={{
+            position: 'absolute',
+            right: containerPadding + 10,
+            top: 245,
+            paddingHorizontal: 12,
+            paddingVertical: 12
+          }}>
+          <Text style={{ fontSize: 16 }}>
+            {showPassword ? '👁️' : '👁️‍🗨️'}
+          </Text>
+        </TouchableOpacity>
 
         {error ? (
           <Text style={{

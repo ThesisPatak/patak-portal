@@ -36,7 +36,7 @@ export default function UsageScreen({ token, onBack }) {
       }
     }
     load();
-    const id = setInterval(() => { if (!stopped) load(); }, 5000);
+    const id = setInterval(() => { if (!stopped) load(); }, 1000);
     return () => { stopped = true; mounted = false; clearInterval(id); };
   }, [token]);
 

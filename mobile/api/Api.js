@@ -58,10 +58,12 @@ const Api = {
     }
   },
 
-  // Usage for a specific house (token = houseId)
+  // Usage for a specific house (returns history of readings for authenticated user)
   getUsage: async (token) => {
     const baseUrl = await Api.getServerUrl();
-    const res = await fetch(`${baseUrl}/api/houses/${encodeURIComponent(token)}`);
+    const res = await fetch(`${baseUrl}/api/user/readings`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     if (!res.ok) throw new Error('Failed to load usage');
     return res.json();
   },

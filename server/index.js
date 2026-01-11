@@ -367,6 +367,37 @@ app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
   res.json({ readings: deviceReadings })
 })
 
+// Endpoint to get all historical readings for the authenticated user
+app.get('/api/user/readings', authMiddleware, (req, res) => {
+  const userId = req.user.userId
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === userId)
+  
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let allReadings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('Failed to load readings:', e)
+  }
+  
+  // Filter readings for user's devices only
+  const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+  // Sort by timestamp descending (newest first)
+  const sortedReadings = userReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  
+  res.json({ 
+    history: sortedReadings,
+    summary: {
+      totalReadings: sortedReadings.length,
+      deviceCount: userDevices.length,
+      latestReading: sortedReadings[0] || null
+    }
+  })
+})
+
 app.post('/devices/register', authMiddleware, async (req, res) => {
   const { deviceId, houseId, meta } = req.body || {}
   if (!deviceId) return res.status(400).json({ error: 'deviceId required' })

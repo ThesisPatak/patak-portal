@@ -34,11 +34,13 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
   
   useEffect(() => {
     let mounted = true;
+    let stopped = false;
     async function load() {
       await loadDashboard();
     }
     load();
-    return () => { mounted = false; };
+    const id = setInterval(() => { if (!stopped) load(); }, 1000);
+    return () => { stopped = true; mounted = false; clearInterval(id); };
   }, [token]);
 
   useEffect(() => {
