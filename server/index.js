@@ -235,6 +235,37 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   })
 })
 
+// ESP32 Device readings submission (no auth for now, can add device token validation later)
+app.post('/api/readings', async (req, res) => {
+  const { house, totalLiters, cubicMeters, timestamp } = req.body || {}
+  if (!house || totalLiters === undefined || cubicMeters === undefined) {
+    return res.status(400).json({ error: 'house, totalLiters, and cubicMeters required' })
+  }
+  
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let readings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      readings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('Failed to load readings:', e)
+  }
+  
+  const reading = {
+    id: generateId('reading'),
+    house,
+    totalLiters: parseFloat(totalLiters),
+    cubicMeters: parseFloat(cubicMeters),
+    timestamp: timestamp || new Date().toISOString(),
+    receivedAt: new Date().toISOString()
+  }
+  
+  readings.push(reading)
+  writeJSON(READINGS_FILE, readings)
+  res.status(201).json({ ok: true, reading })
+})
+
 // Endpoint to get historical readings for charts
 app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
   const { deviceId } = req.params

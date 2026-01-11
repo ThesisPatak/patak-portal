@@ -1,27 +1,47 @@
-{
-  "readings": [],
-  "summary": {
-    "house1": {
-      "totalLiters": 783.654835,
-      "cubicMeters": 0.783655,
-      "last": {
-        "house": "house1",
-        "totalLiters": 783.654835,
-        "cubicMeters": 0.783655,
-        "timestamp": "2025-12-23T08:15:15.000Z",
-        "receivedAt": "2025-12-23T08:15:16.469Z"
-      }
-    },
-    "House1": {
-      "totalLiters": 100,
-      "cubicMeters": 0.1,
-      "last": {
-        "cubicMeters": 0.1,
-        "house": "House1",
-        "totalLiters": 100,
-        "receivedAt": "2025-12-15T06:53:04.825Z",
-        "timestamp": "2025-12-15T06:53:04.825Z"
-      }
-    }
+[
+  {
+    "id": "reading-1768093726697-108",
+    "deviceId": "ESP32-001",
+    "house": "house1",
+    "totalLiters": 100.5,
+    "cubicMeters": 0.1005,
+    "timestamp": "2026-01-10T21:08:46.697Z",
+    "receivedAt": "2026-01-10T21:08:46.697Z"
+  },
+  {
+    "id": "reading-1768093726697-991",
+    "deviceId": "ESP32-001",
+    "house": "house1",
+    "totalLiters": 234.8,
+    "cubicMeters": 0.2348,
+    "timestamp": "2026-01-10T22:08:46.697Z",
+    "receivedAt": "2026-01-10T22:08:46.697Z"
+  },
+  {
+    "id": "reading-1768093726697-407",
+    "deviceId": "ESP32-001",
+    "house": "house1",
+    "totalLiters": 456.2,
+    "cubicMeters": 0.4562,
+    "timestamp": "2026-01-10T23:08:46.697Z",
+    "receivedAt": "2026-01-10T23:08:46.697Z"
+  },
+  {
+    "id": "reading-1768093726697-449",
+    "deviceId": "ESP32-001",
+    "house": "house1",
+    "totalLiters": 678.9,
+    "cubicMeters": 0.6789,
+    "timestamp": "2026-01-11T00:08:46.697Z",
+    "receivedAt": "2026-01-11T00:08:46.697Z"
+  },
+  {
+    "id": "reading-1768093726697-219",
+    "deviceId": "ESP32-001",
+    "house": "house1",
+    "totalLiters": 1234.567,
+    "cubicMeters": 1.234567,
+    "timestamp": "2026-01-11T01:08:46.697Z",
+    "receivedAt": "2026-01-11T01:08:46.697Z"
   }
-}
+]
