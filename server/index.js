@@ -203,7 +203,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     })
     
     const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
-    const monthlyUsage = readingsThisMonth.reduce((sum, r) => sum + (r.cubicMeters || 0), 0)
+    // Since ESP32 sends cumulative totals, use latest reading value as monthly usage
+    const monthlyUsage = currentUsage
     const ratePerCubicMeter = 50 // PHP per m³
     const monthlyBill = monthlyUsage * ratePerCubicMeter
     const estimatedMonthlyBill = monthlyBill * (30 / (new Date().getDate()))
@@ -409,13 +410,12 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     .map(user => {
     const userDevices = devices.filter(d => d.ownerUserId === user.id)
     const deviceReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
-    const monthlyReadings = deviceReadings.filter(r => {
-      const date = new Date(r.timestamp)
-      const now = new Date()
-      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
-    })
-
-    const totalUsage = monthlyReadings.reduce((sum, r) => sum + (r.cubicMeters || 0), 0)
+    
+    // Sort by timestamp descending to get latest reading
+    const latestReading = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
+    
+    // Since ESP32 sends cumulative totals, use latest reading value
+    const totalUsage = latestReading ? (latestReading.cubicMeters || 0) : 0
     const totalBill = totalUsage * 50 // PHP per m³
 
     return {
@@ -424,7 +424,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       cubicMeters: totalUsage,
       totalLiters: totalUsage * 1000,
       deviceCount: userDevices.length,
-      lastReading: deviceReadings[0] ? deviceReadings[0].timestamp : null,
+      lastReading: latestReading ? latestReading.timestamp : null,
       devices: userDevices.map(d => ({
         deviceId: d.deviceId,
         status: d.status,
