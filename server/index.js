@@ -237,6 +237,25 @@ app.get('/api/houses', authMiddleware, (req, res) => {
 
 // ESP32 Device readings submission (no auth for now, can add device token validation later)
 app.post('/api/readings', async (req, res) => {
+  // Authenticate with device token (from ESP32)
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Device token required' })
+  }
+  
+  const token = authHeader.slice(7)
+  let deviceId = null
+  try {
+    const payload = jwt.verify(token, JWT_SECRET)
+    if (payload.type === 'device') {
+      deviceId = payload.deviceId
+    } else {
+      return res.status(401).json({ error: 'Invalid token type' })
+    }
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid device token' })
+  }
+  
   const { house, totalLiters, cubicMeters, timestamp } = req.body || {}
   if (!house || totalLiters === undefined || cubicMeters === undefined) {
     return res.status(400).json({ error: 'house, totalLiters, and cubicMeters required' })
@@ -254,6 +273,7 @@ app.post('/api/readings', async (req, res) => {
   
   const reading = {
     id: generateId('reading'),
+    deviceId,
     house,
     totalLiters: parseFloat(totalLiters),
     cubicMeters: parseFloat(cubicMeters),
@@ -291,20 +311,49 @@ app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
 })
 
 app.post('/devices/register', authMiddleware, async (req, res) => {
-  const { deviceId, deviceKey } = req.body || {}
-  if (!deviceId || !deviceKey) return res.status(400).json({ error: 'deviceId and deviceKey required' })
+  const { deviceId, houseId, meta } = req.body || {}
+  if (!deviceId) return res.status(400).json({ error: 'deviceId required' })
+  
   const devices = readJSON(DEVICES_FILE)
   const exists = devices.find(d => d.deviceId === deviceId)
-  if (exists) {
-    if (exists.ownerUserId && exists.ownerUserId !== req.user.userId) return res.status(409).json({ error: 'Device owned by another user' })
-    if (exists.ownerUserId === req.user.userId) return res.json({ device: { deviceId: exists.deviceId, owner: exists.ownerUserId } })
+  
+  // Generate device token (JWT that ESP32 can use to authenticate)
+  const deviceToken = jwt.sign(
+    { deviceId, type: 'device' },
+    JWT_SECRET,
+    { expiresIn: '1y' }
+  )
+  
+  // Create or update device record
+  const device = {
+    deviceId,
+    ownerUserId: req.user.userId,
+    houseId: houseId || null,
+    meta: meta || {},
+    status: 'registered',
+    lastSeen: null,
+    createdAt: exists ? exists.createdAt : new Date().toISOString()
   }
-  const deviceKeyHash = await bcrypt.hash(deviceKey, 10)
-  const device = { deviceId, deviceKeyHash, ownerUserId: req.user.userId, status: 'registered', lastSeen: null, createdAt: new Date().toISOString() }
+  
   const filtered = devices.filter(d => d.deviceId !== deviceId)
   filtered.push(device)
   writeJSON(DEVICES_FILE, filtered)
-  res.status(201).json({ device: { deviceId: device.deviceId, owner: device.ownerUserId } })
+  
+  res.status(201).json({
+    device: {
+      deviceId: device.deviceId,
+      owner: device.ownerUserId,
+      houseId: device.houseId
+    },
+    deviceToken
+  })
+})
+
+app.get('/devices/list', authMiddleware, (req, res) => {
+  const userId = req.user.userId
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === userId)
+  res.json({ devices: userDevices })
 })
 
 app.post('/devices/heartbeat', async (req, res) => {
