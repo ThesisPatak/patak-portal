@@ -100,14 +100,20 @@ app.post('/auth/register', async (req, res) => {
   if ((!email && !username) || !password) return res.status(400).json({ error: 'email or username, and password required' })
   
   try {
+    console.log(`[REGISTER] Attempting registration for username: ${username}`)
     const users = readJSON(USERS_FILE)
+    console.log(`[REGISTER] Current users in file: ${users.length}`)
     const exists = users.find(u => (email && u.email === email) || (username && u.username === username))
-    if (exists) return res.status(409).json({ error: 'User exists' })
+    if (exists) {
+      console.log(`[REGISTER] User already exists`)
+      return res.status(409).json({ error: 'User exists' })
+    }
     
     const passwordHash = await bcrypt.hash(password, 10)
     const user = { id: generateId('user'), email: email || null, username: username || null, passwordHash, createdAt: new Date().toISOString() }
     users.push(user)
     writeJSON(USERS_FILE, users)
+    console.log(`[REGISTER] User saved. Total users now: ${users.length}`)
     
     const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
     console.log(`✓ User registered: ${username} (${user.id})`)
@@ -420,7 +426,11 @@ app.post('/admin/clear-users', (req, res) => {
 app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
   if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
   
+  console.log('[DASHBOARD] Admin dashboard requested by:', req.user.username)
   const users = readJSON(USERS_FILE)
+  console.log('[DASHBOARD] Total users in file:', users.length)
+  console.log('[DASHBOARD] Users:', users.map(u => ({ id: u.id, username: u.username, isAdmin: u.isAdmin })))
+  
   const devices = readJSON(DEVICES_FILE)
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
   let allReadings = []
@@ -463,6 +473,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     }
   })
 
+  console.log('[DASHBOARD] Returning', userList.length, 'non-admin users')
   res.json({ users: userList })
 })
 
