@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Alert, Clipboard } from 'react-native';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING } from './variables';
@@ -58,9 +58,9 @@ export default function DeviceScreen({ token, onBack }) {
         [
           {
             text: 'Copy Token',
-            onPress: () => {
-              // In a real app, you'd copy to clipboard here
-              Alert.alert('Token copied to clipboard!');
+            onPress: async () => {
+              await Clipboard.setString(result.deviceToken);
+              Alert.alert('✓ Token copied to clipboard!');
             }
           },
           { text: 'OK', onPress: () => setRegistered(null) }
