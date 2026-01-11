@@ -138,7 +138,7 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
             elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
           }}>
             <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.text }}>
+              <Text style={{ fontSize: 32, fontWeight: '900', color: COLORS.text }}>
                 {totalUsage.toFixed(6)}
               </Text>
               <Text style={{ fontSize: 14, color: COLORS.glowBlue, marginTop: 4 }}>m³</Text>
