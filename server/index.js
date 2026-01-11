@@ -236,7 +236,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
     // Since ESP32 sends cumulative totals, use latest reading value as monthly usage
     const monthlyUsage = currentUsage
-    const ratePerCubicMeter = 50 // PHP per m³
+    const ratePerCubicMeter = 15 // PHP per m³
     const monthlyBill = monthlyUsage * ratePerCubicMeter
     const estimatedMonthlyBill = monthlyBill * (30 / (new Date().getDate()))
     
