@@ -1,11 +1,1 @@
-[
-  {
-    "deviceId": "ESP32-001",
-    "ownerUserId": "user-test1",
-    "houseId": "house1",
-    "meta": {},
-    "status": "registered",
-    "lastSeen": null,
-    "createdAt": "2026-01-11T01:08:41.430Z"
-  }
-]
+[]

@@ -7,13 +7,6 @@
     "isAdmin": true,
     "createdAt": "2026-01-08T01:29:23.822Z",
     "lastPasswordChange": "2026-01-08T01:53:31.451Z"
-  },
-  {
-    "id": "user-test1",
-    "email": null,
-    "username": "Test1",
-    "passwordHash": "$2a$10$.OFbCzESQLbw7nxa9JaY7.TpDVoifq7dMFhrsEVoMZNQm87vGauwK",
-    "isAdmin": false,
-    "createdAt": "2026-01-11T01:00:00.000Z"
+
   }
 ]
