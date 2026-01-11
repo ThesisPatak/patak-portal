@@ -172,14 +172,14 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
           <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginBottom: SPACING.base, fontWeight: '600', letterSpacing: 1 }}>TOTAL USAGE</Text>
           
           {/* Circular Progress */}
-          <View style={{ width: 180, height: 180, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
+          <View style={{ width: 240, height: 240, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
             {/* Background circle */}
             <View style={{
               position: 'absolute',
-              width: 160,
-              height: 160,
-              borderRadius: 80,
-              borderWidth: 8,
+              width: 220,
+              height: 220,
+              borderRadius: 110,
+              borderWidth: 10,
               borderColor: 'rgba(0, 180, 255, 0.2)',
               backgroundColor: 'rgba(15, 36, 56, 0.6)',
             }} />
@@ -188,10 +188,10 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             {isIdle && (
               <Animated.View style={{
                 position: 'absolute',
-                width: 160,
-                height: 160,
-                borderRadius: 80,
-                borderWidth: 8,
+                width: 220,
+                height: 220,
+                borderRadius: 110,
+                borderWidth: 10,
                 borderColor: 'transparent',
                 borderTopColor: COLORS.glowBlue,
                 borderRightColor: 'rgba(255, 255, 255, 0.6)',
@@ -212,10 +212,10 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             {!isIdle && (
               <Animated.View style={{
                 position: 'absolute',
-                width: 160,
-                height: 160,
-                borderRadius: 80,
-                borderWidth: 8,
+                width: 220,
+                height: 220,
+                borderRadius: 110,
+                borderWidth: 10,
                 borderColor: 'transparent',
                 borderTopColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
                 borderRightColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
@@ -230,10 +230,10 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
             
             {/* Main animated circle with glow */}
             <Animated.View style={{
-              width: 160,
-              height: 160,
-              borderRadius: 80,
-              borderWidth: 8,
+              width: 220,
+              height: 220,
+              borderRadius: 110,
+              borderWidth: 10,
               borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
               justifyContent: 'center',
               alignItems: 'center',
@@ -245,8 +245,8 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
             }}>
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 40, fontWeight: '900', color: COLORS.text }}>
-                  {totalUsage.toFixed(1)}
+                <Text style={{ fontSize: 48, fontWeight: '900', color: COLORS.text }}>
+                  {totalUsage.toFixed(6)}
                 </Text>
                 <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginTop: SPACING.small }}>m³</Text>
               </View>
