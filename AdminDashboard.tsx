@@ -77,7 +77,12 @@ const AdminDashboard: React.FC = () => {
       });
       if (!res.ok) throw new Error("Failed to load dashboard");
       const data = await res.json();
-      setUsers(data.users || []);
+      // Calculate correct bill locally (15 PHP per m³) - same as mobile app
+      const usersWithCorrectBill = (data.users || []).map((user: any) => ({
+        ...user,
+        monthlyBill: (user.cubicMeters || 0) * 15
+      }));
+      setUsers(usersWithCorrectBill);
     } catch (err) {
       console.error("Dashboard error:", err);
       setUsers([]);

@@ -159,7 +159,9 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
       if (cm === 0.1 || tl === 100) return false;
       return true;
     });
-  const totalUsage = houses.reduce((s, h) => s + (summary[h]?.cubicMeters || 0), 0).toFixed(3);
+  const totalUsageNumber = houses.reduce((s, h) => s + (summary[h]?.cubicMeters || 0), 0);
+  const totalUsage = totalUsageNumber.toFixed(3);
+  const totalBill = (totalUsageNumber * 15).toFixed(2); // 15 PHP per m³ - same as mobile app
   // Label houses as 'House 1', 'House 2', etc.
   const HOUSE_LABELS: Record<string, string> = {};
   houses.forEach((h, i) => {
