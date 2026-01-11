@@ -175,8 +175,10 @@ app.get('/users/:id/devices', authMiddleware, (req, res) => {
 // Dashboard: Return comprehensive user dashboard with devices, readings, and billing
 app.get('/api/houses', authMiddleware, (req, res) => {
   const userId = req.user.userId
+  console.log('[/api/houses] userId:', userId)
   const devices = readJSON(DEVICES_FILE)
   const userDevices = devices.filter(d => d.ownerUserId === userId)
+  console.log('[/api/houses] userDevices count:', userDevices.length, 'devices:', userDevices.map(d => d.deviceId))
   
   // Mock readings file path
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
@@ -235,6 +237,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     totalBill += monthlyBill
   })
   
+  console.log('[/api/houses] Returning summary with', Object.keys(summary).length, 'devices')
   res.json({
     summary,
     totalBill: Math.ceil(totalBill),
