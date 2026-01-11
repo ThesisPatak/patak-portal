@@ -366,6 +366,26 @@ app.get('/devices/list', authMiddleware, (req, res) => {
   res.json({ devices: userDevices })
 })
 
+// Device: Check for pending commands (ESP32 polls this)
+app.post('/devices/check-commands', async (req, res) => {
+  const { deviceId } = req.body || {}
+  if (!deviceId) return res.status(400).json({ error: 'deviceId required' })
+  
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId)
+  if (!device) return res.status(404).json({ error: 'Unknown device' })
+  
+  // Check if reset is requested
+  const commands = []
+  if (device.resetRequested) {
+    commands.push('reset')
+    device.resetRequested = false // Clear flag after sending
+    writeJSON(DEVICES_FILE, devices)
+  }
+  
+  res.json({ commands })
+})
+
 app.post('/devices/heartbeat', async (req, res) => {
   const { deviceId, deviceKey } = req.body || {}
   if (!deviceId || !deviceKey) return res.status(400).json({ error: 'deviceId and deviceKey required' })
@@ -480,7 +500,7 @@ app.delete('/api/admin/users/:userId', authMiddleware, (req, res) => {
 // Serve a minimal web UI for account and device management (must be AFTER API routes)
 app.use(express.static(path.join(__dirname, 'public')))
 
-// Admin: Reset all readings (admin only)
+// Admin: Reset all readings and set reset flag for all devices
 app.post('/admin/reset-readings', authMiddleware, (req, res) => {
   // Check if user is admin
   const users = readJSON(USERS_FILE)
@@ -491,7 +511,13 @@ app.post('/admin/reset-readings', authMiddleware, (req, res) => {
 
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
   writeJSON(READINGS_FILE, [])
-  res.json({ ok: true, message: 'All readings cleared' })
+  
+  // Set reset flag on all devices
+  const devices = readJSON(DEVICES_FILE)
+  devices.forEach(d => d.resetRequested = true)
+  writeJSON(DEVICES_FILE, devices)
+  
+  res.json({ ok: true, message: 'All readings cleared and device reset requested' })
 })
 
 // Admin: Reset readings for a specific device
@@ -510,7 +536,16 @@ app.post('/admin/reset-device-readings', authMiddleware, (req, res) => {
   let readings = readJSON(READINGS_FILE)
   const filtered = readings.filter(r => r.deviceId !== deviceId)
   writeJSON(READINGS_FILE, filtered)
-  res.json({ ok: true, message: `Readings cleared for device ${deviceId}` })
+  
+  // Set reset flag on the device
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId)
+  if (device) {
+    device.resetRequested = true
+    writeJSON(DEVICES_FILE, devices)
+  }
+  
+  res.json({ ok: true, message: `Readings cleared for device ${deviceId} and reset requested` })
 })
 
 // 404 catch-all handler (must be AFTER all other routes and static files)

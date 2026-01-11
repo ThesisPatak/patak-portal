@@ -183,6 +183,37 @@ void ensureWiFi() {
   }
 }
 
+void checkForServerCommands() {
+  // Check if server has any commands for this device (e.g., reset)
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+
+  HTTPClient http;
+  http.begin("https://patak-portal-production.up.railway.app/devices/check-commands");
+  http.addHeader("Content-Type", "application/json");
+  
+  char body[256];
+  snprintf(body, sizeof(body), "{\"deviceId\":\"%s\"}", DEVICE_ID.c_str());
+  
+  int httpCode = http.POST(String(body));
+  if (httpCode == 200) {
+    String resp = http.getString();
+    if (resp.indexOf("\"reset\"") != -1) {
+      Serial.println("[SERVER COMMAND] Reset requested by admin");
+      // Reset the meter
+      noInterrupts();
+      pulseCount = 0;
+      interrupts();
+      totalLiters = 0.0;
+      totalPulsesAccum = 0;
+      saveState();
+      Serial.println("Device reset to 0 liters per server command");
+    }
+  }
+  http.end();
+}
+
 void sendReading() {
   // Must be non-blocking long; keep short and robust
   if (WiFi.status() != WL_CONNECTED) {
@@ -386,6 +417,13 @@ void loop() {
   if (millis() - lastSaveMillis >= SAVE_MS) {
     lastSaveMillis = millis();
     saveState();
+  }
+
+  // Check for server commands every 30 seconds
+  static unsigned long lastCommandCheck = 0;
+  if (millis() - lastCommandCheck >= 30000) {
+    lastCommandCheck = millis();
+    checkForServerCommands();
   }
 
   handleSerial();
