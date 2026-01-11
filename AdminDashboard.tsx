@@ -356,7 +356,7 @@ const AdminDashboard: React.FC = () => {
                     Total (m³)
                   </div>
                   <div style={{ fontSize: isMobile ? "2rem" : "2.5rem", fontWeight: 700, color: "#0057b8" }}>
-                    {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(3)}
+                    {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(6)} m³
                   </div>
                   <div style={{ fontSize: isMobile ? "0.75rem" : "0.85rem", color: "#666", marginTop: "0.5rem" }}>
                     Across all houses
@@ -372,7 +372,7 @@ const AdminDashboard: React.FC = () => {
                           {user.username}
                         </div>
                         <div style={{ fontSize: isMobile ? "1.5rem" : "1.8rem", fontWeight: 700, color: "#0057b8" }}>
-                          {user.cubicMeters.toFixed(3)} m³
+                          {user.cubicMeters.toFixed(6)} m³
                         </div>
                         <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999", marginTop: "0.3rem" }}>
                           {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
@@ -473,7 +473,7 @@ const AdminDashboard: React.FC = () => {
                               <div>
                                 <div style={{ color: "#666", marginBottom: "0.2rem" }}>Usage (m³)</div>
                                 <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "#0057b8" }}>
-                                  {user.cubicMeters.toFixed(3)}
+                                  {user.cubicMeters.toFixed(6)}
                                 </div>
                               </div>
                               <div>
@@ -535,7 +535,7 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {user.cubicMeters.toFixed(3)}
+                                {user.cubicMeters.toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
                                 ₱{(user.cubicMeters * 5208.33).toFixed(2)}

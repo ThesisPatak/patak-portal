@@ -58,7 +58,7 @@ export default function DashboardScreen() {
 
   const housename = (user?.username || 'house1').toLowerCase();
   const houseSummary = summary[housename] || { cubicMeters: 0, last: null };
-  const usage = Number(houseSummary.cubicMeters || 0).toFixed(3);
+  const usage = Number(houseSummary.cubicMeters || 0).toFixed(6);
   const amount = computeResidentialBill(Number(houseSummary.cubicMeters || 0));
 
   async function logout() {

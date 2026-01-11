@@ -73,7 +73,7 @@ const BillingTable: React.FC = () => {
               const label = getHouseLabel(houseKey, idx);
               const fromSummary = summary[houseKey]?.cubicMeters;
               const usageRaw = fromSummary ?? 0;
-              const usage = typeof usageRaw === 'number' ? usageRaw.toFixed(3) : usageRaw;
+              const usage = typeof usageRaw === 'number' ? usageRaw.toFixed(6) : usageRaw;
               return (
                 <tr key={houseKey} style={{ background: '#ffffff', boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
                   <td style={{ padding: '10px 12px' }}>{label}</td>
