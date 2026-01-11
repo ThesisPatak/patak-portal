@@ -355,7 +355,7 @@ export default function DashboardScreen({ token, onOpenUsage, onLogout, onPay, o
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.large }}>
                 <View>
                   <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue, marginBottom: SPACING.small }}>Usage</Text>
-                  <Text style={{ fontSize: 24, fontWeight: '900', color: COLORS.text }}>{device.cubicMeters.toFixed(2)}</Text>
+                  <Text style={{ fontSize: 24, fontWeight: '900', color: COLORS.text }}>{device.cubicMeters.toFixed(6)}</Text>
                   <Text style={{ fontSize: TYPO.captionSize, color: COLORS.glowBlue }}>m³</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>

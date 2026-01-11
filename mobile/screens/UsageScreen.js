@@ -127,7 +127,7 @@ export default function UsageScreen({ token, onBack }) {
           {/* Stats Summary */}
           <View style={{ marginBottom: SPACING.large }}>
             <Text style={{ color: COLORS.text, fontSize: 14, marginBottom: SPACING.small }}>
-              Latest: {items[items.length - 1].cubicMeters?.toFixed(2) ?? '—'} m³
+              Latest: {items[items.length - 1].cubicMeters?.toFixed(6) ?? '—'} m³
             </Text>
             <Text style={{ color: COLORS.text, fontSize: 14 }}>
               Total Readings: {items.length}
@@ -139,7 +139,7 @@ export default function UsageScreen({ token, onBack }) {
           {items.slice().reverse().map((item, idx) => (
             <View key={idx} style={styles.cardSmall}>
               <Text style={{ fontWeight: '700', color: COLORS.text }}>{fmt(item.timestamp)}</Text>
-              <Text style={styles.subtitle}>Cubic Meters: {item.cubicMeters?.toFixed(2) ?? '—'}</Text>
+              <Text style={styles.subtitle}>Cubic Meters: {item.cubicMeters?.toFixed(6) ?? '—'}</Text>
               <Text style={styles.subtitle}>Total Liters: {item.totalLiters ?? '—'}</Text>
             </View>
           ))}
