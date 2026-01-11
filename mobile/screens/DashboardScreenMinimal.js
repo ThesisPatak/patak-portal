@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, RefreshControl, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl, Animated, Alert } from 'react-native';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING } from './variables';
@@ -193,7 +193,17 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
 
         <TouchableOpacity 
           style={[styles.secondaryButton, { marginTop: SPACING.base }]} 
-          onPress={onLogout}
+          onPress={() => {
+            Alert.alert(
+              'Confirm Logout',
+              'Are you sure you want to log out?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Log out', style: 'destructive', onPress: () => onLogout && onLogout() }
+              ],
+              { cancelable: true }
+            );
+          }}
         >
           <Text style={styles.secondaryButtonText}>Logout</Text>
         </TouchableOpacity>

@@ -377,16 +377,16 @@ const AdminDashboard: React.FC = () => {
                         <div style={{ fontSize: isMobile ? "0.8rem" : "0.9rem", color: "#333", fontWeight: 600, marginBottom: "0.5rem" }}>
                           {user.username}
                         </div>
-                        <div style={{ fontSize: isMobile ? "1.5rem" : "1.8rem", fontWeight: 700, color: "#0057b8" }}>
+                        <div style={{ fontSize: isMobile ? "1.5rem" : "1.8rem", fontWeight: 700, color: "#0057b8", marginBottom: "0.75rem" }}>
                           {user.cubicMeters.toFixed(6)} m³
                         </div>
-                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#666", marginTop: "0.5rem", paddingTop: "0.5rem", borderTop: "1px solid #e0e0e0" }}>
-                          <div style={{ marginBottom: "0.3rem" }}>
-                            <span style={{ fontWeight: 600 }}>Registered:</span> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
+                        <div style={{ background: "linear-gradient(90deg, #4CAF50 0%, #45a049 100%)", padding: "0.4rem 0.75rem", borderRadius: "6px", marginBottom: "0.5rem" }}>
+                          <div style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#fff", fontWeight: 600 }}>
+                            Registered: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
                           </div>
-                          <div style={{ color: "#999" }}>
-                            {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
-                          </div>
+                        </div>
+                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999" }}>
+                          {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
                         </div>
                       </div>
                     ))}
