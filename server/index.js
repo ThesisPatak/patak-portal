@@ -26,7 +26,7 @@ function initializeData() {
       id: 'user-1767835763822',
       email: null,
       username: 'adminpatak',
-      passwordHash: '$2a$10$qDrVTftYp3wCLmhehP2xrOzDGItHkJXdI1Y0.ucQD0pksh6ZhLMOO',
+      passwordHash: '$2a$10$Y2gr8aro9OGKnOdo99uLcunL.T5ocLHiPKW835V84gQfNZBh2vBZa',
       isAdmin: true,
       createdAt: '2026-01-08T01:29:23.822Z',
       lastPasswordChange: '2026-01-08T01:53:31.451Z'
@@ -568,7 +568,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server started successfully`)
   console.log(`📡 Listening on http://0.0.0.0:${PORT}`)
   console.log(`🔐 JWT Secret: ${JWT_SECRET !== 'dev_secret_change_me' ? 'Production' : 'Development'}`)
-  console.log(`📁 Data directory: ${DATA_DIR}`)
+  console.log(`� Data directory: ${DATA_DIR}`)
   console.log(`========================================\n`)
 })
 
