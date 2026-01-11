@@ -20,8 +20,18 @@ function initializeData() {
     fs.mkdirSync(DATA_DIR, { recursive: true })
   }
 
-  // Initialize users with admin if not exists
-  if (!fs.existsSync(USERS_FILE)) {
+  // Initialize users with admin if not exists or if file is empty
+  let needsInit = !fs.existsSync(USERS_FILE)
+  if (!needsInit) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'))
+      needsInit = !Array.isArray(existing) || existing.length === 0
+    } catch (e) {
+      needsInit = true
+    }
+  }
+  
+  if (needsInit) {
     const adminUser = {
       id: 'user-1767835763822',
       email: null,
