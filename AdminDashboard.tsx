@@ -130,6 +130,56 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Reset readings for a specific device
+  const resetDeviceReadings = async (deviceId: string) => {
+    if (!window.confirm(`Clear all readings for device "${deviceId}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/admin/reset-device-readings`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token 
+        },
+        body: JSON.stringify({ deviceId }),
+      });
+
+      if (!res.ok) throw new Error("Failed to reset readings");
+      
+      alert(`Readings cleared for device ${deviceId}`);
+      loadDashboard(); // Refresh dashboard
+    } catch (err) {
+      console.error("Reset error:", err);
+      alert("Failed to reset readings");
+    }
+  };
+
+  // Reset all readings
+  const resetAllReadings = async () => {
+    if (!window.confirm(`Clear ALL readings for all devices? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/admin/reset-readings`, {
+        method: "POST",
+        headers: { 
+          Authorization: "Bearer " + token 
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to reset readings");
+      
+      alert("All readings cleared successfully");
+      loadDashboard(); // Refresh dashboard
+    } catch (err) {
+      console.error("Reset error:", err);
+      alert("Failed to reset readings");
+    }
+  };
+
   // Change admin password
   const handleChangePassword = async () => {
     setPasswordError("");
@@ -338,9 +388,26 @@ const AdminDashboard: React.FC = () => {
 
               {/* Automated Billing Section */}
               <section>
-                <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
-                  Automated Billing
-                </h2>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+                  <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", margin: 0, fontWeight: 600 }}>
+                    Automated Billing
+                  </h2>
+                  <button
+                    onClick={resetAllReadings}
+                    style={{
+                      padding: isMobile ? "0.4rem 0.8rem" : "0.6rem 1.2rem",
+                      background: "#dc3545",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: isMobile ? "0.75rem" : "0.9rem",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Reset All Readings
+                  </button>
+                </div>
 
                 <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden", overflowX: "auto" }}>
                   {/* Mobile card view / Desktop table view */}
@@ -367,22 +434,40 @@ const AdminDashboard: React.FC = () => {
                               <div style={{ fontWeight: 600, color: "#333", fontSize: "0.95rem" }}>
                                 {user.username}
                               </div>
-                              <button
-                                onClick={() => deleteUser(user.id, user.username)}
-                                style={{
-                                  padding: "0.4rem 0.8rem",
-                                  background: "#dc3545",
-                                  color: "#fff",
-                                  border: "none",
-                                  borderRadius: "4px",
-                                  cursor: "pointer",
-                                  fontSize: "0.75rem",
-                                  fontWeight: 600,
-                                  minHeight: "auto",
-                                }}
-                              >
-                                Delete
-                              </button>
+                              <div style={{ display: "flex", gap: "0.4rem", flexDirection: "column" }}>
+                                <button
+                                  onClick={() => resetDeviceReadings(user.devices[0]?.deviceId || user.username)}
+                                  style={{
+                                    padding: "0.4rem 0.8rem",
+                                    background: "#ffc107",
+                                    color: "#333",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    fontSize: "0.75rem",
+                                    fontWeight: 600,
+                                    minHeight: "auto",
+                                  }}
+                                >
+                                  Reset Readings
+                                </button>
+                                <button
+                                  onClick={() => deleteUser(user.id, user.username)}
+                                  style={{
+                                    padding: "0.4rem 0.8rem",
+                                    background: "#dc3545",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    fontSize: "0.75rem",
+                                    fontWeight: 600,
+                                    minHeight: "auto",
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", fontSize: "0.85rem" }}>
                               <div>
@@ -464,24 +549,44 @@ const AdminDashboard: React.FC = () => {
                                 </span>
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
-                                <button
-                                  onClick={() => deleteUser(user.id, user.username)}
-                                  style={{
-                                    padding: "0.5rem 1rem",
-                                    background: "#dc3545",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "6px",
-                                    cursor: "pointer",
-                                    fontSize: "0.85rem",
-                                    fontWeight: 600,
-                                    transition: "background 0.2s",
-                                  }}
-                                  onMouseEnter={(e) => e.currentTarget.style.background = "#c82333"}
-                                  onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
-                                >
-                                  Delete
-                                </button>
+                                <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                                  <button
+                                    onClick={() => resetDeviceReadings(user.devices[0]?.deviceId || user.username)}
+                                    style={{
+                                      padding: "0.5rem 1rem",
+                                      background: "#ffc107",
+                                      color: "#333",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      cursor: "pointer",
+                                      fontSize: "0.85rem",
+                                      fontWeight: 600,
+                                      transition: "background 0.2s",
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = "#ffb300"}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = "#ffc107"}
+                                  >
+                                    Reset
+                                  </button>
+                                  <button
+                                    onClick={() => deleteUser(user.id, user.username)}
+                                    style={{
+                                      padding: "0.5rem 1rem",
+                                      background: "#dc3545",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      cursor: "pointer",
+                                      fontSize: "0.85rem",
+                                      fontWeight: 600,
+                                      transition: "background 0.2s",
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = "#c82333"}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
