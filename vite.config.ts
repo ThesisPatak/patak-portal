@@ -5,4 +5,5 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // API calls now go directly to Railway production server
+    // API calls now go directly to Railway production server  }
+})
