@@ -28,13 +28,11 @@ export default function App() {
     return () => stopKeepAlive();
   }, []);
 
-  console.log('App state token=', token, 'screen=', screen, 'error=', error);
-
   if (!token) {
     if (showRegister) {
-      return <RegisterScreen onRegister={(token, user) => { console.log('Registering user:', user); setToken(token); setUsername(user); setShowRegister(false); setScreen('dashboard'); }} onBack={() => setShowRegister(false)} />;
+      return <RegisterScreen onRegister={(token, user) => { setToken(token); setUsername(user); setShowRegister(false); setScreen('dashboard'); }} onBack={() => setShowRegister(false)} />;
     }
-    return <LoginScreen onLogin={(token, user) => { console.log('Logging in user:', user); setToken(token); setUsername(user); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
+    return <LoginScreen onLogin={(token, user) => { setToken(token); setUsername(user); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
   }
 
   // Show loading screen after login while dashboard loads

@@ -32,15 +32,7 @@ function initializeData() {
   }
   
   if (needsInit) {
-    const adminUser = {
-      id: 'user-1767835763822',
-      email: null,
-      username: 'adminpatak',
-      passwordHash: '$2a$10$Y2gr8aro9OGKnOdo99uLcunL.T5ocLHiPKW835V84gQfNZBh2vBZa',
-      isAdmin: true,
-      createdAt: '2026-01-08T01:29:23.822Z',
-      lastPasswordChange: '2026-01-08T01:53:31.451Z'
-    }
+    const adminUser = initializeAdminUser()
     fs.writeFileSync(USERS_FILE, JSON.stringify([adminUser], null, 2))
     console.log('✓ Initialized admin user')
   }
@@ -70,14 +62,23 @@ app.use(cors())
 app.use(compression())
 app.use(express.json({ limit: '10mb' }))
 
+// Security headers middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  next()
+})
+
 // JSON error handler
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: 'Invalid JSON in request body', details: err.message })
+    return res.status(400).json({ error: 'Invalid JSON in request body' })
   }
   if (err) {
     console.error('Server error:', err)
-    return res.status(500).json({ error: 'Internal server error', message: err.message })
+    return res.status(500).json({ error: 'Internal server error' })
   }
   next()
 })
@@ -108,6 +109,9 @@ function authMiddleware(req, res, next) {
 app.post('/auth/register', async (req, res) => {
   const { email, username, password } = req.body || {}
   if ((!email && !username) || !password) return res.status(400).json({ error: 'email or username, and password required' })
+  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' })
+  if (username && (username.length < 3 || username.length > 30)) return res.status(400).json({ error: 'Username must be 3-30 characters' })
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email format' })
   
   try {
     console.log(`[REGISTER] Attempting registration for username: ${username}`)
@@ -300,6 +304,12 @@ app.post('/api/readings', async (req, res) => {
   if (!house || totalLiters === undefined || cubicMeters === undefined) {
     return res.status(400).json({ error: 'house, totalLiters, and cubicMeters required' })
   }
+  if (cubicMeters < 0 || totalLiters < 0) {
+    return res.status(400).json({ error: 'Readings cannot be negative' })
+  }
+  if (cubicMeters > 1000000 || totalLiters > 1000000000) {
+    return res.status(400).json({ error: 'Reading value exceeds maximum allowed' })
+  }
   
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
   let readings = []
@@ -440,10 +450,20 @@ app.post('/devices/heartbeat', async (req, res) => {
   res.json({ ok: true })
 })
 
-// Admin endpoint to clear all users (dev only)
-app.post('/admin/clear-users', (req, res) => {
-  writeJSON(USERS_FILE, [])
-  res.json({ ok: true, message: 'All users cleared' })
+// Admin endpoint to clear all users (requires admin authentication)
+app.post('/admin/clear-users', authMiddleware, (req, res) => {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  const adminUser = {
+    id: 'user-1767835763822',
+    email: null,
+    username: 'adminpatak',
+    passwordHash: '$2a$10$Y2gr8aro9OGKnOdo99uLcunL.T5ocLHiPKW835V84gQfNZBh2vBZa',
+    isAdmin: true,
+    createdAt: '2026-01-08T01:29:23.822Z',
+    lastPasswordChange: '2026-01-08T01:53:31.451Z'
+  }
+  writeJSON(USERS_FILE, [adminUser])
+  res.json({ ok: true, message: 'All users cleared and admin reset' })
 })
 
 // Admin dashboard endpoint
@@ -597,7 +617,7 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.path, method: req.method })
 })
 
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 8080
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n========================================`)
   console.log(`✅ Server started successfully`)
