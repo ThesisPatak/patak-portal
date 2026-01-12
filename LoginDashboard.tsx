@@ -12,7 +12,6 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -138,7 +137,7 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
             </label>
             <div style={{ position: "relative" }}>
               <input
-                type={showPassword ? "text" : "password"}
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
@@ -162,65 +161,6 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
                   e.currentTarget.style.boxShadow = "none";
                 }}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-                style={{
-                  position: "absolute",
-                  right: "0.5rem",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  opacity: loading ? 0.5 : 1,
-                  transition: "opacity 0.2s",
-                  padding: "0.5rem",
-                  width: "40px",
-                  height: "40px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onMouseEnter={(e) => {
-                  if (!loading) e.currentTarget.style.opacity = "1";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = loading ? "0.5" : "1";
-                }}
-              >
-                {showPassword ? (
-                  <svg
-                    width="20"
-                    height="14"
-                    viewBox="0 0 20 14"
-                    fill="none"
-                    stroke="#666"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 7C2.5 3.5 5 2 10 2C15 2 17.5 3.5 19 7" />
-                    <circle cx="10" cy="7" r="2.5" fill="#666" />
-                  </svg>
-                ) : (
-                  <svg
-                    width="20"
-                    height="14"
-                    viewBox="0 0 20 14"
-                    fill="none"
-                    stroke="#666"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 7C2.5 3.5 5 2 10 2C15 2 17.5 3.5 19 7" />
-                    <circle cx="10" cy="7" r="2.5" fill="#666" />
-                    <line x1="1" y1="13" x2="19" y2="1" stroke="#666" strokeWidth="1.5" />
-                  </svg>
-                )}
-              </button>
             </div>
           </div>
 
