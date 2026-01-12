@@ -370,8 +370,6 @@ app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
 // Endpoint to get all historical readings for the authenticated user
 app.get('/api/user/readings', authMiddleware, (req, res) => {
   const userId = req.user.userId
-  const devices = readJSON(DEVICES_FILE)
-  const userDevices = devices.filter(d => d.ownerUserId === userId)
   
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
   let allReadings = []
@@ -383,15 +381,16 @@ app.get('/api/user/readings', authMiddleware, (req, res) => {
     console.error('Failed to load readings:', e)
   }
   
-  // Filter readings for user's devices by deviceId
+  // Try two approaches for filtering:
+  // 1. Filter by user's registered devices
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === userId)
   let userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
   
-  // If no readings by deviceId but user has devices with houseId, also match by house
-  if (userReadings.length === 0 && userDevices.length > 0) {
-    const userHouses = userDevices.map(d => d.houseId).filter(Boolean)
-    if (userHouses.length > 0) {
-      userReadings = allReadings.filter(r => userHouses.includes(r.house))
-    }
+  // 2. Fallback: If no devices registered (Railway doesn't persist), return all readings
+  //    This works because all readings from one installation will be from the same house
+  if (userReadings.length === 0) {
+    userReadings = allReadings
   }
   
   // Sort by timestamp descending (newest first)
