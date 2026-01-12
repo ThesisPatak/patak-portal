@@ -383,8 +383,17 @@ app.get('/api/user/readings', authMiddleware, (req, res) => {
     console.error('Failed to load readings:', e)
   }
   
-  // Filter readings for user's devices only
-  const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+  // Filter readings for user's devices by deviceId
+  let userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+  
+  // If no readings by deviceId but user has devices with houseId, also match by house
+  if (userReadings.length === 0 && userDevices.length > 0) {
+    const userHouses = userDevices.map(d => d.houseId).filter(Boolean)
+    if (userHouses.length > 0) {
+      userReadings = allReadings.filter(r => userHouses.includes(r.house))
+    }
+  }
+  
   // Sort by timestamp descending (newest first)
   const sortedReadings = userReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
   
