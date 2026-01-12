@@ -190,20 +190,36 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
                   e.currentTarget.style.opacity = loading ? "0.5" : "1";
                 }}
               >
-                <svg
-                  width="20"
-                  height="14"
-                  viewBox="0 0 20 14"
-                  fill="none"
-                  stroke="#666"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M1 7C2.5 3.5 5 2 10 2C15 2 17.5 3.5 19 7" />
-                  <circle cx="10" cy="7" r="2.5" fill="#666" />
-                  {!showPassword && <line x1="1" y1="13" x2="19" y2="1" />}
-                </svg>
+                {showPassword ? (
+                  <svg
+                    width="20"
+                    height="14"
+                    viewBox="0 0 20 14"
+                    fill="none"
+                    stroke="#666"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M1 7C2.5 3.5 5 2 10 2C15 2 17.5 3.5 19 7" />
+                    <circle cx="10" cy="7" r="2.5" fill="#666" />
+                  </svg>
+                ) : (
+                  <svg
+                    width="20"
+                    height="14"
+                    viewBox="0 0 20 14"
+                    fill="none"
+                    stroke="#666"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M1 7C2.5 3.5 5 2 10 2C15 2 17.5 3.5 19 7" />
+                    <circle cx="10" cy="7" r="2.5" fill="#666" />
+                    <line x1="1" y1="13" x2="19" y2="1" stroke="#666" strokeWidth="1.5" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
