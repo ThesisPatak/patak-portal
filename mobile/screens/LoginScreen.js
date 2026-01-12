@@ -102,43 +102,46 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
           autoCapitalize="none"
         />
         
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor={COLORS.glowBlue}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          style={{
-            borderWidth: 1,
-            borderColor: COLORS.glowBlue,
-            padding: 14,
-            paddingRight: 50,
-            borderRadius: 12,
-            marginBottom: 20,
-            backgroundColor: 'rgba(0, 180, 255, 0.08)',
-            color: COLORS.text,
-            fontSize: 16,
-            fontWeight: '500',
-            shadowColor: COLORS.glowBlue,
-            shadowOpacity: 0.2,
-            shadowRadius: 4
-          }}
-          autoCapitalize="none"
-        />
-        
-        <TouchableOpacity 
-          onPress={() => setShowPassword(!showPassword)}
-          style={{
-            position: 'absolute',
-            right: 60,
-            top: 215,
-            paddingHorizontal: 12,
-            paddingVertical: 14
-          }}>
-          <Text style={{ fontSize: 18 }}>
-            {showPassword ? '👁️' : '👁️‍🗨️'}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ position: 'relative', marginBottom: 20 }}>
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor={COLORS.glowBlue}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            style={{
+              borderWidth: 1,
+              borderColor: COLORS.glowBlue,
+              padding: 14,
+              paddingRight: 50,
+              borderRadius: 12,
+              backgroundColor: 'rgba(0, 180, 255, 0.08)',
+              color: COLORS.text,
+              fontSize: 16,
+              fontWeight: '500',
+              shadowColor: COLORS.glowBlue,
+              shadowOpacity: 0.2,
+              shadowRadius: 4
+            }}
+            autoCapitalize="none"
+          />
+          
+          <TouchableOpacity 
+            onPress={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 10
+            }}>
+            <Text style={{ fontSize: 18 }}>
+              {showPassword ? '👁️' : '👁️‍🗨️'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {error ? (
           <Text style={{

@@ -130,44 +130,47 @@ export default function RegisterScreen({ onRegister, onBack }) {
           autoCapitalize="none"
         />
         
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor={COLORS.glowGreen}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          style={{
-            borderWidth: 1,
-            borderColor: COLORS.glowGreen,
-            padding: 12,
-            paddingRight: 45,
-            borderRadius: 12,
-            width: '100%',
-            marginBottom: 18,
-            backgroundColor: 'rgba(0, 255, 136, 0.08)',
-            fontSize: inputFontSize,
-            color: COLORS.text,
-            fontWeight: '500',
-            shadowColor: COLORS.glowGreen,
-            shadowOpacity: 0.2,
-            shadowRadius: 4
-          }}
-          autoCapitalize="none"
-        />
-        
-        <TouchableOpacity 
-          onPress={() => setShowPassword(!showPassword)}
-          style={{
-            position: 'absolute',
-            right: containerPadding + 10,
-            top: 245,
-            paddingHorizontal: 12,
-            paddingVertical: 12
-          }}>
-          <Text style={{ fontSize: 16 }}>
-            {showPassword ? '👁️' : '👁️‍🗨️'}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ position: 'relative', marginBottom: 18 }}>
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor={COLORS.glowGreen}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            style={{
+              borderWidth: 1,
+              borderColor: COLORS.glowGreen,
+              padding: 12,
+              paddingRight: 45,
+              borderRadius: 12,
+              width: '100%',
+              backgroundColor: 'rgba(0, 255, 136, 0.08)',
+              fontSize: inputFontSize,
+              color: COLORS.text,
+              fontWeight: '500',
+              shadowColor: COLORS.glowGreen,
+              shadowOpacity: 0.2,
+              shadowRadius: 4
+            }}
+            autoCapitalize="none"
+          />
+          
+          <TouchableOpacity 
+            onPress={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: 10,
+              top: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 8
+            }}>
+            <Text style={{ fontSize: 16 }}>
+              {showPassword ? '👁️' : '👁️‍🗨️'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {error ? (
           <Text style={{
@@ -213,7 +216,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
 
         <TouchableOpacity onPress={onBack}>
           <Text style={{
-            color: 'white',
+            color: COLORS.glowGreen,
             textAlign: 'center',
             fontSize: 13,
             fontWeight: '600',
