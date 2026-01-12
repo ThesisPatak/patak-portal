@@ -113,12 +113,12 @@ export default function RegisterScreen({ onRegister, onBack }) {
           style={{
             borderWidth: 1,
             borderColor: COLORS.glowGreen,
-            padding: 12,
+            padding: 14,
             borderRadius: 12,
             width: '100%',
             marginBottom: 12,
             backgroundColor: 'rgba(0, 255, 136, 0.08)',
-            fontSize: inputFontSize,
+            fontSize: 16,
             color: COLORS.text,
             fontWeight: '500',
             shadowColor: COLORS.glowGreen,
@@ -130,7 +130,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
           autoCapitalize="none"
         />
         
-        <View style={{ position: 'relative', marginBottom: 18 }}>
+        <View style={{ position: 'relative', marginBottom: 20 }}>
           <TextInput
             placeholder="Password"
             placeholderTextColor={COLORS.glowGreen}
@@ -140,12 +140,12 @@ export default function RegisterScreen({ onRegister, onBack }) {
             style={{
               borderWidth: 1,
               borderColor: COLORS.glowGreen,
-              padding: 12,
+              padding: 14,
               paddingRight: 50,
               borderRadius: 12,
               width: '100%',
               backgroundColor: 'rgba(0, 255, 136, 0.08)',
-              fontSize: inputFontSize,
+              fontSize: 16,
               color: COLORS.text,
               fontWeight: '500',
               shadowColor: COLORS.glowGreen,

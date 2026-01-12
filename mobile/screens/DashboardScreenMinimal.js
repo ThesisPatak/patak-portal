@@ -38,7 +38,7 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
 
   const loadDashboard = async () => {
     try {
-      setLoading(true);
+      if (!loading) setLoading(true);
       setError(null);
       const data = await Api.getDashboard(token);
       setSummary(data || { summary: {} });
