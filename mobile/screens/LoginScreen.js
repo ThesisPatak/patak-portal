@@ -9,7 +9,6 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Configure status bar on component mount
   useEffect(() => {
@@ -107,12 +106,11 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
           placeholderTextColor={COLORS.glowBlue}
           value={password}
           onChangeText={setPassword}
-          secureTextEntry={!showPassword}
+          secureTextEntry
           style={{
             borderWidth: 1,
             borderColor: COLORS.glowBlue,
             padding: 14,
-            paddingRight: 50,
             borderRadius: 12,
             marginBottom: 20,
             backgroundColor: 'rgba(0, 180, 255, 0.08)',
@@ -125,20 +123,6 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
           }}
           autoCapitalize="none"
         />
-        
-        <TouchableOpacity 
-          onPress={() => setShowPassword(!showPassword)}
-          style={{
-            position: 'absolute',
-            right: 60,
-            top: 215,
-            paddingHorizontal: 12,
-            paddingVertical: 14
-          }}>
-          <Text style={{ fontSize: 18 }}>
-            {showPassword ? '👁️' : '👁️‍🗨️'}
-          </Text>
-        </TouchableOpacity>
 
         {error ? (
           <Text style={{

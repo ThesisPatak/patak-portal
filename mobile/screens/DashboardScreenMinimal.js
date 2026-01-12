@@ -11,10 +11,17 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
   const [error, setError] = useState(null);
   const glowAnim = React.useRef(new Animated.Value(0)).current;
 
-  // Load dashboard data
+  // Load dashboard data with polling
   useEffect(() => {
     console.log('DashboardScreen: Mounting with token=', token);
-    loadDashboard();
+    let mounted = true;
+    let stopped = false;
+    async function load() {
+      if (mounted) await loadDashboard();
+    }
+    load();
+    const id = setInterval(() => { if (!stopped && mounted) load(); }, 1000);
+    return () => { stopped = true; mounted = false; clearInterval(id); };
   }, [token]);
 
   // Glow animation
