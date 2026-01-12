@@ -130,7 +130,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
           autoCapitalize="none"
         />
         
-        <View style={{ position: 'relative', marginBottom: 20 }}>
+        <View style={{ position: 'relative', marginBottom: 20, width: '100%' }}>
           <TextInput
             placeholder="Password"
             placeholderTextColor={COLORS.glowGreen}
