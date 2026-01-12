@@ -166,9 +166,38 @@ export default function RegisterScreen({ onRegister, onBack }) {
               width: 40,
               alignItems: 'center'
             }}>
-            <Text style={{ fontSize: 18, color: '#666' }}>
-              {showPassword ? '👁️' : '👁️'}
-            </Text>
+            <View style={{
+              width: 24,
+              height: 24,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <View style={{
+                width: 20,
+                height: 12,
+                borderWidth: 1.5,
+                borderColor: '#666',
+                borderRadius: 6,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <View style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: '#666'
+                }} />
+              </View>
+              {!showPassword && (
+                <View style={{
+                  position: 'absolute',
+                  width: 24,
+                  height: 1.5,
+                  backgroundColor: '#666',
+                  transform: [{ rotate: '-45deg' }]
+                }} />
+              )}
+            </View>
           </TouchableOpacity>
         </View>
 

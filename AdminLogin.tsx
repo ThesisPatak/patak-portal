@@ -229,8 +229,6 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   background: "none",
                   border: "none",
                   cursor: loading ? "not-allowed" : "pointer",
-                  fontSize: "1.2rem",
-                  color: "#666",
                   opacity: loading ? 0.5 : 1,
                   transition: "opacity 0.2s",
                   padding: "0.5rem",
@@ -247,7 +245,20 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   e.currentTarget.style.opacity = loading ? "0.5" : "1";
                 }}
               >
-                👁️
+                <svg
+                  width="20"
+                  height="14"
+                  viewBox="0 0 20 14"
+                  fill="none"
+                  stroke="#666"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M1 7C2.5 3.5 5 2 10 2C15 2 17.5 3.5 19 7" />
+                  <circle cx="10" cy="7" r="2.5" fill="#666" />
+                  {!showPassword && <line x1="1" y1="13" x2="19" y2="1" />}
+                </svg>
               </button>
             </div>
 
