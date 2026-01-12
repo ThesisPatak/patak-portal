@@ -223,30 +223,31 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 disabled={loading}
                 style={{
                   position: "absolute",
-                  right: "0.75rem",
+                  right: "0.5rem",
                   top: "50%",
                   transform: "translateY(-50%)",
                   background: "none",
                   border: "none",
                   cursor: loading ? "not-allowed" : "pointer",
                   fontSize: "1.2rem",
-                  opacity: loading ? 0.5 : 0.7,
+                  color: "#666",
+                  opacity: loading ? 0.5 : 1,
                   transition: "opacity 0.2s",
-                  padding: "0.25rem",
+                  padding: "0.5rem",
+                  width: "40px",
+                  height: "40px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  minHeight: "44px",
-                  minWidth: "44px",
                 }}
                 onMouseEnter={(e) => {
                   if (!loading) e.currentTarget.style.opacity = "1";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = "0.7";
+                  e.currentTarget.style.opacity = loading ? "0.5" : "1";
                 }}
               >
-                {showPassword ? "👁️" : "👁️‍🗨️"}
+                👁️
               </button>
             </div>
 
