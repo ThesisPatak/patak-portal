@@ -141,7 +141,7 @@ export default function RegisterScreen({ onRegister, onBack }) {
               borderWidth: 1,
               borderColor: COLORS.glowGreen,
               padding: 12,
-              paddingRight: 45,
+              paddingRight: 50,
               borderRadius: 12,
               width: '100%',
               backgroundColor: 'rgba(0, 255, 136, 0.08)',
@@ -159,15 +159,15 @@ export default function RegisterScreen({ onRegister, onBack }) {
             onPress={() => setShowPassword(!showPassword)}
             style={{
               position: 'absolute',
-              right: 10,
+              right: 14,
               top: 0,
               bottom: 0,
               justifyContent: 'center',
-              alignItems: 'center',
-              paddingHorizontal: 8
+              width: 40,
+              alignItems: 'center'
             }}>
-            <Text style={{ fontSize: 16 }}>
-              {showPassword ? '👁️' : '👁️‍🗨️'}
+            <Text style={{ fontSize: 18, color: '#666' }}>
+              {showPassword ? '👁️' : '👁️'}
             </Text>
           </TouchableOpacity>
         </View>

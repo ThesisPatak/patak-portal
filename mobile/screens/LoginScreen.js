@@ -130,15 +130,15 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
             onPress={() => setShowPassword(!showPassword)}
             style={{
               position: 'absolute',
-              right: 12,
+              right: 14,
               top: 0,
               bottom: 0,
               justifyContent: 'center',
-              alignItems: 'center',
-              paddingHorizontal: 10
+              width: 40,
+              alignItems: 'center'
             }}>
-            <Text style={{ fontSize: 18 }}>
-              {showPassword ? '👁️' : '👁️‍🗨️'}
+            <Text style={{ fontSize: 20, color: '#666' }}>
+              {showPassword ? '👁️' : '👁️'}
             </Text>
           </TouchableOpacity>
         </View>
