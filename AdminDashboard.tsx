@@ -136,55 +136,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Reset readings for a specific device
-  const resetDeviceReadings = async (deviceId: string) => {
-    if (!window.confirm(`Clear all readings for device "${deviceId}"? This cannot be undone.`)) {
-      return;
-    }
 
-    try {
-      const res = await fetch(`${API_URL}/admin/reset-device-readings`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token 
-        },
-        body: JSON.stringify({ deviceId }),
-      });
-
-      if (!res.ok) throw new Error("Failed to reset readings");
-      
-      alert(`Readings cleared for device ${deviceId}`);
-      loadDashboard(); // Refresh dashboard
-    } catch (err) {
-      console.error("Reset error:", err);
-      alert("Failed to reset readings");
-    }
-  };
-
-  // Reset all readings
-  const resetAllReadings = async () => {
-    if (!window.confirm(`Clear ALL readings for all devices? This cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/admin/reset-readings`, {
-        method: "POST",
-        headers: { 
-          Authorization: "Bearer " + token 
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to reset readings");
-      
-      alert("All readings cleared successfully");
-      loadDashboard(); // Refresh dashboard
-    } catch (err) {
-      console.error("Reset error:", err);
-      alert("Failed to reset readings");
-    }
-  };
 
   // Change admin password
   const handleChangePassword = async () => {
@@ -474,22 +426,6 @@ const AdminDashboard: React.FC = () => {
                               </div>
                               <div style={{ display: "flex", gap: "0.4rem", flexDirection: "column" }}>
                                 <button
-                                  onClick={() => resetDeviceReadings(user.devices[0]?.deviceId || user.username)}
-                                  style={{
-                                    padding: "0.4rem 0.8rem",
-                                    background: "#ffc107",
-                                    color: "#333",
-                                    border: "none",
-                                    borderRadius: "4px",
-                                    cursor: "pointer",
-                                    fontSize: "0.75rem",
-                                    fontWeight: 600,
-                                    minHeight: "auto",
-                                  }}
-                                >
-                                  Reset Readings
-                                </button>
-                                <button
                                   onClick={() => deleteUser(user.id, user.username)}
                                   style={{
                                     padding: "0.4rem 0.8rem",
@@ -616,24 +552,6 @@ const AdminDashboard: React.FC = () => {
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
                                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
-                                  <button
-                                    onClick={() => resetDeviceReadings(user.devices[0]?.deviceId || user.username)}
-                                    style={{
-                                      padding: "0.5rem 1rem",
-                                      background: "#ffc107",
-                                      color: "#333",
-                                      border: "none",
-                                      borderRadius: "6px",
-                                      cursor: "pointer",
-                                      fontSize: "0.85rem",
-                                      fontWeight: 600,
-                                      transition: "background 0.2s",
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = "#ffb300"}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = "#ffc107"}
-                                  >
-                                    Reset
-                                  </button>
                                   <button
                                     onClick={() => deleteUser(user.id, user.username)}
                                     style={{
