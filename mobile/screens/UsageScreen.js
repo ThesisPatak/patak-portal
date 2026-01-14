@@ -104,18 +104,7 @@ export default function UsageScreen({ token, onBack }) {
           </View>
         </View>
       ) : (
-        <>
-          {/* Total Usage Summary */}
-          <View style={{ backgroundColor: '#1a3a52', padding: 16, marginBottom: 16, borderRadius: 8, borderLeftWidth: 4, borderLeftColor: COLORS.glowBlue }}>
-            <Text style={{ color: COLORS.glowBlue, fontSize: 24, fontWeight: 'bold' }}>
-              {readings.reduce((sum, r) => sum + (r.cubicMeters || 0), 0).toFixed(6)} m³
-            </Text>
-            <Text style={{ color: '#FFD700', fontSize: 14, fontWeight: '600', marginTop: 8 }}>
-              ₱{(readings.reduce((sum, r) => sum + (r.cubicMeters || 0), 0) * 15).toFixed(2)}
-            </Text>
-          </View>
-
-          <FlatList
+        <FlatList
           data={readings.slice().reverse()}
           keyExtractor={(item, idx) => `${item.timestamp}-${idx}`}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.glowBlue} />}
@@ -160,7 +149,6 @@ export default function UsageScreen({ token, onBack }) {
             </View>
           )}
         />
-        </>
       )}
     </View>
   );
