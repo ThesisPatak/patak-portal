@@ -58,7 +58,7 @@ const BillingTable: React.FC = () => {
 
   return (
     <section>
-      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>Billing Summary</h2>
+      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>Consumer Accounts</h2>
       {houseKeys.length === 0 ? (
         <div style={{ padding: '1rem', color: '#888' }}>No houses or devices yet.</div>
       ) : (
