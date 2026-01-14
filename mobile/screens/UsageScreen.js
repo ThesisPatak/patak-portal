@@ -51,11 +51,11 @@ export default function UsageScreen({ token, onBack }) {
   useEffect(() => {
     loadReadings();
     
-    // Real-time polling: reduced to 5 seconds (from 1 second) for efficiency
-    // SSE endpoint on web provides instant updates; mobile app uses reduced polling
+    // Real-time polling: sync with ESP32 data in near real-time
+    // Reduced to 2 seconds for faster updates when device sends readings
     const interval = setInterval(() => {
       loadReadings();
-    }, 5000); // Changed from 1000ms to 5000ms
+    }, 2000); // Changed from 5000ms to 2000ms
     
     return () => clearInterval(interval);
   }, [token]);
