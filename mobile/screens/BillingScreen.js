@@ -83,9 +83,14 @@ export default function BillingScreen({ onBack, token }) {
                 return dueDate.toISOString().slice(0,10);
               })();
               const status = Number(usage) === 0 ? 'No data' : 'Unpaid';
+              const isOnline = s.isOnline ?? false;
+              const deviceStatus = isOnline ? '🟢 Online' : '🔴 Offline';
               return (
                 <View style={styles.card}>
-                  <Text style={{ fontWeight: '700', color: COLORS.primary }}>{item}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <Text style={{ fontWeight: '700', color: COLORS.primary }}>{item}</Text>
+                    <Text style={{ fontSize: 12, color: isOnline ? '#4caf50' : '#ff6b6b', fontWeight: '600' }}>{deviceStatus}</Text>
+                  </View>
                   <Text style={styles.subtitle}>Usage (m³): {typeof usage === 'number' ? usage.toFixed(6) : usage}</Text>
                   <Text style={styles.subtitle}>Amount Due (₱): ₱{amount.toFixed(2)}</Text>
                   <Text style={styles.subtitle}>Due Date: {due}</Text>
