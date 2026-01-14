@@ -839,23 +839,49 @@ app.post('/api/admin/users', authMiddleware, async (req, res) => {
 
 // Admin: Delete a user by username
 app.delete('/api/admin/users/:username', authMiddleware, (req, res) => {
-  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [DELETE-USER] Request received`)
+  console.log(`[DELETE-USER] Auth: userId=${req.user.userId}, username=${req.user.username}, isAdmin=${req.user.isAdmin}`)
+  
+  if (!req.user.isAdmin) {
+    console.log(`[DELETE-USER] ✗ REJECTED - User is not admin (isAdmin=${req.user.isAdmin})`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
   
   const { username } = req.params
-  const users = readJSON(USERS_FILE)
-  const devices = readJSON(DEVICES_FILE)
+  const decodedUsername = decodeURIComponent(username)
+  console.log(`[DELETE-USER] Target username: "${username}" (decoded: "${decodedUsername}")`)
   
-  const user = users.find(u => u.username === username || decodeURIComponent(username).includes(u.username))
-  if (!user) return res.status(404).json({ error: 'User not found' })
+  const users = readJSON(USERS_FILE)
+  console.log(`[DELETE-USER] Total users in database: ${users.length}`)
+  
+  const user = users.find(u => u.username === decodedUsername)
+  console.log(`[DELETE-USER] User found: ${user ? user.username : 'NOT FOUND'}`)
+  
+  if (!user) {
+    console.log(`[DELETE-USER] ✗ User not found for username: "${decodedUsername}"`)
+    return res.status(404).json({ error: 'User not found' })
+  }
+  
+  if (user.isAdmin) {
+    console.log(`[DELETE-USER] ✗ Cannot delete admin user: ${user.username}`)
+    return res.status(403).json({ error: 'Cannot delete admin users' })
+  }
   
   // Remove user and their devices
   const filtered = users.filter(u => u.id !== user.id)
   writeJSON(USERS_FILE, filtered)
+  console.log(`[DELETE-USER] ✓ Deleted user from users.json (now ${filtered.length} users)`)
   
+  const devices = readJSON(DEVICES_FILE)
   const userDevices = devices.filter(d => d.ownerUserId !== user.id)
-  writeJSON(DEVICES_FILE, userDevices)
+  if (devices.length !== userDevices.length) {
+    writeJSON(DEVICES_FILE, userDevices)
+    console.log(`[DELETE-USER] ✓ Removed ${devices.length - userDevices.length} devices owned by deleted user`)
+  }
   
-  res.json({ ok: true, message: 'User deleted' })
+  console.log(`[DELETE-USER] ✓ SUCCESS - User deleted: ${user.username}`)
+  res.json({ ok: true, message: 'User deleted', deletedUsername: user.username })
 })
 
 // Admin dashboard endpoint
