@@ -9,7 +9,11 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const DATA_DIR = path.join(__dirname, 'data')
+
+// Use environment variable for data directory, default to /data for Railway volume
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', '..', 'data')
+console.log(`[STARTUP] DATA_DIR environment variable: ${process.env.DATA_DIR}`)
+console.log(`[STARTUP] Using DATA_DIR: ${DATA_DIR}`)
 const USERS_FILE = path.join(DATA_DIR, 'users.json')
 const DEVICES_FILE = path.join(DATA_DIR, 'devices.json')
 

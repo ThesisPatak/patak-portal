@@ -6,10 +6,13 @@
   "deploy": {
     "restartPolicyCondition": "on-failure",
     "restartPolicyMaxRetries": 5,
+    "environment": {
+      "DATA_DIR": "/data"
+    },
     "volumes": [
       {
         "name": "data",
-        "mountPath": "/app/server/data"
+        "mountPath": "/data"
       }
     ]
   }
