@@ -418,11 +418,11 @@ const AdminDashboard: React.FC = () => {
               {/* Separator */}
               <div style={{ height: "1px", background: "#ddd", margin: "2rem 0" }} />
 
-              {/* Automated Billing Section */}
+              {/* User's Accounts Section */}
               <section>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
                   <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", margin: 0, fontWeight: 600 }}>
-                    Automated Billing
+                    User's Accounts
                   </h2>
                   <button
                     onClick={resetAllReadings}
