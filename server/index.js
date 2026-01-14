@@ -106,6 +106,10 @@ app.get('/debug/state', (req, res) => {
     res.json({
       timestamp: new Date().toISOString(),
       dataDirectory: DATA_DIR,
+      dataDirectoryExists: fs.existsSync(DATA_DIR),
+      usersFileExists: fs.existsSync(USERS_FILE),
+      devicesFileExists: fs.existsSync(DEVICES_FILE),
+      volumeMounted: fs.existsSync(DATA_DIR),
       users: {
         count: users.length,
         list: users.map(u => ({ id: u.id, username: u.username, email: u.email, isAdmin: u.isAdmin, createdAt: u.createdAt }))
@@ -122,6 +126,37 @@ app.get('/debug/state', (req, res) => {
   } catch (err) {
     console.error(`[DEBUG] Error:`, err)
     res.status(500).json({ error: 'Failed to get state', message: err.message })
+  }
+})
+
+// Debug endpoint - Test file writing capability
+app.post('/debug/test-write', (req, res) => {
+  console.log(`\n[DEBUG-WRITE] Testing file write capability...`)
+  try {
+    const testFile = path.join(DATA_DIR, 'test-write.txt')
+    const testData = `Test write at ${new Date().toISOString()}`
+    console.log(`[DEBUG-WRITE] Attempting to write to: ${testFile}`)
+    fs.writeFileSync(testFile, testData)
+    console.log(`[DEBUG-WRITE] ✓ Write successful`)
+    
+    const readBack = fs.readFileSync(testFile, 'utf8')
+    console.log(`[DEBUG-WRITE] ✓ Read back: ${readBack}`)
+    
+    res.json({
+      success: true,
+      message: 'File write test passed',
+      testFile,
+      dataDirectory: DATA_DIR,
+      directoryWritable: true
+    })
+  } catch (err) {
+    console.error(`[DEBUG-WRITE] ✗ Write failed:`, err.message)
+    res.status(500).json({
+      success: false,
+      message: 'File write test failed',
+      error: err.message,
+      dataDirectory: DATA_DIR
+    })
   }
 })
 
