@@ -430,7 +430,28 @@ const AdminDashboard: React.FC = () => {
                           No users registered yet
                         </div>
                       ) : (
-                        users.map((user) => (
+                        users.map((user) => {
+                          // Calculate bill status
+                          const getBillStatus = () => {
+                            if (user.cubicMeters === 0 || !user.lastReadingTimestamp) {
+                              return { text: 'Not yet active', color: '#999' };
+                            }
+                            
+                            const firstReadingDate = new Date(user.lastReadingTimestamp);
+                            const dueDate = new Date(firstReadingDate);
+                            dueDate.setMonth(dueDate.getMonth() + 1);
+                            
+                            const now = new Date();
+                            if (now > dueDate) {
+                              return { text: '🔴 Overdue', color: '#ff6b6b' };
+                            } else {
+                              return { text: '⏳ Pending', color: '#ff9800' };
+                            }
+                          };
+                          
+                          const billStatus = getBillStatus();
+                          
+                          return (
                           <div
                             key={user.id}
                             style={{
@@ -500,14 +521,15 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                               </div>
                               <div>
-                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Status</div>
-                                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: user.cubicMeters === 0 ? "#999" : "#dc3545" }}>
-                                  {user.cubicMeters === 0 ? 'No data' : 'Unpaid'}
+                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Bill Status</div>
+                                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: billStatus.color }}>
+                                  {billStatus.text}
                                 </div>
                               </div>
                             </div>
                           </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   ) : (
@@ -529,7 +551,7 @@ const AdminDashboard: React.FC = () => {
                               Due Date
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Status
+                              Bill Status
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Action
@@ -537,7 +559,28 @@ const AdminDashboard: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {users.map((user) => (
+                          {users.map((user) => {
+                            // Calculate bill status
+                            const getBillStatus = () => {
+                              if (user.cubicMeters === 0 || !user.lastReadingTimestamp) {
+                                return { text: 'Not yet active', color: '#999' };
+                              }
+                              
+                              const firstReadingDate = new Date(user.lastReadingTimestamp);
+                              const dueDate = new Date(firstReadingDate);
+                              dueDate.setMonth(dueDate.getMonth() + 1);
+                              
+                              const now = new Date();
+                              if (now > dueDate) {
+                                return { text: '🔴 Overdue', color: '#ff6b6b' };
+                              } else {
+                                return { text: '⏳ Pending', color: '#ff9800' };
+                              }
+                            };
+                            
+                            const billStatus = getBillStatus();
+                            
+                            return (
                             <tr key={user.id} style={{ borderBottom: "1px solid #e0e0e0", transition: "background 0.2s" }}
                               onMouseEnter={(e) => e.currentTarget.style.background = "#f9f9f9"}
                               onMouseLeave={(e) => e.currentTarget.style.background = "#fff"}
@@ -555,8 +598,8 @@ const AdminDashboard: React.FC = () => {
                                 {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
-                                <span style={{ color: user.cubicMeters === 0 ? "#999" : "#dc3545", fontWeight: 600, fontSize: "0.9rem" }}>
-                                  {user.cubicMeters === 0 ? 'No data' : 'Unpaid'}
+                                <span style={{ color: billStatus.color, fontWeight: 600, fontSize: "0.9rem" }}>
+                                  {billStatus.text}
                                 </span>
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
@@ -600,7 +643,8 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                               </td>
                             </tr>
-                          ))}
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
