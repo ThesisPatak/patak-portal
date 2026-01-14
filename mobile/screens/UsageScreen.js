@@ -89,8 +89,18 @@ export default function UsageScreen({ token, onBack }) {
       )}
 
       {readings.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: COLORS.text, fontSize: 16 }}>No readings yet</Text>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: SPACING.base }}>
+          <View style={{ backgroundColor: '#1a3a52', padding: 24, borderRadius: 12, alignItems: 'center' }}>
+            <Text style={{ color: COLORS.glowBlue, fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+              📱 No Device Registered
+            </Text>
+            <Text style={{ color: COLORS.text, fontSize: 14, textAlign: 'center', marginBottom: 16 }}>
+              Please register your water meter device to start viewing usage history.
+            </Text>
+            <Text style={{ color: '#aaa', fontSize: 12, textAlign: 'center', fontStyle: 'italic' }}>
+              Once your device is registered, readings will appear here.
+            </Text>
+          </View>
         </View>
       ) : (
         <FlatList

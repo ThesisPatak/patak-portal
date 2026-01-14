@@ -558,17 +558,13 @@ app.get('/api/user/readings', authMiddleware, (req, res) => {
     console.error('Failed to load readings:', e)
   }
   
-  // Try two approaches for filtering:
-  // 1. Filter by user's registered devices
+  // Filter by user's registered devices only
   const devices = readJSON(DEVICES_FILE)
   const userDevices = devices.filter(d => d.ownerUserId === userId)
   let userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
   
-  // 2. Fallback: If no devices registered (Railway doesn't persist), return all readings
-  //    This works because all readings from one installation will be from the same house
-  if (userReadings.length === 0) {
-    userReadings = allReadings
-  }
+  // Security: Do NOT return all readings if no devices registered
+  // Users must explicitly register a device to see readings
   
   // Sort by timestamp descending (newest first)
   const sortedReadings = userReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
@@ -578,7 +574,8 @@ app.get('/api/user/readings', authMiddleware, (req, res) => {
     summary: {
       totalReadings: sortedReadings.length,
       deviceCount: userDevices.length,
-      latestReading: sortedReadings[0] || null
+      latestReading: sortedReadings[0] || null,
+      deviceRegistered: userDevices.length > 0
     }
   })
 })
