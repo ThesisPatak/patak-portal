@@ -69,6 +69,7 @@ const BillingTable: React.FC = () => {
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Usage (m³)</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
+              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Bill Status</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Device Status</th>
             </tr>
           </thead>
@@ -81,6 +82,25 @@ const BillingTable: React.FC = () => {
               const isOnline = summary[houseKey]?.isOnline ?? false;
               const statusColor = isOnline ? '#4caf50' : '#ff6b6b';
               const statusText = isOnline ? '🟢 Online' : '🔴 Offline';
+              
+              // Calculate bill status
+              const getBillStatus = () => {
+                const num = Number(usageRaw || 0);
+                if (num === 0 || !summary[houseKey]?.lastReading?.timestamp) return { text: 'Not yet active', color: '#999' };
+                
+                const firstReadingDate = new Date(summary[houseKey].lastReading.timestamp);
+                const dueDate = new Date(firstReadingDate);
+                dueDate.setMonth(dueDate.getMonth() + 1);
+                
+                const now = new Date();
+                if (now > dueDate) {
+                  return { text: '🔴 Overdue', color: '#ff6b6b' };
+                } else {
+                  return { text: '⏳ Pending', color: '#ff9800' };
+                }
+              };
+              
+              const billStatus = getBillStatus();
               
               return (
                 <tr key={houseKey} style={{ background: '#ffffff', boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
@@ -99,6 +119,7 @@ const BillingTable: React.FC = () => {
                     dueDate.setMonth(dueDate.getMonth() + 1);
                     return dueDate.toISOString().slice(0,10);
                   })()}</td>
+                  <td style={{ padding: '10px 12px', color: billStatus.color, fontWeight: '600' }}>{billStatus.text}</td>
                   <td style={{ padding: '10px 12px', color: statusColor, fontWeight: '600' }}>{statusText}</td>
                 </tr>
               );
