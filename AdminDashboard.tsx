@@ -420,25 +420,10 @@ const AdminDashboard: React.FC = () => {
 
               {/* User's Accounts Section */}
               <section>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+                <div style={{ marginBottom: "1.5rem" }}>
                   <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", margin: 0, fontWeight: 600 }}>
                     User's Accounts
                   </h2>
-                  <button
-                    onClick={resetAllReadings}
-                    style={{
-                      padding: isMobile ? "0.4rem 0.8rem" : "0.6rem 1.2rem",
-                      background: "#dc3545",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: isMobile ? "0.75rem" : "0.9rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Reset All Readings
-                  </button>
                 </div>
 
                 <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden", overflowX: "auto" }}>
