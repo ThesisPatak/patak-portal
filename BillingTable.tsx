@@ -70,7 +70,6 @@ const BillingTable: React.FC = () => {
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Bill Status</th>
-              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Device Status</th>
             </tr>
           </thead>
           <tbody>
@@ -120,7 +119,6 @@ const BillingTable: React.FC = () => {
                     return dueDate.toISOString().slice(0,10);
                   })()}</td>
                   <td style={{ padding: '10px 12px', color: billStatus.color, fontWeight: '600' }}>{billStatus.text}</td>
-                  <td style={{ padding: '10px 12px', color: statusColor, fontWeight: '600' }}>{statusText}</td>
                 </tr>
               );
             })}

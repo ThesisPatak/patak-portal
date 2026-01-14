@@ -385,8 +385,29 @@ const AdminDashboard: React.FC = () => {
                             Registered: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
                           </span>
                         </div>
-                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999" }}>
+                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999", marginTop: "0.75rem" }}>
                           {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
+                        </div>
+                        {/* Device Status Section */}
+                        <div style={{ marginTop: "0.75rem", borderTop: "1px solid #ddd", paddingTop: "0.75rem" }}>
+                          <div style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#666", fontWeight: 600, marginBottom: "0.5rem" }}>Devices ({user.deviceCount})</div>
+                          {user.devices && user.devices.length > 0 ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                              {user.devices.map((device: any, idx: number) => {
+                                const isOnline = device.status === "online";
+                                const statusColor = isOnline ? "#4caf50" : "#ff6b6b";
+                                const statusText = isOnline ? "🟢 Active" : "🔴 Offline";
+                                return (
+                                  <div key={idx} style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", padding: "0.4rem", background: "#f0f0f0", borderRadius: "4px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ color: "#555" }}>{device.deviceId}</span>
+                                    <span style={{ color: statusColor, fontWeight: "600" }}>{statusText}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#999", fontStyle: "italic" }}>No devices registered</div>
+                          )}
                         </div>
                       </div>
                     ))}
