@@ -69,6 +69,17 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
   const summaryData = summary?.summary || summary || {};
   const devices = Object.values(summaryData);
   const totalUsage = devices.reduce((sum, d) => sum + (Number(d?.cubicMeters) || 0), 0);
+  
+  // Calculate due date from first device's first reading
+  const getDueDate = () => {
+    const allDevices = devices.filter(d => d && d.lastReading && d.lastReading.timestamp);
+    if (allDevices.length === 0) return 'Not yet active';
+    const firstReading = new Date(allDevices[0].lastReading.timestamp);
+    const dueDate = new Date(firstReading);
+    dueDate.setMonth(dueDate.getMonth() + 1);
+    return dueDate.toISOString().slice(0, 10);
+  };
+  const dueDate = getDueDate();
 
   return (
     <ScrollView 
@@ -158,7 +169,7 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
       <View style={[styles.card, { marginBottom: SPACING.large, alignItems: 'center' }]}>
         <Text style={{ fontSize: 14, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.base }}>MONTHLY BILL</Text>
         <Text style={{ fontSize: 36, fontWeight: '900', color: COLORS.glowBlue }}>₱{(totalUsage * 15).toFixed(2)}</Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, marginTop: SPACING.small }}>Est. by month end</Text>
+        <Text style={{ fontSize: 12, color: COLORS.text, marginTop: SPACING.small }}>Due: {dueDate}</Text>
       </View>
 
       {/* Devices */}
