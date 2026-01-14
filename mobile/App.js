@@ -3,7 +3,6 @@ import { SafeAreaView, View, Text, TouchableOpacity, StatusBar, ActivityIndicato
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreenMinimal';
-import UsageScreen from './screens/UsageScreen';
 import PayScreen from './screens/PayScreen';
 import DeviceScreen from './screens/DeviceScreen';
 import styles from './screens/styles';
@@ -15,7 +14,6 @@ export default function App() {
   const [token, setToken] = useState(null);
   const [username, setUsername] = useState(null);
   const [screen, setScreen] = useState('dashboard');
-  const [selectedHouse, setSelectedHouse] = useState(null);
   const [payInfo, setPayInfo] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
   const [error, setError] = useState(null);
@@ -51,16 +49,11 @@ export default function App() {
         <DashboardScreen
           token={token}
           username={username}
-          onOpenUsage={(house) => { setSelectedHouse(house); setScreen('usage'); }}
           onLogout={() => { setToken(null); setUsername(null); setScreen('dashboard'); }}
           onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
           onOpenDevices={() => setScreen('devices')}
         />
       );
-    }
-
-    if (screen === 'usage') {
-      return <UsageScreen token={selectedHouse || token} onBack={() => setScreen('dashboard')} />;
     }
 
     if (screen === 'pay') {
