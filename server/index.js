@@ -745,20 +745,26 @@ app.post('/admin/clear-users', authMiddleware, (req, res) => {
 // Admin: Get all users (for admin panel)
 app.get('/api/admin/users', authMiddleware, (req, res) => {
   const timestamp = new Date().toISOString()
-  console.log(`\n[${timestamp}] [ADMIN-USERS] Request received`)
-  console.log(`[ADMIN-USERS] User info:`, { userId: req.user.userId, username: req.user.username, isAdmin: req.user.isAdmin })
+  console.log(`\n[${timestamp}] [ADMIN-USERS] ========== Request received ==========`)
+  console.log(`[ADMIN-USERS] Auth info: userId=${req.user.userId}, username=${req.user.username}, isAdmin=${req.user.isAdmin}`)
   
   if (!req.user.isAdmin) {
-    console.log(`[ADMIN-USERS] ✗ REJECTED - User is not admin`)
+    console.log(`[ADMIN-USERS] ✗ REJECTED - User is not admin (isAdmin=${req.user.isAdmin})`)
     return res.status(403).json({ error: 'Admin access required' })
   }
   
+  console.log(`[ADMIN-USERS] ✓ Authorization passed`)
   const users = readJSON(USERS_FILE)
-  console.log(`[ADMIN-USERS] Loaded ${users.length} total users from database`)
+  console.log(`[ADMIN-USERS] Loaded ${users.length} total users from ${USERS_FILE}`)
+  console.log(`[ADMIN-USERS] Raw users data:`)
+  users.forEach((u, idx) => console.log(`  [${idx}] ${JSON.stringify(u)}`))
   
   const userList = {}
+  let addedCount = 0
+  let skippedCount = 0
   
   users.forEach(user => {
+    console.log(`[ADMIN-USERS] Checking user: username=${user.username}, isAdmin=${user.isAdmin}, isAdmin check: !${user.isAdmin} = ${!user.isAdmin}`)
     if (!user.isAdmin) {
       // Use username as key, since that's what mobile app uses
       const key = user.username || user.email || user.id
@@ -769,13 +775,16 @@ app.get('/api/admin/users', authMiddleware, (req, res) => {
         email: user.email,
         username: user.username
       }
-      console.log(`[ADMIN-USERS] Added user: ${key} (id: ${user.id})`)
+      console.log(`[ADMIN-USERS] ✓ Added user: ${key}`)
+      addedCount++
     } else {
-      console.log(`[ADMIN-USERS] Skipping admin user: ${user.username}`)
+      console.log(`[ADMIN-USERS] ✗ Skipped admin user: ${user.username} (isAdmin=true)`)
+      skippedCount++
     }
   })
   
-  console.log(`[ADMIN-USERS] ✓ Returning ${Object.keys(userList).length} non-admin users`)
+  console.log(`[ADMIN-USERS] ✓ Complete - Added: ${addedCount}, Skipped: ${skippedCount}`)
+  console.log(`[ADMIN-USERS] Returning users object:`, JSON.stringify(userList))
   res.json({ users: userList })
 })
 
