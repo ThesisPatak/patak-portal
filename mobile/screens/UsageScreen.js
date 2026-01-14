@@ -19,8 +19,8 @@ function calculateFlowRate(liters, durationSeconds) {
 }
 
 function calculateCost(cubicMeters) {
-  // Philippine water rate: approximately ₱ 9.50 per cubic meter
-  const RATE_PER_CUBIC_METER = 9.50;
+  // Philippine water rate: approximately ₱15 per cubic meter (matches dashboard calculation)
+  const RATE_PER_CUBIC_METER = 15;
   return cubicMeters * RATE_PER_CUBIC_METER;
 }
 
@@ -104,7 +104,19 @@ export default function UsageScreen({ token, onBack }) {
           </View>
         </View>
       ) : (
-        <FlatList
+        <>
+          {/* Total Usage Summary */}
+          <View style={{ backgroundColor: '#1a3a52', padding: 16, marginBottom: 16, borderRadius: 8, borderLeftWidth: 4, borderLeftColor: COLORS.glowBlue }}>
+            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>Recent Readings ({readings.length})</Text>
+            <Text style={{ color: COLORS.glowBlue, fontSize: 24, fontWeight: 'bold' }}>
+              {readings.reduce((sum, r) => sum + (r.cubicMeters || 0), 0).toFixed(6)} m³
+            </Text>
+            <Text style={{ color: '#FFD700', fontSize: 14, fontWeight: '600', marginTop: 8 }}>
+              ₱{(readings.reduce((sum, r) => sum + (r.cubicMeters || 0), 0) * 15).toFixed(2)}
+            </Text>
+          </View>
+
+          <FlatList
           data={readings.slice().reverse()}
           keyExtractor={(item, idx) => `${item.timestamp}-${idx}`}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.glowBlue} />}
@@ -157,6 +169,7 @@ export default function UsageScreen({ token, onBack }) {
             </View>
           }
         />
+        </>
       )}
     </View>
   );
