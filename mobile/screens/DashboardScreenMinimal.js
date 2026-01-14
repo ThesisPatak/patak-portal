@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, RefreshControl, Animated, Alert } from 'react-native';
+import { Svg, Path } from 'react-native-svg';
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING } from './variables';
@@ -110,56 +111,51 @@ export default function DashboardScreen({ token, username, onLogout, onOpenUsage
         
         {/* Circular Progress */}
         <View style={{ width: 200, height: 200, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
-          {/* Background circle */}
-          <View style={{
-            position: 'absolute',
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            borderWidth: 6,
-            borderColor: 'rgba(0, 180, 255, 0.2)',
-            backgroundColor: 'rgba(15, 36, 56, 0.6)',
-          }} />
-          
-          {/* Progress arc */}
+          {/* Glow background */}
           <Animated.View style={{
             position: 'absolute',
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            borderWidth: 6,
-            borderColor: 'transparent',
-            borderTopColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
-            borderRightColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
-            transform: [
-              {
-                rotate: `${(totalUsage / 100) * 360}deg`
-              }
-            ],
-            opacity: 0.8
+            width: 220,
+            height: 220,
+            borderRadius: 110,
+            backgroundColor: 'rgba(0, 180, 255, 0.1)',
+            shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
+            shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 20] }),
+            elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
           }} />
-          
-          {/* Main circle with glow */}
+
+          {/* Water Droplet SVG */}
           <Animated.View style={{
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            borderWidth: 6,
-            borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: 'rgba(15, 36, 56, 0.6)',
             shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
             shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 20] }),
             elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
           }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 28, fontWeight: '900', color: COLORS.text }}>
+            <Svg width={180} height={220} viewBox="0 0 100 140" style={{ marginBottom: 10 }}>
+              {/* Water droplet shape - better proportions */}
+              <Path
+                d="M 50 10 C 40 20 35 35 35 50 C 35 75 42 95 50 110 C 58 95 65 75 65 50 C 65 35 60 20 50 10 Z"
+                fill={totalUsage > 100 ? COLORS.danger : COLORS.glowBlue}
+                fillOpacity="0.15"
+              />
+              <Path
+                d="M 50 10 C 40 20 35 35 35 50 C 35 75 42 95 50 110 C 58 95 65 75 65 50 C 65 35 60 20 50 10 Z"
+                fill="none"
+                stroke={totalUsage > 100 ? COLORS.danger : COLORS.glowBlue}
+                strokeWidth="2"
+              />
+            </Svg>
+            
+            {/* Usage value inside droplet */}
+            <View style={{ position: 'absolute', alignItems: 'center' }}>
+              <Text style={{ fontSize: 26, fontWeight: '900', color: COLORS.text }}>
                 {totalUsage.toFixed(6)}
               </Text>
-              <Text style={{ fontSize: 14, color: COLORS.glowBlue, marginTop: 4 }}>m³</Text>
+              <Text style={{ fontSize: 13, color: COLORS.glowBlue, marginTop: 3 }}>m³</Text>
             </View>
           </Animated.View>
         </View>
