@@ -51,10 +51,11 @@ export default function UsageScreen({ token, onBack }) {
   useEffect(() => {
     loadReadings();
     
-    // Real-time polling: refresh every 1 second to show new readings
+    // Real-time polling: reduced to 5 seconds (from 1 second) for efficiency
+    // SSE endpoint on web provides instant updates; mobile app uses reduced polling
     const interval = setInterval(() => {
       loadReadings();
-    }, 1000);
+    }, 5000); // Changed from 1000ms to 5000ms
     
     return () => clearInterval(interval);
   }, [token]);

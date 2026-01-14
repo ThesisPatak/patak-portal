@@ -45,7 +45,9 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
 
     const connect = () => {
       try {
-        es = new EventSource('/api/stream');
+        // EventSource doesn't support custom headers, so pass token in query string
+        // The server validates this in the authMiddleware
+        es = new EventSource(`/api/stream?token=${encodeURIComponent(token)}`);
       } catch (err) {
         console.error('Failed to create EventSource', err);
         setTimeout(connect, reconnectMs);

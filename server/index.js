@@ -19,6 +19,24 @@ const DEVICES_FILE = path.join(DATA_DIR, 'devices.json')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
+// Real-time SSE client tracking for broadcasting readings
+const sseClients = new Map() // { userId: Set<{ res, sendEvent }> }
+
+// Helper to broadcast readings to SSE clients
+function broadcastToSSEClients(userId, reading) {
+  const clients = sseClients.get(userId)
+  if (clients) {
+    clients.forEach(client => {
+      try {
+        client.res.write(`event: reading\ndata: ${JSON.stringify(reading)}\n\n`)
+      } catch (err) {
+        console.error(`[SSE] Error writing to client:`, err.message)
+        clients.delete(client)
+      }
+    })
+  }
+}
+
 function initializeAdminUser() {
   return {
     id: 'user-1767835763822',
@@ -219,12 +237,22 @@ function generateId(prefix = 'id') {
 }
 
 function authMiddleware(req, res, next) {
+  // Support token from both Authorization header and query string
+  // Query string is needed for EventSource which doesn't support custom headers
+  let token = null
+  
   const h = req.headers.authorization
-  if (!h || !h.startsWith('Bearer ')) {
-    console.log(`[AUTH] ✗ REJECTED - Missing or invalid authorization header`)
+  if (h && h.startsWith('Bearer ')) {
+    token = h.slice(7)
+  } else if (req.query.token) {
+    token = req.query.token
+  }
+  
+  if (!token) {
+    console.log(`[AUTH] ✗ REJECTED - Missing token (no Authorization header or query string token)`)
     return res.status(401).json({ error: 'Missing token' })
   }
-  const token = h.slice(7)
+  
   try {
     const payload = jwt.verify(token, JWT_SECRET)
     console.log(`[AUTH] ✓ Token verified - userId: ${payload.userId}, username: ${payload.username}, isAdmin: ${payload.isAdmin}`)
@@ -351,6 +379,80 @@ app.get('/users/:id/devices', authMiddleware, (req, res) => {
   const devices = readJSON(DEVICES_FILE)
   const mine = devices.filter(d => d.ownerUserId === id)
   res.json({ devices: mine })
+})
+
+// Real-time SSE endpoint for real-time reading updates
+app.get('/api/stream', authMiddleware, (req, res) => {
+  const userId = req.user.userId
+  console.log(`[SSE] Client connecting for userId: ${userId}`)
+  
+  // Set SSE headers
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('X-Accel-Buffering', 'no') // Disable nginx buffering
+  
+  // Send initial connection message with current summary
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === userId)
+  
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let allReadings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('[SSE] Failed to load readings:', e)
+  }
+  
+  // Build summary
+  const summary = {}
+  userDevices.forEach(device => {
+    const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    const lastReading = deviceReadings[0]
+    const houseId = device.houseId || 'unknown'
+    
+    summary[houseId] = {
+      totalLiters: lastReading ? lastReading.totalLiters : 0,
+      cubicMeters: lastReading ? lastReading.cubicMeters : 0,
+      last: lastReading || null
+    }
+  })
+  
+  res.write(`event: summary\ndata: ${JSON.stringify({ summary })}\n\n`)
+  
+  // Register this client for real-time updates
+  if (!sseClients.has(userId)) {
+    sseClients.set(userId, new Set())
+  }
+  
+  const client = { res, userId }
+  sseClients.get(userId).add(client)
+  console.log(`[SSE] Client registered. Total clients for user: ${sseClients.get(userId).size}`)
+  
+  // Send keepalive every 30 seconds to prevent timeout
+  const keepaliveInterval = setInterval(() => {
+    try {
+      res.write(': keepalive\n\n')
+    } catch (err) {
+      console.error('[SSE] Keepalive failed:', err.message)
+      clearInterval(keepaliveInterval)
+      sseClients.get(userId).delete(client)
+    }
+  }, 30000)
+  
+  // Handle client disconnect
+  req.on('close', () => {
+    console.log(`[SSE] Client disconnecting for userId: ${userId}`)
+    clearInterval(keepaliveInterval)
+    sseClients.get(userId).delete(client)
+    if (sseClients.get(userId).size === 0) {
+      sseClients.delete(userId)
+    }
+    res.end()
+  })
 })
 
 // Dashboard: Return comprehensive user dashboard with devices, readings, and billing
@@ -523,6 +625,20 @@ app.post('/api/readings', async (req, res) => {
   
   console.log(`[ESP32-READING] ✓✓ SUCCESS - Reading accepted and saved`)
   res.status(201).json({ ok: true, reading })
+  
+  // Broadcast reading to SSE clients for all users with devices for this house
+  const deviceList = readJSON(DEVICES_FILE)
+  const deviceOwnerIds = new Set()
+  deviceList.forEach(d => {
+    if (d.deviceId === deviceId) {
+      deviceOwnerIds.add(d.ownerUserId)
+    }
+  })
+  
+  // Send real-time update to connected clients
+  deviceOwnerIds.forEach(userId => {
+    broadcastToSSEClients(userId, reading)
+  })
 })
 
 // Endpoint to get historical readings for charts
