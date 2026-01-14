@@ -117,7 +117,7 @@ const AdminDashboard: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(username)}`, {
         method: "DELETE",
         headers: { Authorization: "Bearer " + token },
       });
