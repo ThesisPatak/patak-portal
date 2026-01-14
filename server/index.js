@@ -909,12 +909,8 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const userDevices = devices.filter(d => d.ownerUserId === user.id)
     let deviceReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
     
-    // FALLBACK: If user has no devices but readings exist, assign unlinked readings to them
-    // This handles the case where ESP32 was sending data before devices were registered
-    if (userDevices.length === 0 && allReadings.length > 0 && users.filter(u => !u.isAdmin).length === 1) {
-      console.log(`[DASHBOARD] User ${user.username} has no devices but readings exist. Assigning all readings as fallback.`)
-      deviceReadings = allReadings
-    }
+    // Security: Do NOT return readings if user has no devices registered
+    // Users must explicitly register a device to see readings
     
     // Sort by timestamp descending to get latest reading
     const latestReading = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
