@@ -70,7 +70,10 @@ const Api = {
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      if (!res.ok) throw new Error('Failed to load usage');
+      if (!res.ok) {
+        const errorData = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errorData}`);
+      }
       return res.json();
     } catch (e) {
       clearTimeout(timeoutId);
