@@ -356,6 +356,10 @@ app.get('/users/:id/devices', authMiddleware, (req, res) => {
 // Dashboard: Return comprehensive user dashboard with devices, readings, and billing
 app.get('/api/houses', authMiddleware, (req, res) => {
   const userId = req.user.userId
+  const users = readJSON(USERS_FILE)
+  const user = users.find(u => u.id === userId)
+  const userCreatedAt = user?.createdAt || new Date().toISOString()
+  
   const devices = readJSON(DEVICES_FILE)
   const userDevices = devices.filter(d => d.ownerUserId === userId)
   
@@ -425,7 +429,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     estimatedTotalBill: Math.ceil(Object.values(summary).reduce((sum, s) => sum + s.estimatedMonthlyBill, 0)),
     deviceCount: userDevices.length,
     daysInMonth: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(),
-    currentDay: new Date().getDate()
+    currentDay: new Date().getDate(),
+    userCreatedAt: userCreatedAt
   })
 })
 

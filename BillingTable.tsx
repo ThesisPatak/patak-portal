@@ -6,6 +6,7 @@ const getHouseLabel = (houseKey: string, index: number) => `House ${index + 1}`;
 
 const BillingTable: React.FC = () => {
   const [summary, setSummary] = useState<Record<string, any>>({});
+  const [userCreatedAt, setUserCreatedAt] = useState<string>(new Date().toISOString());
 
   function computeResidentialBill(usage: number) {
     const MINIMUM = 255.0;
@@ -40,7 +41,10 @@ const BillingTable: React.FC = () => {
         const res = await fetch('/api/houses');
         if (!res.ok) throw new Error('no summary');
         const json = await res.json();
-        if (mounted) setSummary(json.summary || {});
+        if (mounted) {
+          setSummary(json.summary || {});
+          setUserCreatedAt(json.userCreatedAt || new Date().toISOString());
+        }
       } catch (e) {
         // ignore, we'll fallback to local sampleData
       }
@@ -86,9 +90,10 @@ const BillingTable: React.FC = () => {
                   <td style={{ padding: '10px 12px' }}>{(() => {
                     const num = Number(usageRaw || 0);
                     if (num === 0) return 'Not yet active';
-                    const d = new Date();
-                    d.setMonth(d.getMonth() + 1);
-                    return d.toISOString().slice(0,10);
+                    const registrationDate = new Date(userCreatedAt);
+                    const dueDate = new Date(registrationDate);
+                    dueDate.setMonth(dueDate.getMonth() + 1);
+                    return dueDate.toISOString().slice(0,10);
                   })()}</td>
                   <td style={{ padding: '10px 12px', color: '#c70039' }}>{Number(usageRaw) === 0 ? 'No data' : 'Unpaid'}</td>
                 </tr>

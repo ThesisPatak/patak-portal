@@ -32,6 +32,7 @@ function computeResidentialBill(usage) {
 
 export default function BillingScreen({ onBack, token }) {
   const [summary, setSummary] = useState(null);
+  const [userCreatedAt, setUserCreatedAt] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -39,7 +40,10 @@ export default function BillingScreen({ onBack, token }) {
     async function load() {
       try {
         const data = await Api.getDashboard(token);
-        if (mounted) setSummary(data.summary || {});
+        if (mounted) {
+          setSummary(data.summary || {});
+          setUserCreatedAt(data.userCreatedAt || new Date().toISOString());
+        }
       } catch (e) {}
     }
     if (token) {
@@ -72,9 +76,11 @@ export default function BillingScreen({ onBack, token }) {
               const amount = s.monthlyBill ?? 0;
               const due = (() => { 
                 if (Number(usage) === 0) return 'Not yet active';
-                const d = new Date(); 
-                d.setMonth(d.getMonth() + 1); 
-                return d.toISOString().slice(0,10); 
+                // Calculate due date as 1 month from user registration
+                const registrationDate = new Date(userCreatedAt);
+                const dueDate = new Date(registrationDate);
+                dueDate.setMonth(dueDate.getMonth() + 1);
+                return dueDate.toISOString().slice(0,10);
               })();
               const status = Number(usage) === 0 ? 'No data' : 'Unpaid';
               return (
