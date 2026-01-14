@@ -150,18 +150,26 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
   }
 
   const allKeys = Object.keys(summary).length ? Object.keys(summary) : [];
+  
+  // Create mapping of lowercase keys to original keys to preserve case-sensitive lookups
+  const keyMap: Record<string, string> = {};
+  allKeys.forEach(k => {
+    keyMap[k.toLowerCase()] = k;
+  });
+
   // normalize keys and filter out obvious test entries (0.1 m³ or 100 liters)
   const houses = allKeys
     .map(k => k.toString().toLowerCase())
     .filter((k, i, arr) => arr.indexOf(k) === i) // dedupe
     .filter(k => {
-      const s = summary[k] || summary[k.toString()] || {};
+      const originalKey = keyMap[k];
+      const s = summary[originalKey] || {};
       const cm = Number(s?.cubicMeters ?? s?.last?.cubicMeters ?? 0);
       const tl = Number(s?.totalLiters ?? s?.last?.totalLiters ?? 0);
       if (cm === 0.1 || tl === 100) return false;
       return true;
     });
-  const totalUsageNumber = houses.reduce((s, h) => s + (summary[h]?.cubicMeters || 0), 0);
+  const totalUsageNumber = houses.reduce((s, h) => s + (summary[keyMap[h]]?.cubicMeters || 0), 0);
   const totalUsage = totalUsageNumber.toFixed(3);
   const totalBill = (totalUsageNumber * 15).toFixed(2); // 15 PHP per m³ - same as mobile app
   // Label houses as 'House 1', 'House 2', etc.
@@ -175,14 +183,25 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
 
   // Fetch per-device readings for each house
   useEffect(() => {
-    houses.forEach(houseId => {
-      fetch(`/api/readings/${houseId}`)
-        .then(res => res.json())
-        .then(data => {
-          setDeviceReadings(prev => ({ ...prev, [houseId]: data.byDevice || {} }));
-        })
-        .catch(() => {});
-    });
+    const fetchDeviceReadings = () => {
+      houses.forEach(houseId => {
+        const originalDeviceId = keyMap[houseId];
+        fetch(`/api/readings/${originalDeviceId}`)
+          .then(res => res.json())
+          .then(data => {
+            setDeviceReadings(prev => ({ ...prev, [houseId]: data.byDevice || {} }));
+          })
+          .catch(() => {});
+      });
+    };
+
+    // Fetch immediately when houses change
+    fetchDeviceReadings();
+
+    // Also poll for updates every 5 seconds to show latest readings
+    const interval = setInterval(fetchDeviceReadings, 5000);
+
+    return () => clearInterval(interval);
   }, [houses.join(",")]);
 
   return (
@@ -230,10 +249,10 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
             {houses.map((h) => (
               <div key={h} style={{ padding: "1rem", background: "#fff", borderRadius: "10px", flex: "1 1 240px", minWidth: "240px", boxShadow: "0 2px 6px #0000000f" }}>
                 <h4 style={{ margin: "0 0 0.5rem 0" }}>{HOUSE_LABELS[h] || h}</h4>
-                <p style={{ margin: 0, fontSize: "1.1rem" }}>{Number(summary[h]?.cubicMeters ?? 0).toFixed(3)} m³</p>
+                <p style={{ margin: 0, fontSize: "1.1rem" }}>{Number(summary[keyMap[h]]?.cubicMeters ?? 0).toFixed(3)} m³</p>
                 <small style={{ color: "#666" }}> {
-                  summary[h]?.last && summary[h].last.timestamp
-                    ? new Date(summary[h].last.timestamp).toLocaleTimeString()
+                  summary[keyMap[h]]?.last && summary[keyMap[h]].last.timestamp
+                    ? new Date(summary[keyMap[h]].last.timestamp).toLocaleTimeString()
                     : (loading ? "loading..." : "no data")
                 }</small>
                 {(deviceReadings[h] && Object.keys(deviceReadings[h]).length > 0) && (

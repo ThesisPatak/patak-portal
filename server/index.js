@@ -662,7 +662,11 @@ app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
   }
   
   const deviceReadings = readings.filter(r => r.deviceId === deviceId)
-  res.json({ readings: deviceReadings })
+  // Return in byDevice format as expected by UsageDashboard component
+  res.json({ 
+    readings: deviceReadings,
+    byDevice: { [deviceId]: deviceReadings }
+  })
 })
 
 // Endpoint to get all historical readings for the authenticated user
