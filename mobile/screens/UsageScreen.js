@@ -36,14 +36,10 @@ export default function UsageScreen({ token, onBack }) {
       const data = await Api.getUsage(token);
       const history = data.history || [];
       
-      // Filter to show only data from the last 1 minute
-      const oneMinuteAgo = Date.now() - (1 * 60 * 1000); // 1 minute in milliseconds
-      const recentReadings = history.filter(item => {
-        const itemTime = new Date(item.timestamp).getTime();
-        return itemTime >= oneMinuteAgo;
-      });
+      // Show only the last 50 readings (most recent first)
+      const last50Readings = history.slice(0, 50);
       
-      setReadings(recentReadings);
+      setReadings(last50Readings);
     } catch (e) {
       console.error('Error loading readings:', e);
       setError(e.message || 'Failed to load readings');
@@ -143,7 +139,7 @@ export default function UsageScreen({ token, onBack }) {
           )}
           ListHeaderComponent={
             <View style={{ marginBottom: 12, padding: 12, backgroundColor: '#1a3a52', borderRadius: 8 }}>
-              <Text style={{ color: COLORS.text, marginBottom: 4 }}>Recent Readings (Last 1 Minute)</Text>
+              <Text style={{ color: COLORS.text, marginBottom: 4 }}>Recent Readings (Last 50)</Text>
               <Text style={{ color: COLORS.glowBlue, fontSize: 24, fontWeight: 'bold' }}>
                 {readings.length}
               </Text>
