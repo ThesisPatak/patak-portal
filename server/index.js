@@ -406,6 +406,72 @@ app.get('/api/user/readings', authMiddleware, (req, res) => {
   })
 })
 
+// Endpoint to get usage history with filtering and pagination
+app.get('/api/usage/history', authMiddleware, (req, res) => {
+  const userId = req.user.userId
+  const { limit = '100', offset = '0', deviceId = null, startDate = null, endDate = null } = req.query
+  const limitNum = Math.min(parseInt(limit) || 100, 1000)
+  const offsetNum = parseInt(offset) || 0
+  
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  let allReadings = []
+  try {
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('Failed to load readings:', e)
+  }
+  
+  // Filter by user's devices
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === userId)
+  let userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+  
+  // Filter by specific device if requested
+  if (deviceId) {
+    const device = userDevices.find(d => d.deviceId === deviceId)
+    if (!device) {
+      return res.status(403).json({ error: 'Device not found or access denied' })
+    }
+    userReadings = userReadings.filter(r => r.deviceId === deviceId)
+  }
+  
+  // Filter by date range if provided
+  if (startDate) {
+    const start = new Date(startDate).getTime()
+    userReadings = userReadings.filter(r => new Date(r.timestamp).getTime() >= start)
+  }
+  if (endDate) {
+    const end = new Date(endDate).getTime()
+    userReadings = userReadings.filter(r => new Date(r.timestamp).getTime() <= end)
+  }
+  
+  // Sort by timestamp descending (newest first)
+  const sortedReadings = userReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  
+  // Apply pagination
+  const total = sortedReadings.length
+  const paginated = sortedReadings.slice(offsetNum, offsetNum + limitNum)
+  
+  // Calculate statistics
+  const stats = {
+    totalReadings: total,
+    currentPage: Math.floor(offsetNum / limitNum) + 1,
+    pageSize: limitNum,
+    hasMore: offsetNum + limitNum < total,
+    minReading: paginated.length > 0 ? Math.min(...paginated.map(r => r.cubicMeters || 0)) : 0,
+    maxReading: paginated.length > 0 ? Math.max(...paginated.map(r => r.cubicMeters || 0)) : 0,
+    avgReading: paginated.length > 0 ? paginated.reduce((sum, r) => sum + (r.cubicMeters || 0), 0) / paginated.length : 0
+  }
+  
+  res.json({
+    history: paginated,
+    stats,
+    devices: userDevices.map(d => ({ deviceId: d.deviceId, houseId: d.houseId }))
+  })
+})
+
 app.post('/devices/register', authMiddleware, async (req, res) => {
   const { deviceId, houseId, meta } = req.body || {}
   if (!deviceId) return res.status(400).json({ error: 'deviceId required' })
@@ -501,6 +567,84 @@ app.post('/admin/clear-users', authMiddleware, (req, res) => {
   }
   writeJSON(USERS_FILE, [adminUser])
   res.json({ ok: true, message: 'All users cleared and admin reset' })
+})
+
+// Admin: Get all users (for admin panel)
+app.get('/api/admin/users', authMiddleware, (req, res) => {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  
+  const users = readJSON(USERS_FILE)
+  const userList = {}
+  
+  users.forEach(user => {
+    if (!user.isAdmin) {
+      // Use username as key, since that's what mobile app uses
+      const key = user.username || user.email || user.id
+      userList[key] = {
+        role: 'user',
+        id: user.id,
+        createdAt: user.createdAt,
+        email: user.email,
+        username: user.username
+      }
+    }
+  })
+  
+  res.json({ users: userList })
+})
+
+// Admin: Create a user (manual creation from admin panel)
+app.post('/api/admin/users', authMiddleware, async (req, res) => {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  
+  const { houseId, password, role } = req.body || {}
+  if (!houseId || !password) return res.status(400).json({ error: 'houseId and password required' })
+  
+  try {
+    const users = readJSON(USERS_FILE)
+    // Use houseId as username if creating from admin panel
+    const exists = users.find(u => (u.username === houseId) || (u.email === houseId))
+    if (exists) {
+      return res.status(409).json({ error: 'User already exists' })
+    }
+    
+    const passwordHash = await bcrypt.hash(password, 10)
+    const user = { 
+      id: generateId('user'), 
+      email: null, 
+      username: houseId,  // Use houseId as username
+      passwordHash, 
+      createdAt: new Date().toISOString() 
+    }
+    users.push(user)
+    writeJSON(USERS_FILE, users)
+    
+    res.status(201).json({ ok: true, user: { id: user.id, username: user.username } })
+  } catch (err) {
+    console.error('User creation error:', err)
+    res.status(500).json({ error: 'User creation failed' })
+  }
+})
+
+// Admin: Delete a user by username
+app.delete('/api/admin/users/:username', authMiddleware, (req, res) => {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  
+  const { username } = req.params
+  const users = readJSON(USERS_FILE)
+  const devices = readJSON(DEVICES_FILE)
+  
+  const user = users.find(u => u.username === username || decodeURIComponent(username).includes(u.username))
+  if (!user) return res.status(404).json({ error: 'User not found' })
+  
+  // Remove user and their devices
+  const filtered = users.filter(u => u.id !== user.id)
+  writeJSON(USERS_FILE, filtered)
+  
+  const userDevices = devices.filter(d => d.ownerUserId !== user.id)
+  writeJSON(DEVICES_FILE, userDevices)
+  
+  res.json({ ok: true, message: 'User deleted' })
 })
 
 // Admin dashboard endpoint
