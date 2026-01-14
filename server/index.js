@@ -650,11 +650,19 @@ app.get('/api/usage/history', authMiddleware, (req, res) => {
 })
 
 app.post('/devices/register', authMiddleware, async (req, res) => {
+  const timestamp = new Date().toISOString()
   const { deviceId, houseId, meta } = req.body || {}
-  if (!deviceId) return res.status(400).json({ error: 'deviceId required' })
+  console.log(`\n[${timestamp}] [DEVICE-REGISTER] Request from user ${req.user.userId}`)
+  console.log(`[DEVICE-REGISTER] deviceId: ${deviceId}, houseId: ${houseId}`)
+  
+  if (!deviceId) {
+    console.log(`[DEVICE-REGISTER] ✗ REJECTED - deviceId required`)
+    return res.status(400).json({ error: 'deviceId required' })
+  }
   
   const devices = readJSON(DEVICES_FILE)
   const exists = devices.find(d => d.deviceId === deviceId)
+  console.log(`[DEVICE-REGISTER] Device already exists: ${!!exists}`)
   
   // Generate device token (JWT that ESP32 can use to authenticate)
   const deviceToken = jwt.sign(
@@ -662,6 +670,7 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     JWT_SECRET,
     { expiresIn: '1y' }
   )
+  console.log(`[DEVICE-REGISTER] Generated device token`)
   
   // Create or update device record
   const device = {
@@ -673,10 +682,12 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     lastSeen: null,
     createdAt: exists ? exists.createdAt : new Date().toISOString()
   }
+  console.log(`[DEVICE-REGISTER] Created device object:`, device)
   
   const filtered = devices.filter(d => d.deviceId !== deviceId)
   filtered.push(device)
   writeJSON(DEVICES_FILE, filtered)
+  console.log(`[DEVICE-REGISTER] ✓ Saved to devices file. Total devices: ${filtered.length}`)
   
   res.status(201).json({
     device: {
@@ -686,6 +697,7 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     },
     deviceToken
   })
+  console.log(`[DEVICE-REGISTER] ✓✓ SUCCESS - Device registered for user`)
 })
 
 app.get('/devices/list', authMiddleware, (req, res) => {
