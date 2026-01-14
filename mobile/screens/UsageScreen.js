@@ -54,6 +54,13 @@ export default function UsageScreen({ token, onBack }) {
 
   useEffect(() => {
     loadReadings();
+    
+    // Real-time polling: refresh every 5 seconds to show new readings
+    const interval = setInterval(() => {
+      loadReadings();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, [token]);
 
   const onRefresh = async () => {
