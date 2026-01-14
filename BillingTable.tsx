@@ -66,6 +66,7 @@ const BillingTable: React.FC = () => {
           <thead>
             <tr>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Household</th>
+              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Device Status</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Usage (m³)</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
@@ -104,6 +105,23 @@ const BillingTable: React.FC = () => {
               return (
                 <tr key={houseKey} style={{ background: '#ffffff', boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
                   <td style={{ padding: '10px 12px' }}>{label}</td>
+                  <td style={{ padding: '10px 12px' }}>
+                    {(() => {
+                      // Get device status from the house data
+                      const houseData = summary[houseKey];
+                      const lastReading = houseData?.last;
+                      if (!lastReading) return <span style={{ color: '#ff6b6b', fontWeight: '600' }}>🔴 Offline</span>;
+                      
+                      // Check if device is online (had activity in last 5 minutes)
+                      const lastSeenTime = lastReading.receivedAt ? new Date(lastReading.receivedAt).getTime() : new Date(lastReading.timestamp).getTime();
+                      const now = Date.now();
+                      const isOnline = (now - lastSeenTime) < 5 * 60 * 1000;
+                      
+                      return isOnline ? 
+                        <span style={{ color: '#4caf50', fontWeight: '600' }}>🟢 Active</span> : 
+                        <span style={{ color: '#ff6b6b', fontWeight: '600' }}>🔴 Offline</span>;
+                    })()}
+                  </td>
                   <td style={{ padding: '10px 12px' }}>{usage}</td>
                   <td style={{ padding: '10px 12px' }}>{(() => {
                     const num = Number(usageRaw || 0);
