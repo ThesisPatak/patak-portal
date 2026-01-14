@@ -15,31 +15,62 @@ const DEVICES_FILE = path.join(DATA_DIR, 'devices.json')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
+function initializeAdminUser() {
+  return {
+    id: 'user-1767835763822',
+    email: null,
+    username: 'adminpatak',
+    passwordHash: '$2a$10$Y2gr8aro9OGKnOdo99uLcunL.T5ocLHiPKW835V84gQfNZBh2vBZa',
+    isAdmin: true,
+    createdAt: '2026-01-08T01:29:23.822Z',
+    lastPasswordChange: '2026-01-08T01:53:31.451Z'
+  }
+}
+
 function initializeData() {
   if (!fs.existsSync(DATA_DIR)) {
+    console.log(`[INIT] Creating data directory: ${DATA_DIR}`)
     fs.mkdirSync(DATA_DIR, { recursive: true })
   }
 
-  // Initialize users with admin if not exists or if file is empty
-  let needsInit = !fs.existsSync(USERS_FILE)
-  if (!needsInit) {
-    try {
-      const existing = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'))
-      needsInit = !Array.isArray(existing) || existing.length === 0
-    } catch (e) {
-      needsInit = true
-    }
-  }
-  
-  if (needsInit) {
+  // Initialize users - preserve existing, only create if truly missing
+  if (!fs.existsSync(USERS_FILE)) {
+    console.log(`[INIT] Users file does not exist, creating with admin user...`)
     const adminUser = initializeAdminUser()
     fs.writeFileSync(USERS_FILE, JSON.stringify([adminUser], null, 2))
     console.log('✓ Initialized admin user')
+  } else {
+    console.log(`[INIT] Users file exists, loading...`)
+    try {
+      const existing = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'))
+      if (Array.isArray(existing)) {
+        console.log(`[INIT] ✓ Loaded ${existing.length} users from persistent storage`)
+      } else {
+        console.log(`[INIT] ⚠ Users file corrupted, resetting with admin only`)
+        const adminUser = initializeAdminUser()
+        fs.writeFileSync(USERS_FILE, JSON.stringify([adminUser], null, 2))
+      }
+    } catch (e) {
+      console.log(`[INIT] ⚠ Failed to parse users file:`, e.message, `- resetting with admin only`)
+      const adminUser = initializeAdminUser()
+      fs.writeFileSync(USERS_FILE, JSON.stringify([adminUser], null, 2))
+    }
   }
 
   // Initialize devices if not exists
   if (!fs.existsSync(DEVICES_FILE)) {
+    console.log(`[INIT] Devices file does not exist, creating...`)
     fs.writeFileSync(DEVICES_FILE, JSON.stringify([], null, 2))
+  } else {
+    console.log(`[INIT] Devices file exists, loading...`)
+    try {
+      const existing = JSON.parse(fs.readFileSync(DEVICES_FILE, 'utf8'))
+      if (Array.isArray(existing)) {
+        console.log(`[INIT] ✓ Loaded ${existing.length} devices from persistent storage`)
+      }
+    } catch (e) {
+      console.log(`[INIT] ⚠ Devices file corrupted:`, e.message)
+    }
   }
 }
 
