@@ -566,9 +566,6 @@ const AdminDashboard: React.FC = () => {
                               Bill Status
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Device Status
-                            </th>
-                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Action
                             </th>
                           </tr>
@@ -615,11 +612,6 @@ const AdminDashboard: React.FC = () => {
                               <td style={{ padding: "1rem", textAlign: "center" }}>
                                 <span style={{ color: billStatus.color, fontWeight: 600, fontSize: "0.9rem" }}>
                                   {billStatus.text}
-                                </span>
-                              </td>
-                              <td style={{ padding: "1rem", textAlign: "center" }}>
-                                <span style={{ color: user.isOnline ? "#4caf50" : "#ff6b6b", fontWeight: 600, fontSize: "0.9rem" }}>
-                                  {user.isOnline ? '🟢 Online' : '🔴 Offline'}
                                 </span>
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
