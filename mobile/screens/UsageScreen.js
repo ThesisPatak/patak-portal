@@ -107,7 +107,6 @@ export default function UsageScreen({ token, onBack }) {
         <>
           {/* Total Usage Summary */}
           <View style={{ backgroundColor: '#1a3a52', padding: 16, marginBottom: 16, borderRadius: 8, borderLeftWidth: 4, borderLeftColor: COLORS.glowBlue }}>
-            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>Recent Readings ({readings.length})</Text>
             <Text style={{ color: COLORS.glowBlue, fontSize: 24, fontWeight: 'bold' }}>
               {readings.reduce((sum, r) => sum + (r.cubicMeters || 0), 0).toFixed(6)} m³
             </Text>
@@ -160,14 +159,6 @@ export default function UsageScreen({ token, onBack }) {
               )}
             </View>
           )}
-          ListHeaderComponent={
-            <View style={{ marginBottom: 12, padding: 12, backgroundColor: '#1a3a52', borderRadius: 8 }}>
-              <Text style={{ color: COLORS.text, marginBottom: 4 }}>Recent Readings (Last 50)</Text>
-              <Text style={{ color: COLORS.glowBlue, fontSize: 24, fontWeight: 'bold' }}>
-                {readings.length}
-              </Text>
-            </View>
-          }
         />
         </>
       )}
