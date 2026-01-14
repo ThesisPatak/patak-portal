@@ -61,11 +61,21 @@ const Api = {
   // Usage for a specific house (returns history of readings for authenticated user)
   getUsage: async (token) => {
     const baseUrl = await Api.getServerUrl();
-    const res = await fetch(`${baseUrl}/api/user/readings`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('Failed to load usage');
-    return res.json();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    try {
+      const res = await fetch(`${baseUrl}/api/user/readings`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      if (!res.ok) throw new Error('Failed to load usage');
+      return res.json();
+    } catch (e) {
+      clearTimeout(timeoutId);
+      throw e;
+    }
   },
 
   // Register a device for the authenticated user (owner)

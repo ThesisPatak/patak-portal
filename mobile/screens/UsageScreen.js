@@ -10,23 +10,32 @@ function fmt(ts) {
 
 export default function UsageScreen({ token, onBack }) {
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
     let stopped = false;
     async function load() {
       try {
+        setLoading(true);
+        setError(null);
         const data = await Api.getUsage(token);
         if (mounted) {
           const h = (data.history || []);
           setItems(h);
         }
       } catch (e) {
-        // ignore load errors during polling
+        if (mounted) {
+          setError(`Failed to load readings: ${e.message}`);
+          console.error('UsageScreen load error:', e);
+        }
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
     load();
-    const id = setInterval(() => { if (!stopped) load(); }, 1000);
+    const id = setInterval(() => { if (!stopped) load(); }, 10000);
     return () => { stopped = true; mounted = false; clearInterval(id); };
   }, [token]);
 
@@ -45,7 +54,15 @@ export default function UsageScreen({ token, onBack }) {
       </TouchableOpacity>
       <Text style={styles.title}>Usage History</Text>
 
-      {items.length === 0 ? (
+      {error && (
+        <View style={{ backgroundColor: '#ff4444', padding: 12, marginBottom: 12, borderRadius: 8 }}>
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>{error}</Text>
+        </View>
+      )}
+
+      {loading && items.length === 0 ? (
+        <Text style={styles.subtitle}>Loading readings...</Text>
+      ) : items.length === 0 ? (
         <Text style={styles.subtitle}>No readings available yet.</Text>
       ) : (
         <FlatList
