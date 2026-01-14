@@ -13,6 +13,17 @@ function formatDate(timestamp) {
   }
 }
 
+function calculateFlowRate(liters, durationSeconds) {
+  if (!durationSeconds || durationSeconds === 0) return 0;
+  return (liters / durationSeconds) * 60; // liters per minute
+}
+
+function calculateCost(cubicMeters) {
+  // Philippine water rate: approximately ₱ 9.50 per cubic meter
+  const RATE_PER_CUBIC_METER = 9.50;
+  return cubicMeters * RATE_PER_CUBIC_METER;
+}
+
 export default function UsageScreen({ token, onBack }) {
   const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +35,15 @@ export default function UsageScreen({ token, onBack }) {
       setError(null);
       const data = await Api.getUsage(token);
       const history = data.history || [];
-      setReadings(history);
+      
+      // Filter to show only data from the last 1 minute
+      const oneMinuteAgo = Date.now() - (1 * 60 * 1000); // 1 minute in milliseconds
+      const recentReadings = history.filter(item => {
+        const itemTime = new Date(item.timestamp).getTime();
+        return itemTime >= oneMinuteAgo;
+      });
+      
+      setReadings(recentReadings);
     } catch (e) {
       console.error('Error loading readings:', e);
       setError(e.message || 'Failed to load readings');
@@ -73,24 +92,51 @@ export default function UsageScreen({ token, onBack }) {
       ) : (
         <FlatList
           data={readings.slice().reverse()}
-          keyExtractor={(item, idx) => String(idx)}
+          keyExtractor={(item, idx) => `${item.timestamp}-${idx}`}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.glowBlue} />}
           renderItem={({ item }) => (
             <View style={{ backgroundColor: '#1a3a52', padding: 12, marginBottom: 8, borderRadius: 8, borderLeftWidth: 4, borderLeftColor: COLORS.glowBlue }}>
-              <Text style={{ color: COLORS.glowBlue, fontWeight: 'bold', marginBottom: 4 }}>
+              <Text style={{ color: COLORS.glowBlue, fontWeight: 'bold', marginBottom: 8 }}>
                 {formatDate(item.timestamp)}
               </Text>
-              <Text style={{ color: COLORS.text, marginBottom: 2 }}>
-                💧 {item.cubicMeters?.toFixed(4)} m³
+              
+              {/* Volume Data */}
+              <View style={{ marginBottom: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#2a4a62' }}>
+                <Text style={{ color: COLORS.text, marginBottom: 2 }}>
+                  💧 Volume: {item.cubicMeters?.toFixed(4)} m³ ({item.totalLiters?.toFixed(0)} L)
+                </Text>
+              </View>
+
+              {/* Flow Rate */}
+              {item.durationSeconds && item.totalLiters && (
+                <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>
+                  ⚡ Flow Rate: {calculateFlowRate(item.totalLiters, item.durationSeconds).toFixed(2)} L/min
+                </Text>
+              )}
+
+              {/* Usage Duration */}
+              {item.durationSeconds && (
+                <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>
+                  ⏱️ Duration: {Math.floor(item.durationSeconds)} seconds
+                </Text>
+              )}
+
+              {/* Cost */}
+              <Text style={{ color: '#FFD700', fontSize: 12, fontWeight: '600', marginBottom: 4 }}>
+                💰 Cost: ₱{calculateCost(item.cubicMeters || 0).toFixed(2)}
               </Text>
-              <Text style={{ color: '#aaa', fontSize: 12 }}>
-                {item.totalLiters?.toFixed(0)} liters
-              </Text>
+
+              {/* Device ID */}
+              {item.deviceId && (
+                <Text style={{ color: '#888', fontSize: 11, marginTop: 4, fontStyle: 'italic' }}>
+                  Device: {item.deviceId}
+                </Text>
+              )}
             </View>
           )}
           ListHeaderComponent={
             <View style={{ marginBottom: 12, padding: 12, backgroundColor: '#1a3a52', borderRadius: 8 }}>
-              <Text style={{ color: COLORS.text, marginBottom: 4 }}>Total Readings</Text>
+              <Text style={{ color: COLORS.text, marginBottom: 4 }}>Recent Readings (Last 1 Minute)</Text>
               <Text style={{ color: COLORS.glowBlue, fontSize: 24, fontWeight: 'bold' }}>
                 {readings.length}
               </Text>

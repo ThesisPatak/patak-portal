@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Linking, ActivityIndicator, Share } from 'react-native';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
@@ -16,15 +16,12 @@ export default function PayScreen({ payInfo, onBack }) {
   const handleOpenPayPal = async () => {
     try {
       setLoading(true);
-      const canOpen = await Linking.canOpenURL(paypalLink);
-      if (canOpen) {
-        await Linking.openURL(paypalLink);
-      } else {
-        alert('Cannot open PayPal link. Please open it manually:\n' + paypalLink);
-      }
+      await Linking.openURL(paypalLink).catch(() => {
+        alert('Cannot open PayPal automatically.\n\nPayPal ID: ' + PAYPAL_ID + '\nAmount: ₱' + Number(amount).toFixed(2));
+      });
     } catch (error) {
       console.error('Error opening PayPal:', error);
-      alert('Failed to open PayPal. Please check your internet connection.');
+      alert('PayPal: ' + paypalLink);
     } finally {
       setLoading(false);
     }
@@ -33,9 +30,12 @@ export default function PayScreen({ payInfo, onBack }) {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Pay ₱${Number(amount).toFixed(2)} via PayPal:\n${paypalLink}`,
-        url: paypalLink,
+        message: `Pay ₱${Number(amount).toFixed(2)} via PayPal for ${house}:\n${paypalLink}`,
         title: `Payment for ${house}`,
+      }).catch(error => {
+        if (error.code !== 'E_CANCELLED') {
+          console.error('Share error:', error);
+        }
       });
     } catch (error) {
       console.error('Share error:', error);
