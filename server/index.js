@@ -1048,11 +1048,33 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       totalLiters: totalUsage * 1000,
       deviceCount: userDevices.length,
       lastReading: latestReading ? latestReading.timestamp : null,
-      devices: userDevices.map(d => ({
-        deviceId: d.deviceId,
-        status: d.status,
-        lastSeen: d.lastSeen
-      })),
+      devices: userDevices.map(d => {
+        // Compute device status dynamically based on lastSeen timestamp
+        // A device is considered 'online' if:
+        // 1. It has sent a reading/heartbeat within the last 5 minutes, OR
+        // 2. It was just registered (status is 'registered' and createdAt is recent)
+        let computedStatus = 'offline';
+        const now = Date.now();
+        const lastSeenTime = d.lastSeen ? new Date(d.lastSeen).getTime() : null;
+        const createdAtTime = d.createdAt ? new Date(d.createdAt).getTime() : null;
+        
+        // Within 5 minutes of last activity = online
+        if (lastSeenTime && (now - lastSeenTime) < 5 * 60 * 1000) {
+          computedStatus = 'online';
+        }
+        // Just registered (within 5 minutes of creation) and no activity yet = online (registered)
+        else if (createdAtTime && (now - createdAtTime) < 5 * 60 * 1000 && !lastSeenTime) {
+          computedStatus = 'online';
+        }
+        // Otherwise = offline
+        
+        return {
+          deviceId: d.deviceId,
+          status: computedStatus,
+          lastSeen: d.lastSeen,
+          createdAt: d.createdAt
+        };
+      }),
       monthlyBill: totalBill,
       dataSource: userDevices.length > 0 ? 'registered_devices' : (deviceReadings.length > 0 ? 'fallback_all_readings' : 'no_data')
     }
