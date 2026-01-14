@@ -69,7 +69,7 @@ const BillingTable: React.FC = () => {
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Usage (m³)</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
-              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Status</th>
+              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Device Status</th>
             </tr>
           </thead>
           <tbody>
@@ -78,6 +78,10 @@ const BillingTable: React.FC = () => {
               const fromSummary = summary[houseKey]?.cubicMeters;
               const usageRaw = fromSummary ?? 0;
               const usage = typeof usageRaw === 'number' ? usageRaw.toFixed(6) : usageRaw;
+              const isOnline = summary[houseKey]?.isOnline ?? false;
+              const statusColor = isOnline ? '#4caf50' : '#ff6b6b';
+              const statusText = isOnline ? '🟢 Online' : '🔴 Offline';
+              
               return (
                 <tr key={houseKey} style={{ background: '#ffffff', boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
                   <td style={{ padding: '10px 12px' }}>{label}</td>
@@ -89,13 +93,13 @@ const BillingTable: React.FC = () => {
                   })()}</td>
                   <td style={{ padding: '10px 12px' }}>{(() => {
                     const num = Number(usageRaw || 0);
-                    if (num === 0) return 'Not yet active';
-                    const registrationDate = new Date(userCreatedAt);
-                    const dueDate = new Date(registrationDate);
+                    if (num === 0 || !summary[houseKey]?.lastReading?.timestamp) return 'Not yet active';
+                    const firstReadingDate = new Date(summary[houseKey].lastReading.timestamp);
+                    const dueDate = new Date(firstReadingDate);
                     dueDate.setMonth(dueDate.getMonth() + 1);
                     return dueDate.toISOString().slice(0,10);
                   })()}</td>
-                  <td style={{ padding: '10px 12px', color: '#c70039' }}>{Number(usageRaw) === 0 ? 'No data' : 'Unpaid'}</td>
+                  <td style={{ padding: '10px 12px', color: statusColor, fontWeight: '600' }}>{statusText}</td>
                 </tr>
               );
             })}

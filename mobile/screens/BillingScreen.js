@@ -30,7 +30,7 @@ function computeResidentialBill(usage) {
   return Number(total.toFixed(2));
 }
 
-export default function BillingScreen({ onBack, token }) {
+export default function BillingScreen({ onBack, token, username }) {
   const [summary, setSummary] = useState(null);
   const [userCreatedAt, setUserCreatedAt] = useState(null);
 
@@ -74,21 +74,24 @@ export default function BillingScreen({ onBack, token }) {
               const s = summary[item] || {};
               const usage = s.cubicMeters ?? 0;
               const amount = s.monthlyBill ?? 0;
+              
+              // Due date: from first reading timestamp + 1 month (or "Not yet active")
               const due = (() => { 
-                if (Number(usage) === 0) return 'Not yet active';
-                // Calculate due date as 1 month from user registration
-                const registrationDate = new Date(userCreatedAt);
-                const dueDate = new Date(registrationDate);
+                if (Number(usage) === 0 || !s.lastReading?.timestamp) return 'Not yet active';
+                const firstReadingDate = new Date(s.lastReading.timestamp);
+                const dueDate = new Date(firstReadingDate);
                 dueDate.setMonth(dueDate.getMonth() + 1);
                 return dueDate.toISOString().slice(0,10);
               })();
+              
               const status = Number(usage) === 0 ? 'No data' : 'Unpaid';
               const isOnline = s.isOnline ?? false;
               const deviceStatus = isOnline ? '🟢 Online' : '🔴 Offline';
+              
               return (
                 <View style={styles.card}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <Text style={{ fontWeight: '700', color: COLORS.primary }}>{item}</Text>
+                    <Text style={{ fontWeight: '700', color: COLORS.primary }}>{username || 'User'}</Text>
                     <Text style={{ fontSize: 12, color: isOnline ? '#4caf50' : '#ff6b6b', fontWeight: '600' }}>{deviceStatus}</Text>
                   </View>
                   <Text style={styles.subtitle}>Usage (m³): {typeof usage === 'number' ? usage.toFixed(6) : usage}</Text>
