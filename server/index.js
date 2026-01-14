@@ -89,6 +89,42 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '2.0-json-fix' })
 })
 
+// Debug endpoint - Check server state (users, devices, readings count)
+app.get('/debug/state', (req, res) => {
+  console.log(`[DEBUG] State check requested`)
+  try {
+    const users = readJSON(USERS_FILE)
+    const devices = readJSON(DEVICES_FILE)
+    const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+    let readings = []
+    if (fs.existsSync(READINGS_FILE)) {
+      readings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+    
+    console.log(`[DEBUG] State: ${users.length} users, ${devices.length} devices, ${readings.length} readings`)
+    
+    res.json({
+      timestamp: new Date().toISOString(),
+      dataDirectory: DATA_DIR,
+      users: {
+        count: users.length,
+        list: users.map(u => ({ id: u.id, username: u.username, email: u.email, isAdmin: u.isAdmin, createdAt: u.createdAt }))
+      },
+      devices: {
+        count: devices.length,
+        list: devices.map(d => ({ deviceId: d.deviceId, ownerUserId: d.ownerUserId, houseId: d.houseId, status: d.status, lastSeen: d.lastSeen }))
+      },
+      readings: {
+        count: readings.length,
+        latestReadings: readings.slice(-5).map(r => ({ id: r.id, deviceId: r.deviceId, house: r.house, cubicMeters: r.cubicMeters, timestamp: r.timestamp, receivedAt: r.receivedAt }))
+      }
+    })
+  } catch (err) {
+    console.error(`[DEBUG] Error:`, err)
+    res.status(500).json({ error: 'Failed to get state', message: err.message })
+  }
+})
+
 function generateId(prefix = 'id') {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random()*1000)}`
 }
@@ -108,32 +144,54 @@ function authMiddleware(req, res, next) {
 
 app.post('/auth/register', async (req, res) => {
   const { email, username, password } = req.body || {}
-  if ((!email && !username) || !password) return res.status(400).json({ error: 'email or username, and password required' })
-  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' })
-  if (username && (username.length < 3 || username.length > 30)) return res.status(400).json({ error: 'Username must be 3-30 characters' })
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email format' })
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [REGISTER] REQUEST - username: ${username}, email: ${email}, hasPassword: ${!!password}`)
+  console.log(`[REGISTER] Full request body:`, JSON.stringify(req.body))
+  
+  if ((!email && !username) || !password) {
+    console.log(`[REGISTER] ✗ FAILED - Missing email or username and/or password`)
+    return res.status(400).json({ error: 'email or username, and password required' })
+  }
+  if (password.length < 8) {
+    console.log(`[REGISTER] ✗ FAILED - Password too short (${password.length} chars)`)
+    return res.status(400).json({ error: 'Password must be at least 8 characters' })
+  }
+  if (username && (username.length < 3 || username.length > 30)) {
+    console.log(`[REGISTER] ✗ FAILED - Username invalid length (${username.length} chars)`)
+    return res.status(400).json({ error: 'Username must be 3-30 characters' })
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    console.log(`[REGISTER] ✗ FAILED - Invalid email format: ${email}`)
+    return res.status(400).json({ error: 'Invalid email format' })
+  }
   
   try {
-    console.log(`[REGISTER] Attempting registration for username: ${username}`)
     const users = readJSON(USERS_FILE)
-    console.log(`[REGISTER] Current users in file: ${users.length}`)
+    console.log(`[REGISTER] Current users in database: ${users.length}`)
+    users.forEach((u, idx) => console.log(`  [${idx}] id=${u.id}, username=${u.username}, email=${u.email}, isAdmin=${u.isAdmin}`))
+    
     const exists = users.find(u => (email && u.email === email) || (username && u.username === username))
     if (exists) {
-      console.log(`[REGISTER] User already exists`)
+      console.log(`[REGISTER] ✗ FAILED - User already exists: ${exists.username || exists.email}`)
       return res.status(409).json({ error: 'User exists' })
     }
     
+    console.log(`[REGISTER] Hashing password...`)
     const passwordHash = await bcrypt.hash(password, 10)
-    const user = { id: generateId('user'), email: email || null, username: username || null, passwordHash, createdAt: new Date().toISOString() }
+    const userId = generateId('user')
+    const user = { id: userId, email: email || null, username: username || null, passwordHash, createdAt: new Date().toISOString() }
+    
+    console.log(`[REGISTER] Created user object:`, { id: user.id, username: user.username, email: user.email, createdAt: user.createdAt })
     users.push(user)
+    console.log(`[REGISTER] Writing ${users.length} users to disk...`)
     writeJSON(USERS_FILE, users)
-    console.log(`[REGISTER] User saved. Total users now: ${users.length}`)
+    console.log(`[REGISTER] ✓ SAVED - User file now contains ${users.length} users`)
     
     const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
-    console.log(`✓ User registered: ${username} (${user.id})`)
+    console.log(`[REGISTER] ✓✓ SUCCESS - User registered: ${username} (${user.id}), token issued`)
     res.status(201).json({ token, user: { id: user.id, email: user.email, username: user.username, createdAt: user.createdAt } })
   } catch (err) {
-    console.error('Registration error:', err)
+    console.error(`[REGISTER] ✗ ERROR:`, err.message, err.stack)
     res.status(500).json({ error: 'Registration failed', message: err.message })
   }
 })
@@ -279,9 +337,16 @@ app.get('/api/houses', authMiddleware, (req, res) => {
 
 // ESP32 Device readings submission (no auth for now, can add device token validation later)
 app.post('/api/readings', async (req, res) => {
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [ESP32-READING] =========== Incoming reading from ESP32 ===========`)
+  console.log(`[ESP32-READING] Full request body:`, JSON.stringify(req.body))
+  
   // Authenticate with device token (from ESP32)
   const authHeader = req.headers.authorization
+  console.log(`[ESP32-READING] Authorization header present: ${!!authHeader}`)
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Missing or invalid device token`)
     return res.status(401).json({ error: 'Device token required' })
   }
   
@@ -289,23 +354,31 @@ app.post('/api/readings', async (req, res) => {
   let deviceId = null
   try {
     const payload = jwt.verify(token, JWT_SECRET)
+    console.log(`[ESP32-READING] Token verified successfully. Payload:`, { type: payload.type, deviceId: payload.deviceId })
     if (payload.type === 'device') {
       deviceId = payload.deviceId
     } else {
+      console.log(`[ESP32-READING] ✗ REJECTED - Invalid token type: ${payload.type}`)
       return res.status(401).json({ error: 'Invalid token type' })
     }
   } catch (e) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Token verification failed:`, e.message)
     return res.status(401).json({ error: 'Invalid device token' })
   }
   
-  const { house, totalLiters, cubicMeters, timestamp } = req.body || {}
+  const { house, totalLiters, cubicMeters, timestamp: reqTimestamp } = req.body || {}
+  console.log(`[ESP32-READING] Parsed reading data: house=${house}, totalLiters=${totalLiters}, cubicMeters=${cubicMeters}, deviceId=${deviceId}`)
+  
   if (!house || totalLiters === undefined || cubicMeters === undefined) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Missing required fields`)
     return res.status(400).json({ error: 'house, totalLiters, and cubicMeters required' })
   }
   if (cubicMeters < 0 || totalLiters < 0) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Negative reading values`)
     return res.status(400).json({ error: 'Readings cannot be negative' })
   }
   if (cubicMeters > 1000000 || totalLiters > 1000000000) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Reading value exceeds maximum`)
     return res.status(400).json({ error: 'Reading value exceeds maximum allowed' })
   }
   
@@ -314,9 +387,12 @@ app.post('/api/readings', async (req, res) => {
   try {
     if (fs.existsSync(READINGS_FILE)) {
       readings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+      console.log(`[ESP32-READING] Loaded ${readings.length} existing readings from disk`)
+    } else {
+      console.log(`[ESP32-READING] Readings file does not exist, creating new`)
     }
   } catch (e) {
-    console.error('Failed to load readings:', e)
+    console.error(`[ESP32-READING] ✗ Failed to load readings:`, e.message)
   }
   
   const reading = {
@@ -325,21 +401,28 @@ app.post('/api/readings', async (req, res) => {
     house,
     totalLiters: parseFloat(totalLiters),
     cubicMeters: parseFloat(cubicMeters),
-    timestamp: timestamp || new Date().toISOString(),
+    timestamp: reqTimestamp || new Date().toISOString(),
     receivedAt: new Date().toISOString()
   }
+  console.log(`[ESP32-READING] Created reading object:`, reading)
   
   readings.push(reading)
+  console.log(`[ESP32-READING] Writing ${readings.length} readings to disk...`)
   writeJSON(READINGS_FILE, readings)
+  console.log(`[ESP32-READING] ✓ Reading saved. Total readings now: ${readings.length}`)
   
   // Update device's lastSeen timestamp to mark it as online
   const devices = readJSON(DEVICES_FILE)
   const device = devices.find(d => d.deviceId === deviceId)
   if (device) {
     device.lastSeen = new Date().toISOString()
+    console.log(`[ESP32-READING] Updated device '${deviceId}' lastSeen timestamp`)
     writeJSON(DEVICES_FILE, devices)
+  } else {
+    console.log(`[ESP32-READING] ⚠ Device '${deviceId}' not found in devices list`)
   }
   
+  console.log(`[ESP32-READING] ✓✓ SUCCESS - Reading accepted and saved`)
   res.status(201).json({ ok: true, reading })
 })
 
