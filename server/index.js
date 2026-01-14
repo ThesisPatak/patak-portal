@@ -160,6 +160,25 @@ app.get('/debug/state', (req, res) => {
   }
 })
 
+// Debug endpoint - Verify token validity
+app.post('/debug/verify-token', (req, res) => {
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log(`[DEBUG-TOKEN] No token provided`)
+    return res.status(400).json({ valid: false, error: 'No token provided' })
+  }
+  
+  const token = authHeader.slice(7)
+  try {
+    const payload = jwt.verify(token, JWT_SECRET)
+    console.log(`[DEBUG-TOKEN] ✓ Token is valid:`, payload)
+    res.json({ valid: true, payload })
+  } catch (err) {
+    console.log(`[DEBUG-TOKEN] ✗ Token is invalid:`, err.message)
+    res.status(400).json({ valid: false, error: err.message })
+  }
+})
+
 // Debug endpoint - Test file writing capability
 app.post('/debug/test-write', (req, res) => {
   console.log(`\n[DEBUG-WRITE] Testing file write capability...`)
@@ -197,13 +216,18 @@ function generateId(prefix = 'id') {
 
 function authMiddleware(req, res, next) {
   const h = req.headers.authorization
-  if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' })
+  if (!h || !h.startsWith('Bearer ')) {
+    console.log(`[AUTH] ✗ REJECTED - Missing or invalid authorization header`)
+    return res.status(401).json({ error: 'Missing token' })
+  }
   const token = h.slice(7)
   try {
     const payload = jwt.verify(token, JWT_SECRET)
+    console.log(`[AUTH] ✓ Token verified - userId: ${payload.userId}, username: ${payload.username}, isAdmin: ${payload.isAdmin}`)
     req.user = payload
     next()
   } catch (e) {
+    console.log(`[AUTH] ✗ Token verification failed:`, e.message)
     return res.status(401).json({ error: 'Invalid token' })
   }
 }
@@ -720,9 +744,18 @@ app.post('/admin/clear-users', authMiddleware, (req, res) => {
 
 // Admin: Get all users (for admin panel)
 app.get('/api/admin/users', authMiddleware, (req, res) => {
-  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [ADMIN-USERS] Request received`)
+  console.log(`[ADMIN-USERS] User info:`, { userId: req.user.userId, username: req.user.username, isAdmin: req.user.isAdmin })
+  
+  if (!req.user.isAdmin) {
+    console.log(`[ADMIN-USERS] ✗ REJECTED - User is not admin`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
   
   const users = readJSON(USERS_FILE)
+  console.log(`[ADMIN-USERS] Loaded ${users.length} total users from database`)
+  
   const userList = {}
   
   users.forEach(user => {
@@ -736,9 +769,13 @@ app.get('/api/admin/users', authMiddleware, (req, res) => {
         email: user.email,
         username: user.username
       }
+      console.log(`[ADMIN-USERS] Added user: ${key} (id: ${user.id})`)
+    } else {
+      console.log(`[ADMIN-USERS] Skipping admin user: ${user.username}`)
     }
   })
   
+  console.log(`[ADMIN-USERS] ✓ Returning ${Object.keys(userList).length} non-admin users`)
   res.json({ users: userList })
 })
 
