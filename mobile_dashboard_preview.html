@@ -83,11 +83,15 @@
         /* Present Usage - Full Width */
         .present-usage-card {
             background: rgba(15, 36, 56, 0.6);
-            border: 2px solid #00b4ff;
+            border: 2px solid #1dd1a1;
             border-radius: 12px;
             padding: 16px;
             text-align: center;
             margin-bottom: 20px;
+        }
+
+        .present-usage-card .card-label {
+            color: #1dd1a1;
         }
 
         .card-label {
@@ -102,14 +106,14 @@
             width: 140px;
             height: 140px;
             border-radius: 70px;
-            border: 5px solid #00b4ff;
+            border: 5px solid #1dd1a1;
             background: rgba(15, 36, 56, 0.8);
             margin: 0 auto 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+            box-shadow: 0 0 20px rgba(29, 209, 161, 0.5);
             position: relative;
             animation: pulse-glow 3s ease-in-out infinite;
         }
@@ -126,6 +130,15 @@
             justify-content: center;
             box-shadow: 0 0 15px rgba(0, 180, 255, 0.4);
             animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .circle-small.previous {
+            border-color: #888888;
+            box-shadow: 0 0 15px rgba(136, 136, 136, 0.4);
+        }
+
+        .circle-small.previous .usage-unit {
+            color: #888888;
         }
 
         .circle-small.danger {
@@ -151,12 +164,13 @@
 
         .usage-unit {
             font-size: 12px;
-            color: #00b4ff;
+            color: #1dd1a1;
             margin-top: 4px;
         }
 
         .circle-small .usage-unit {
             font-size: 10px;
+            color: #00b4ff;
         }
 
         .usage-row {
@@ -174,6 +188,14 @@
             border-radius: 12px;
             padding: 12px;
             text-align: center;
+        }
+
+        .usage-card:first-child {
+            border-color: #888888;
+        }
+
+        .usage-card:first-child .card-label {
+            color: #888888;
         }
 
         /* Estimated Bill */
@@ -303,14 +325,17 @@
 </head>
 <body>
     <div class="preview-info">
-        <strong>✓ NEW DASHBOARD LAYOUT</strong><br><br>
+        <strong>✓ NEW DASHBOARD LAYOUT (PRODUCTION)</strong><br><br>
+        <strong>Color Scheme:</strong><br>
+        🟢 Present Usage: Green<br>
+        ⚫ Previous Usage: Gray<br>
+        🔵 Total Usage: Cyan<br><br>
         <strong>Features:</strong><br>
         • Present Usage (Large top circle)<br>
         • Previous Usage (Small bottom left)<br>
         • Total Usage (Small bottom right)<br>
         • Balanced & responsive design<br>
         • Glow animation on all circles<br>
-        • Color changes based on usage<br>
     </div>
 
     <div class="mobile-frame">
@@ -343,8 +368,8 @@
                 <div class="usage-row">
                     <div class="usage-col">
                         <div class="usage-card">
-                            <div class="card-label">PREVIOUS</div>
-                            <div class="circle-small">
+                            <div class="card-label" style="color: #888888;">PREVIOUS</div>
+                            <div class="circle-small previous">
                                 <div class="usage-value">18.92</div>
                                 <div class="usage-unit">m³</div>
                             </div>

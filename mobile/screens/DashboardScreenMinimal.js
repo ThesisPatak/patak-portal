@@ -155,8 +155,8 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
         
         {/* Present Usage - Top Circle */}
         <View style={{ marginBottom: SPACING.large, alignItems: 'center' }}>
-          <View style={[styles.card, { width: '100%', borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
-            <Text style={{ fontSize: 12, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>PRESENT USAGE</Text>
+          <View style={[styles.card, { width: '100%', borderColor: '#1dd1a1', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
+            <Text style={{ fontSize: 12, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>PRESENT USAGE</Text>
             
             {/* Circle */}
             <View style={{ width: 140, height: 140, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.base, position: 'relative' }}>
@@ -167,7 +167,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 height: 120,
                 borderRadius: 60,
                 borderWidth: 5,
-                borderColor: 'rgba(0, 180, 255, 0.2)',
+                borderColor: 'rgba(29, 209, 161, 0.2)',
                 backgroundColor: 'rgba(15, 36, 56, 0.6)',
               }} />
               
@@ -177,11 +177,11 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 height: 120,
                 borderRadius: 60,
                 borderWidth: 5,
-                borderColor: presentUsage > 50 ? COLORS.danger : COLORS.glowBlue,
+                borderColor: '#1dd1a1',
                 justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: 'rgba(15, 36, 56, 0.6)',
-                shadowColor: presentUsage > 50 ? COLORS.danger : COLORS.glowBlue,
+                shadowColor: '#1dd1a1',
                 shadowOffset: { width: 0, height: 0 },
                 shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
                 shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 15] }),
@@ -191,7 +191,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                   <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
                     {presentUsage.toFixed(2)}
                   </Text>
-                  <Text style={{ fontSize: 12, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
+                  <Text style={{ fontSize: 12, color: '#1dd1a1', marginTop: 2 }}>m³</Text>
                 </View>
               </Animated.View>
             </View>
@@ -202,8 +202,8 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
         <View style={{ flexDirection: 'row', gap: SPACING.base, marginBottom: SPACING.large }}>
           {/* Previous Usage - Bottom Left Circle */}
           <View style={{ flex: 1 }}>
-            <View style={[styles.card, { borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
-              <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS</Text>
+            <View style={[styles.card, { borderColor: '#888888', borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
+              <Text style={{ fontSize: 11, color: '#888888', fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS</Text>
               
               {/* Circle */}
               <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.small, position: 'relative' }}>
@@ -214,7 +214,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                   height: 95,
                   borderRadius: 47.5,
                   borderWidth: 4,
-                  borderColor: 'rgba(0, 180, 255, 0.2)',
+                  borderColor: 'rgba(136, 136, 136, 0.2)',
                   backgroundColor: 'rgba(15, 36, 56, 0.6)',
                 }} />
                 
@@ -224,11 +224,11 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                   height: 95,
                   borderRadius: 47.5,
                   borderWidth: 4,
-                  borderColor: COLORS.glowBlue,
+                  borderColor: '#888888',
                   justifyContent: 'center',
                   alignItems: 'center',
                   backgroundColor: 'rgba(15, 36, 56, 0.6)',
-                  shadowColor: COLORS.glowBlue,
+                  shadowColor: '#888888',
                   shadowOffset: { width: 0, height: 0 },
                   shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
                   shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
@@ -238,7 +238,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                     <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
                       {previousUsage.toFixed(2)}
                     </Text>
-                    <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
+                    <Text style={{ fontSize: 10, color: '#888888', marginTop: 2 }}>m³</Text>
                   </View>
                 </Animated.View>
               </View>
