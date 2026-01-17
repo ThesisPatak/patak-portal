@@ -1164,9 +1164,43 @@ app.post('/api/payments/record', authMiddleware, (req, res) => {
   payments.push(newPayment)
   writeJSON(PAYMENTS_FILE, payments)
   
-  console.log(`[RECORD-PAYMENT] ✓ Payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear}`)
+  // Log payment with method-specific details
+  if (paymentMethod === 'gcash') {
+    console.log(`[RECORD-PAYMENT] ✓ GCash payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear}`)
+    console.log(`[RECORD-PAYMENT] Transaction ID: ${newPayment.id}`)
+  } else {
+    console.log(`[RECORD-PAYMENT] ✓ Payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear} via ${paymentMethod}`)
+  }
   
   res.json({ ok: true, message: 'Payment recorded successfully', payment: newPayment })
+})
+
+// GCash: Webhook endpoint for payment confirmations (optional integration)
+app.post('/api/gcash/webhook', (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { transactionId, amount, recipientId, senderId, status, metadata } = req.body || {}
+  
+  console.log(`\n[${timestamp}] [GCASH-WEBHOOK] Received GCash webhook`)
+  console.log(`[GCASH-WEBHOOK] Transaction: ${transactionId}, Amount: ${amount}, Status: ${status}`)
+  
+  if (!transactionId || !status) {
+    return res.status(400).json({ error: 'Missing required fields' })
+  }
+  
+  // Verify signature (implement GCash webhook validation)
+  // This would require GCash API key and signature verification
+  
+  if (status === 'SUCCESS' || status === 'COMPLETED') {
+    console.log(`[GCASH-WEBHOOK] ✓ GCash payment confirmed: ${transactionId}`)
+    
+    // Extract user info from metadata if provided
+    // In real implementation, you'd verify and update payment status
+    
+    return res.json({ ok: true, message: 'Webhook processed' })
+  }
+  
+  console.log(`[GCASH-WEBHOOK] ℹ Payment status: ${status}`)
+  res.json({ ok: true, message: 'Webhook received' })
 })
 
 // User/Admin: Get payments for a user

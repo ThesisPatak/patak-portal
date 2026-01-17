@@ -63,7 +63,13 @@ export default function App() {
     }
 
     if (screen === 'pay') {
-      return <PayScreen payInfo={payInfo} onBack={() => setScreen('dashboard')} />;
+      return <PayScreen 
+        payInfo={payInfo} 
+        token={token}
+        username={username}
+        onBack={() => setScreen('dashboard')}
+        onPaymentSuccess={() => setPayInfo(null)}
+      />;
     }
 
     if (screen === 'devices') {
