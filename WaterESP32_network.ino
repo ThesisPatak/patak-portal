@@ -7,6 +7,7 @@
 // Networking
 #include <WiFi.h>
 #include <WebServer.h>
+#include <ESPmDNS.h>
 #include <HTTPClient.h>
 #include <time.h>
 
@@ -386,6 +387,21 @@ void setup() {
     Serial.println("\n✓ WiFi connected!");
     Serial.print("IP: ");
     Serial.println(WiFi.localIP());
+    
+    // Initialize mDNS for auto-discovery
+    String mdnsHostname = DEVICE_ID;
+    mdnsHostname.toLowerCase();
+    mdnsHostname.replace("_", "-");
+    
+    if (MDNS.begin(mdnsHostname.c_str())) {
+      Serial.print("✓ mDNS started as: ");
+      Serial.print(mdnsHostname);
+      Serial.println(".local");
+      MDNS.addService("http", "tcp", 80);
+    } else {
+      Serial.println("✗ mDNS failed");
+    }
+    
     setupWebServer();  // Start web server for token reception
   } else {
     Serial.println("\n✗ WiFi connection failed");
