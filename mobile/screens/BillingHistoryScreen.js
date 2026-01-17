@@ -1,0 +1,278 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
+import Api from '../api/Api';
+import styles from './styles';
+import { COLORS, SPACING } from './variables';
+
+function generateBillingHistory(readings, createdAt) {
+  const history = [];
+  const now = new Date();
+  
+  // Check if we have actual data
+  const hasData = readings && readings.length > 0;
+  
+  if (hasData) {
+    // Rolling billing cycles from first reading date
+    const firstReadingDate = new Date(readings[0].timestamp);
+    const billingStartDay = firstReadingDate.getDate();
+    const billingStartMonth = firstReadingDate.getMonth();
+    const billingStartYear = firstReadingDate.getFullYear();
+    
+    // Generate 12 rolling periods from first reading
+    for (let i = 11; i >= 0; i--) {
+      let periodStartDate = new Date(billingStartYear, billingStartMonth - i, billingStartDay);
+      let periodEndDate = new Date(billingStartYear, billingStartMonth - i + 1, billingStartDay);
+      
+      // Handle year rollover
+      if (periodEndDate < periodStartDate) {
+        periodEndDate = new Date(periodEndDate.getFullYear() + 1, periodEndDate.getMonth(), periodEndDate.getDate());
+      }
+      
+      const periodReadings = readings.filter((r) => {
+        const readingDate = new Date(r.timestamp);
+        return readingDate >= periodStartDate && readingDate < periodEndDate;
+      }).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      
+      let consumption = 0;
+      if (periodReadings.length > 0) {
+        const firstReading = periodReadings[0];
+        const lastReading = periodReadings[periodReadings.length - 1];
+        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+      }
+      
+      const monthStr = `${periodStartDate.toLocaleString('default', { month: 'short' })} ${periodStartDate.getDate()} - ${periodEndDate.toLocaleString('default', { month: 'short' })} ${periodEndDate.getDate()}`;
+      const amountDue = consumption * 15;
+      
+      // Determine bill status
+      let billStatus = 'Pending';
+      if (now > periodEndDate) {
+        billStatus = 'Overdue';
+      } else if (now < periodStartDate) {
+        billStatus = 'Upcoming';
+      }
+      
+      history.push({
+        month: monthStr,
+        monthDate: periodStartDate,
+        consumption: consumption.toFixed(6),
+        amountDue: amountDue.toFixed(2),
+        billStatus,
+        dueDate: periodEndDate.toISOString().split('T')[0],
+      });
+    }
+  } else {
+    // Default calendar months (no data)
+    for (let i = 11; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const nextMonthDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      
+      const monthStr = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      
+      history.push({
+        month: monthStr,
+        monthDate,
+        consumption: '0.000000',
+        amountDue: '0.00',
+        billStatus: 'Not yet active',
+        dueDate: nextMonthDate.toISOString().split('T')[0],
+      });
+    }
+  }
+  
+  return history;
+}
+
+export default function BillingHistoryScreen({ token, username, onBack }) {
+  const [readings, setReadings] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
+  const [billingHistory, setBillingHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  async function loadData() {
+    try {
+      setError(null);
+      // Get user's dashboard data
+      const dashboard = await Api.getDashboard(token);
+      const userData = dashboard?.summary?.[username] || {};
+      setUserInfo(userData);
+
+      // Get user's readings
+      const data = await Api.getUsage(token);
+      const history = data.history || [];
+      setReadings(history);
+
+      // Generate billing history
+      const createdAt = userData.createdAt || new Date().toISOString();
+      const bills = generateBillingHistory(history, createdAt);
+      setBillingHistory(bills);
+    } catch (e) {
+      console.error('Error loading data:', e);
+      setError(e.message || 'Failed to load billing history');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, [token]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background }}>
+        <ActivityIndicator size="large" color={COLORS.glowBlue} />
+        <Text style={{ color: COLORS.glowBlue, marginTop: 12 }}>Loading billing history...</Text>
+      </View>
+    );
+  }
+
+  const totalConsumption = userInfo?.cubicMeters || 0;
+  const createdDate = userInfo?.createdAt ? new Date(userInfo.createdAt).toLocaleDateString() : 'Unknown';
+  const deviceCount = userInfo?.deviceCount || 0;
+  const lastReading = userInfo?.lastReading ? new Date(userInfo.lastReading.timestamp).toLocaleString() : 'No data yet';
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: COLORS.background }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.glowBlue} />}
+      contentContainerStyle={{ padding: SPACING.base, paddingBottom: SPACING.large }}
+    >
+      {/* Back Button */}
+      <TouchableOpacity onPress={onBack} style={{ marginBottom: SPACING.base }}>
+        <Text style={{ color: COLORS.link, fontSize: 16, fontWeight: '600' }}>← Back to Dashboard</Text>
+      </TouchableOpacity>
+
+      {/* Title */}
+      <Text style={[styles.title, { marginBottom: SPACING.large }]}>📋 Billing History</Text>
+
+      {error && (
+        <View style={{ backgroundColor: '#ff4444', padding: 12, marginBottom: 12, borderRadius: 8 }}>
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>⚠️ {error}</Text>
+        </View>
+      )}
+
+      {/* User Information */}
+      <View style={{ backgroundColor: '#1a3a52', padding: 16, borderRadius: 12, marginBottom: SPACING.large }}>
+        <Text style={{ color: COLORS.glowBlue, fontSize: 16, fontWeight: 'bold', marginBottom: 12 }}>
+          User Information
+        </Text>
+
+        <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', padding: 12, borderRadius: 8, marginBottom: 8 }}>
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 2 }}>Registered</Text>
+            <Text style={{ color: COLORS.text, fontSize: 14, fontWeight: '600' }}>{createdDate}</Text>
+          </View>
+
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 2 }}>Devices</Text>
+            <Text style={{ color: COLORS.text, fontSize: 14, fontWeight: '600' }}>{deviceCount}</Text>
+          </View>
+
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 2 }}>Total Usage</Text>
+            <Text style={{ color: COLORS.glowBlue, fontSize: 14, fontWeight: '600' }}>
+              {totalConsumption.toFixed(6)} m³
+            </Text>
+          </View>
+
+          <View>
+            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 2 }}>Last Reading</Text>
+            <Text style={{ color: COLORS.text, fontSize: 14, fontWeight: '600' }}>{lastReading}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Billing History Table */}
+      <View style={{ backgroundColor: '#1a3a52', padding: 16, borderRadius: 12, marginBottom: SPACING.large }}>
+        <Text style={{ color: COLORS.glowBlue, fontSize: 16, fontWeight: 'bold', marginBottom: 12 }}>
+          Last 12 Months
+        </Text>
+
+        {billingHistory.length === 0 ? (
+          <Text style={{ color: '#aaa', textAlign: 'center', padding: 20 }}>No billing history available</Text>
+        ) : (
+          <FlatList
+            scrollEnabled={false}
+            data={billingHistory}
+            keyExtractor={(item, idx) => `${item.month}-${idx}`}
+            renderItem={({ item, index }) => {
+              const isLastRow = index === billingHistory.length - 1;
+              const displayTotal = isLastRow ? totalConsumption : billingHistory.slice(0, index + 1).reduce((sum, b) => sum + parseFloat(b.consumption), 0);
+
+              return (
+                <View
+                  style={{
+                    backgroundColor: isLastRow ? 'rgba(0, 87, 184, 0.1)' : 'transparent',
+                    padding: 12,
+                    marginBottom: 8,
+                    borderLeftWidth: 3,
+                    borderLeftColor: COLORS.glowBlue,
+                    borderRadius: 4,
+                  }}
+                >
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ color: COLORS.glowBlue, fontWeight: '600', fontSize: 12 }}>
+                      {item.month}
+                    </Text>
+                  </View>
+
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>Consumption</Text>
+                    <Text style={{ color: COLORS.text, fontSize: 13, fontWeight: '500' }}>
+                      {item.consumption} m³
+                    </Text>
+                  </View>
+
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>User's Total Consumption</Text>
+                    <Text style={{ color: COLORS.glowBlue, fontSize: 13, fontWeight: '600' }}>
+                      {displayTotal.toFixed(6)} m³
+                    </Text>
+                  </View>
+
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>Amount Due</Text>
+                    <Text style={{ color: '#FFD700', fontSize: 13, fontWeight: '600' }}>
+                      ₱{item.amountDue}
+                    </Text>
+                  </View>
+
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>Due Date</Text>
+                    <Text style={{ color: COLORS.text, fontSize: 12 }}>{item.dueDate}</Text>
+                  </View>
+
+                  <View>
+                    <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>Status</Text>
+                    <Text
+                      style={{
+                        color:
+                          item.billStatus === 'Paid'
+                            ? '#4caf50'
+                            : item.billStatus === 'Overdue'
+                            ? '#ff6b6b'
+                            : '#ff9800',
+                        fontSize: 12,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {item.billStatus === 'Pending' && '⏳ '}{item.billStatus === 'Overdue' && '🔴 '}{item.billStatus === 'Upcoming' && '📅 '}{item.billStatus}
+                    </Text>
+                  </View>
+                </View>
+              );
+            }}
+          />
+        )}
+      </View>
+    </ScrollView>
+  );
+}

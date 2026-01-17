@@ -3,6 +3,7 @@ import { SafeAreaView, View, Text, TouchableOpacity, StatusBar, ActivityIndicato
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreenMinimal';
+import BillingHistoryScreen from './screens/BillingHistoryScreen';
 import PayScreen from './screens/PayScreen';
 import DeviceScreen from './screens/DeviceScreen';
 import styles from './screens/styles';
@@ -49,11 +50,16 @@ export default function App() {
         <DashboardScreen
           token={token}
           username={username}
+          onOpenBilling={() => setScreen('billing')}
           onLogout={() => { setToken(null); setUsername(null); setScreen('dashboard'); }}
           onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
           onOpenDevices={() => setScreen('devices')}
         />
       );
+    }
+
+    if (screen === 'billing') {
+      return <BillingHistoryScreen token={token} username={username} onBack={() => setScreen('dashboard')} />;
     }
 
     if (screen === 'pay') {

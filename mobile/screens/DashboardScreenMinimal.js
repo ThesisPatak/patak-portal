@@ -4,7 +4,7 @@ import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING } from './variables';
 
-export default function DashboardScreen({ token, username, onLogout, onPay, onOpenDevices }) {
+export default function DashboardScreen({ token, username, onOpenBilling, onLogout, onPay, onOpenDevices }) {
   const [summary, setSummary] = useState({ summary: {} });
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -197,6 +197,10 @@ export default function DashboardScreen({ token, username, onLogout, onPay, onOp
 
       {/* Action Buttons */}
       <View style={{ gap: SPACING.base }}>
+        <TouchableOpacity style={[styles.primaryButton]} onPress={onOpenBilling}>
+          <Text style={styles.primaryButtonText}>📋 Billing History</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={[styles.primaryButton]} onPress={() => onPay(null, totalUsage * 15)}>
           <Text style={styles.primaryButtonText}>💳 Pay Bill</Text>
         </TouchableOpacity>
