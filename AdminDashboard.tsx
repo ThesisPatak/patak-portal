@@ -36,6 +36,7 @@ const AdminDashboard: React.FC = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userReadings, setUserReadings] = useState<any[]>([]);
   const [readingsLoading, setReadingsLoading] = useState(false);
+  const [userConsumption, setUserConsumption] = useState<Record<string, { present: number; previous: number }>>({});
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
@@ -84,6 +85,28 @@ const AdminDashboard: React.FC = () => {
         monthlyBill: (user.cubicMeters || 0) * 15
       }));
       setUsers(usersWithCorrectBill);
+      
+      // Fetch consumption data for all users
+      const consumptionMap: Record<string, { present: number; previous: number }> = {};
+      for (const user of usersWithCorrectBill) {
+        try {
+          const readingsRes = await fetch(`${API_URL}/api/admin/users/${user.id}/readings`, {
+            headers: { Authorization: "Bearer " + token },
+          });
+          if (readingsRes.ok) {
+            const readingsData = await readingsRes.json();
+            const readings = readingsData.readings || [];
+            consumptionMap[user.id] = {
+              present: getPresentConsumption(readings),
+              previous: getPreviousConsumption(readings),
+            };
+          }
+        } catch (err) {
+          console.error(`Failed to fetch readings for user ${user.id}:`, err);
+          consumptionMap[user.id] = { present: 0, previous: 0 };
+        }
+      }
+      setUserConsumption(consumptionMap);
     } catch (err) {
       console.error("Dashboard error:", err);
       setUsers([]);
@@ -108,6 +131,54 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setReadingsLoading(false);
     }
+  };
+
+  // Calculate consumption for current month (from start of month to now)
+  const getPresentConsumption = (readings: any[]) => {
+    if (!readings || readings.length === 0) return 0;
+    
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const monthReadings = readings.filter((r: any) => {
+      const readingDate = new Date(r.timestamp);
+      return readingDate >= startOfMonth;
+    }).sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    
+    if (monthReadings.length === 0) return 0;
+    
+    // If only one reading in month, it's the consumption from month start
+    if (monthReadings.length === 1) {
+      return monthReadings[0].cubicMeters;
+    }
+    
+    // Get the first reading of this month
+    const firstReading = monthReadings[0];
+    const lastReading = monthReadings[monthReadings.length - 1];
+    
+    // Return the difference from first to last reading in the month
+    return Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+  };
+
+  // Calculate consumption for previous month
+  const getPreviousConsumption = (readings: any[]) => {
+    if (!readings || readings.length === 0) return 0;
+    
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    
+    const prevMonthReadings = readings.filter((r: any) => {
+      const readingDate = new Date(r.timestamp);
+      return readingDate >= startOfPrevMonth && readingDate < startOfMonth;
+    }).sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    
+    if (prevMonthReadings.length === 0) return 0;
+    
+    const firstReading = prevMonthReadings[0];
+    const lastReading = prevMonthReadings[prevMonthReadings.length - 1];
+    
+    return Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
   };
 
   // Delete user account
@@ -321,50 +392,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Per-House Cards */}
-                {users.length > 0 && (
-                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: isMobile ? "0.8rem" : "1rem", marginBottom: "2rem" }}>
-                    {users.map((user) => (
-                      <div key={user.id} style={{ background: "#f9f9f9", padding: isMobile ? "1rem" : "1.5rem", borderRadius: "12px", border: "1px solid #e0e0e0" }}>
-                        <div style={{ fontSize: isMobile ? "0.8rem" : "0.9rem", color: "#333", fontWeight: 600, marginBottom: "0.5rem" }}>
-                          {user.username}
-                        </div>
-                        <div style={{ fontSize: isMobile ? "1.5rem" : "1.8rem", fontWeight: 700, color: "#0057b8", marginBottom: "0.75rem" }}>
-                          {user.cubicMeters.toFixed(6)} m³
-                        </div>
-                        <div style={{ background: "linear-gradient(90deg, #4CAF50 0%, #45a049 100%)", padding: isMobile ? "0.35rem 0.6rem" : "0.45rem 0.75rem", borderRadius: "6px", marginBottom: "0.75rem", display: "block" }}>
-                          <span style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#fff", fontWeight: 600, whiteSpace: "nowrap" }}>
-                            Registered: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: isMobile ? "0.7rem" : "0.8rem", color: "#999", marginTop: "0.75rem" }}>
-                          {user.lastReading ? new Date(user.lastReading).toLocaleTimeString() : "No data"}
-                        </div>
-                        {/* Device Status Section */}
-                        <div style={{ marginTop: "0.75rem", borderTop: "1px solid #ddd", paddingTop: "0.75rem" }}>
-                          <div style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#666", fontWeight: 600, marginBottom: "0.5rem" }}>Devices ({user.deviceCount})</div>
-                          {user.devices && user.devices.length > 0 ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                              {user.devices.map((device: any, idx: number) => {
-                                const isOnline = device.status === "online";
-                                const statusColor = isOnline ? "#4caf50" : "#ff6b6b";
-                                const statusText = isOnline ? "🟢 Active" : "🔴 Offline";
-                                return (
-                                  <div key={idx} style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", padding: "0.4rem", background: "#f0f0f0", borderRadius: "4px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                    <span style={{ color: "#555" }}>{device.deviceId}</span>
-                                    <span style={{ color: statusColor, fontWeight: "600" }}>{statusText}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <div style={{ fontSize: isMobile ? "0.65rem" : "0.75rem", color: "#999", fontStyle: "italic" }}>No devices registered</div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+  
               </section>
 
               {/* Separator */}
@@ -490,7 +518,10 @@ const AdminDashboard: React.FC = () => {
                               Household
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Usage (m³)
+                              Present Consumption (m³)
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Previous Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Amount Due (₱)
@@ -537,7 +568,10 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {user.cubicMeters.toFixed(6)}
+                                {(userConsumption[user.id]?.present || 0).toFixed(6)}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
+                                {(userConsumption[user.id]?.previous || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
                                 ₱{user.monthlyBill.toFixed(2)}
@@ -552,6 +586,55 @@ const AdminDashboard: React.FC = () => {
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
                                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                                  <button
+                                    onClick={() => setSelectedUserId(user.id)}
+                                    style={{
+                                      padding: "0.5rem 1rem",
+                                      background: "#0057b8",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      cursor: "pointer",
+                                      fontSize: "0.85rem",
+                                      fontWeight: 600,
+                                      transition: "background 0.2s",
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = "#004399"}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = "#0057b8"}
+                                  >
+                                    View
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      if (!window.confirm(`Reset meter for "${user.username}"?`)) return;
+                                      try {
+                                        const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(user.username)}/reset-meter`, {
+                                          method: "POST",
+                                          headers: { Authorization: "Bearer " + token },
+                                        });
+                                        if (!res.ok) throw new Error("Failed");
+                                        alert(`Meter reset for ${user.username}`);
+                                        await loadDashboard();
+                                      } catch (err) {
+                                        alert("Failed to reset meter");
+                                      }
+                                    }}
+                                    style={{
+                                      padding: "0.5rem 1rem",
+                                      background: "#ff9800",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      cursor: "pointer",
+                                      fontSize: "0.85rem",
+                                      fontWeight: 600,
+                                      transition: "background 0.2s",
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = "#e68900"}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = "#ff9800"}
+                                  >
+                                    Reset
+                                  </button>
                                   <button
                                     onClick={() => deleteUser(user.id, user.username)}
                                     style={{

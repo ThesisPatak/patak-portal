@@ -959,6 +959,39 @@ app.post('/api/admin/users', authMiddleware, async (req, res) => {
   }
 })
 
+// Admin: Reset meter for a user
+app.post('/api/admin/users/:username/reset-meter', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [RESET-METER] Request received`)
+  
+  if (!req.user.isAdmin) {
+    console.log(`[RESET-METER] ✗ REJECTED - User is not admin`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+  
+  const { username } = req.params
+  const decodedUsername = decodeURIComponent(username)
+  console.log(`[RESET-METER] Target username: "${decodedUsername}"`)
+  
+  const users = readJSON(USERS_FILE)
+  const user = users.find(u => u.username === decodedUsername)
+  
+  if (!user) {
+    console.log(`[RESET-METER] ✗ User not found`)
+    return res.status(404).json({ error: 'User not found' })
+  }
+  
+  // Reset user consumption to 0
+  user.cubicMeters = 0
+  user.totalLiters = 0
+  user.lastReading = null
+  
+  writeJSON(USERS_FILE, users)
+  console.log(`[RESET-METER] ✓ Meter reset for user: ${user.username}`)
+  
+  res.json({ ok: true, message: 'Meter reset successfully', username: user.username })
+})
+
 // Admin: Delete a user by username
 app.delete('/api/admin/users/:username', authMiddleware, (req, res) => {
   const timestamp = new Date().toISOString()
