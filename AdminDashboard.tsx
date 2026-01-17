@@ -524,6 +524,9 @@ const AdminDashboard: React.FC = () => {
                               Previous Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Total Consumption (m³)
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Amount Due (₱)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
@@ -572,6 +575,9 @@ const AdminDashboard: React.FC = () => {
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
                                 {(userConsumption[user.id]?.previous || 0).toFixed(6)}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>
+                                {((userConsumption[user.id]?.present || 0) + (userConsumption[user.id]?.previous || 0)).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
                                 ₱{user.monthlyBill.toFixed(2)}
