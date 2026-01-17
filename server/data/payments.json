@@ -1,1 +1,123 @@
-[]
+[
+  {
+    "id": "payment-1705276800000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-01-10T14:30:00Z",
+    "billingMonth": 2,
+    "billingYear": 2025,
+    "paymentMethod": "manual",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1707955200000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-02-15T10:20:00Z",
+    "billingMonth": 3,
+    "billingYear": 2025,
+    "paymentMethod": "GCash",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1710374400000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-03-20T09:15:00Z",
+    "billingMonth": 4,
+    "billingYear": 2025,
+    "paymentMethod": "bank_transfer",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1713052800000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-04-18T16:45:00Z",
+    "billingMonth": 5,
+    "billingYear": 2025,
+    "paymentMethod": "manual",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1715644800000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-05-22T11:30:00Z",
+    "billingMonth": 6,
+    "billingYear": 2025,
+    "paymentMethod": "GCash",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1718323200000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-06-19T13:00:00Z",
+    "billingMonth": 7,
+    "billingYear": 2025,
+    "paymentMethod": "manual",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1721001600000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-07-25T15:20:00Z",
+    "billingMonth": 8,
+    "billingYear": 2025,
+    "paymentMethod": "bank_transfer",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1723593600000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-08-28T10:45:00Z",
+    "billingMonth": 9,
+    "billingYear": 2025,
+    "paymentMethod": "GCash",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1726272000000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-09-17T14:15:00Z",
+    "billingMonth": 10,
+    "billingYear": 2025,
+    "paymentMethod": "manual",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1728950400000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-10-21T09:30:00Z",
+    "billingMonth": 11,
+    "billingYear": 2025,
+    "paymentMethod": "bank_transfer",
+    "status": "confirmed"
+  },
+  {
+    "id": "payment-1731542400000",
+    "userId": "user-1705259281234",
+    "username": "BulanE",
+    "amount": 0,
+    "paymentDate": "2025-11-16T12:00:00Z",
+    "billingMonth": 12,
+    "billingYear": 2025,
+    "paymentMethod": "GCash",
+    "status": "confirmed"
+  }
+]
