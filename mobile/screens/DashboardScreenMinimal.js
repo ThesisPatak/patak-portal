@@ -6,6 +6,7 @@ import { COLORS, TYPO, SPACING } from './variables';
 
 export default function DashboardScreen({ token, username, onOpenBilling, onLogout, onPay, onOpenDevices }) {
   const [summary, setSummary] = useState({ summary: {} });
+  const [usageHistory, setUsageHistory] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,6 +43,15 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
       setError(null);
       const data = await Api.getDashboard(token);
       setSummary(data || { summary: {} });
+      
+      // Load usage history to calculate present and previous
+      try {
+        const history = await Api.getUsage(token);
+        setUsageHistory(history || []);
+      } catch (histErr) {
+        console.log('Could not load usage history:', histErr);
+        setUsageHistory([]);
+      }
     } catch (err) {
       console.error('Dashboard load error:', err);
       setError(err.message || 'Failed to load dashboard');
@@ -69,6 +79,39 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
   const summaryData = summary?.summary || summary || {};
   const devices = Object.values(summaryData);
   const totalUsage = devices.reduce((sum, d) => sum + (Number(d?.cubicMeters) || 0), 0);
+  
+  // Calculate present and previous usage from history
+  const calculateUsageMetrics = () => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    let presentUsage = 0;
+    let previousUsage = 0;
+    
+    if (Array.isArray(usageHistory) && usageHistory.length > 0) {
+      // Group readings by month
+      const monthlyUsage = {};
+      usageHistory.forEach(reading => {
+        const date = new Date(reading.timestamp || new Date());
+        const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+        if (!monthlyUsage[monthKey]) {
+          monthlyUsage[monthKey] = 0;
+        }
+        monthlyUsage[monthKey] += Number(reading.cubicMeters) || 0;
+      });
+      
+      const currentMonthKey = `${currentYear}-${currentMonth}`;
+      const previousMonthKey = `${currentMonth === 0 ? currentYear - 1 : currentYear}-${currentMonth === 0 ? 11 : currentMonth - 1}`;
+      
+      presentUsage = monthlyUsage[currentMonthKey] || 0;
+      previousUsage = monthlyUsage[previousMonthKey] || 0;
+    }
+    
+    return { presentUsage, previousUsage };
+  };
+  
+  const { presentUsage, previousUsage } = calculateUsageMetrics();
   
   // Calculate due date from first device's first reading
   const getDueDate = () => {
@@ -104,64 +147,148 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
         </Text>
       </View>
 
-      {/* Total Usage Card */}
-      <View style={[styles.card, { marginBottom: SPACING.large, borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.large, alignItems: 'center' }]}>
-        <Text style={{ fontSize: 14, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.base }}>TOTAL USAGE</Text>
+      {/* Usage Circles - 3 Column Layout */}
+      <View style={{ marginBottom: SPACING.large }}>
+        <Text style={{ fontSize: 16, color: COLORS.glowBlue, fontWeight: '700', marginBottom: SPACING.large, textAlign: 'center' }}>
+          USAGE SUMMARY
+        </Text>
         
-        {/* Circular Progress */}
-        <View style={{ width: 200, height: 200, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.large, position: 'relative' }}>
-          {/* Background circle */}
-          <View style={{
-            position: 'absolute',
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            borderWidth: 6,
-            borderColor: 'rgba(0, 180, 255, 0.2)',
-            backgroundColor: 'rgba(15, 36, 56, 0.6)',
-          }} />
-          
-          {/* Progress arc */}
-          <Animated.View style={{
-            position: 'absolute',
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            borderWidth: 6,
-            borderColor: 'transparent',
-            borderTopColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
-            borderRightColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
-            transform: [
-              {
-                rotate: `${(totalUsage / 100) * 360}deg`
-              }
-            ],
-            opacity: 0.8
-          }} />
-          
-          {/* Main circle with glow */}
-          <Animated.View style={{
-            width: 180,
-            height: 180,
-            borderRadius: 90,
-            borderWidth: 6,
-            borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(15, 36, 56, 0.6)',
-            shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
-            shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 20] }),
-            elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 12] }),
-          }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 28, fontWeight: '900', color: COLORS.text }}>
-                {totalUsage.toFixed(6)}
-              </Text>
-              <Text style={{ fontSize: 14, color: COLORS.glowBlue, marginTop: 4 }}>m³</Text>
+        {/* Present Usage - Top Circle */}
+        <View style={{ marginBottom: SPACING.large, alignItems: 'center' }}>
+          <View style={[styles.card, { width: '100%', borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
+            <Text style={{ fontSize: 12, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>PRESENT USAGE</Text>
+            
+            {/* Circle */}
+            <View style={{ width: 140, height: 140, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.base, position: 'relative' }}>
+              {/* Background circle */}
+              <View style={{
+                position: 'absolute',
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                borderWidth: 5,
+                borderColor: 'rgba(0, 180, 255, 0.2)',
+                backgroundColor: 'rgba(15, 36, 56, 0.6)',
+              }} />
+              
+              {/* Main circle with glow */}
+              <Animated.View style={{
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                borderWidth: 5,
+                borderColor: presentUsage > 50 ? COLORS.danger : COLORS.glowBlue,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(15, 36, 56, 0.6)',
+                shadowColor: presentUsage > 50 ? COLORS.danger : COLORS.glowBlue,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.8] }),
+                shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [5, 15] }),
+                elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 10] }),
+              }}>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
+                    {presentUsage.toFixed(2)}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
+                </View>
+              </Animated.View>
             </View>
-          </Animated.View>
+          </View>
+        </View>
+
+        {/* Row with Previous and Total Usage */}
+        <View style={{ flexDirection: 'row', gap: SPACING.base, marginBottom: SPACING.large }}>
+          {/* Previous Usage - Bottom Left Circle */}
+          <View style={{ flex: 1 }}>
+            <View style={[styles.card, { borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
+              <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS</Text>
+              
+              {/* Circle */}
+              <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.small, position: 'relative' }}>
+                {/* Background circle */}
+                <View style={{
+                  position: 'absolute',
+                  width: 95,
+                  height: 95,
+                  borderRadius: 47.5,
+                  borderWidth: 4,
+                  borderColor: 'rgba(0, 180, 255, 0.2)',
+                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
+                }} />
+                
+                {/* Main circle */}
+                <Animated.View style={{
+                  width: 95,
+                  height: 95,
+                  borderRadius: 47.5,
+                  borderWidth: 4,
+                  borderColor: COLORS.glowBlue,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
+                  shadowColor: COLORS.glowBlue,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
+                  shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
+                  elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
+                }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
+                      {previousUsage.toFixed(2)}
+                    </Text>
+                    <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
+                  </View>
+                </Animated.View>
+              </View>
+            </View>
+          </View>
+
+          {/* Total Usage - Bottom Right Circle */}
+          <View style={{ flex: 1 }}>
+            <View style={[styles.card, { borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
+              <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>TOTAL</Text>
+              
+              {/* Circle */}
+              <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.small, position: 'relative' }}>
+                {/* Background circle */}
+                <View style={{
+                  position: 'absolute',
+                  width: 95,
+                  height: 95,
+                  borderRadius: 47.5,
+                  borderWidth: 4,
+                  borderColor: 'rgba(0, 180, 255, 0.2)',
+                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
+                }} />
+                
+                {/* Main circle */}
+                <Animated.View style={{
+                  width: 95,
+                  height: 95,
+                  borderRadius: 47.5,
+                  borderWidth: 4,
+                  borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
+                  shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
+                  shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
+                  elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
+                }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
+                      {totalUsage.toFixed(2)}
+                    </Text>
+                    <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
+                  </View>
+                </Animated.View>
+              </View>
+            </View>
+          </View>
         </View>
       </View>
 

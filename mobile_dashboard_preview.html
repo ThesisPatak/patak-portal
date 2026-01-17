@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PATAK Portal - Mobile Dashboard Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mobile-frame {
+            width: 390px;
+            height: 844px;
+            background: #0f2438;
+            border-radius: 50px;
+            border: 15px solid #000;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #0a1929;
+            border-bottom: 1px solid rgba(0, 180, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #0f2438;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .welcome {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .username {
+            font-size: 32px;
+            color: #00b4ff;
+            font-weight: 900;
+        }
+
+        .section-title {
+            font-size: 16px;
+            color: #00b4ff;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .usage-container {
+            margin-bottom: 30px;
+        }
+
+        /* Present Usage - Full Width */
+        .present-usage-card {
+            background: rgba(15, 36, 56, 0.6);
+            border: 2px solid #00b4ff;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: #00b4ff;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .circle-large {
+            width: 140px;
+            height: 140px;
+            border-radius: 70px;
+            border: 5px solid #00b4ff;
+            background: rgba(15, 36, 56, 0.8);
+            margin: 0 auto 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+            position: relative;
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .circle-small {
+            width: 110px;
+            height: 110px;
+            border-radius: 55px;
+            border: 4px solid #00b4ff;
+            background: rgba(15, 36, 56, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 180, 255, 0.4);
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .circle-small.danger {
+            border-color: #ff3333;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.4);
+        }
+
+        .circle-large.danger {
+            border-color: #ff3333;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+        }
+
+        .usage-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: white;
+            line-height: 1;
+        }
+
+        .circle-small .usage-value {
+            font-size: 16px;
+        }
+
+        .usage-unit {
+            font-size: 12px;
+            color: #00b4ff;
+            margin-top: 4px;
+        }
+
+        .circle-small .usage-unit {
+            font-size: 10px;
+        }
+
+        .usage-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .usage-col {
+            flex: 1;
+        }
+
+        .usage-card {
+            background: rgba(15, 36, 56, 0.6);
+            border: 2px solid #00b4ff;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        /* Estimated Bill */
+        .bill-card {
+            background: rgba(15, 36, 56, 0.6);
+            border: 2px solid #00b4ff;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .bill-amount {
+            font-size: 36px;
+            font-weight: 900;
+            color: #00b4ff;
+            margin: 12px 0;
+        }
+
+        .bill-due {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-button {
+            background: linear-gradient(135deg, #00b4ff, #0088cc);
+            color: white;
+        }
+
+        .primary-button:hover {
+            box-shadow: 0 0 20px rgba(0, 180, 255, 0.6);
+        }
+
+        .secondary-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #888;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(0, 180, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(0, 180, 255, 0.8);
+            }
+        }
+
+        .devices-section {
+            margin-top: 20px;
+        }
+
+        .device-item {
+            background: rgba(15, 36, 56, 0.6);
+            border: 1px solid rgba(0, 180, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .device-name {
+            color: #00b4ff;
+            font-weight: 700;
+        }
+
+        .device-status {
+            color: #888;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 180, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00b4ff;
+            border-radius: 3px;
+        }
+
+        .preview-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00b4ff;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 300px;
+            border: 1px solid #00b4ff;
+        }
+
+        @media (max-width: 480px) {
+            .mobile-frame {
+                width: 100%;
+                border-radius: 20px;
+                border-width: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-info">
+        <strong>✓ NEW DASHBOARD LAYOUT</strong><br><br>
+        <strong>Features:</strong><br>
+        • Present Usage (Large top circle)<br>
+        • Previous Usage (Small bottom left)<br>
+        • Total Usage (Small bottom right)<br>
+        • Balanced & responsive design<br>
+        • Glow animation on all circles<br>
+        • Color changes based on usage<br>
+    </div>
+
+    <div class="mobile-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>●●●●● WiFi ▶</span>
+        </div>
+
+        <div class="screen-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="welcome">Welcome back</div>
+                <div class="username">John</div>
+            </div>
+
+            <!-- Usage Summary -->
+            <div class="usage-container">
+                <div class="section-title">USAGE SUMMARY</div>
+
+                <!-- Present Usage - Full Width -->
+                <div class="present-usage-card">
+                    <div class="card-label">PRESENT USAGE</div>
+                    <div class="circle-large">
+                        <div class="usage-value">24.56</div>
+                        <div class="usage-unit">m³</div>
+                    </div>
+                </div>
+
+                <!-- Previous and Total Usage Row -->
+                <div class="usage-row">
+                    <div class="usage-col">
+                        <div class="usage-card">
+                            <div class="card-label">PREVIOUS</div>
+                            <div class="circle-small">
+                                <div class="usage-value">18.92</div>
+                                <div class="usage-unit">m³</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="usage-col">
+                        <div class="usage-card">
+                            <div class="card-label">TOTAL</div>
+                            <div class="circle-small">
+                                <div class="usage-value">125.34</div>
+                                <div class="usage-unit">m³</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estimated Bill -->
+            <div class="bill-card">
+                <div class="card-label">MONTHLY BILL</div>
+                <div class="bill-amount">₱368.40</div>
+                <div class="bill-due">Due: 2026-02-17</div>
+            </div>
+
+            <!-- Devices -->
+            <div class="devices-section">
+                <div class="section-title">DEVICES (1)</div>
+                <div class="device-item">
+                    <div class="device-name">🎛️ ESP32-001</div>
+                    <div class="device-status">🟢 Active</div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button class="button primary-button">📋 Billing History</button>
+                <button class="button primary-button">💳 Pay Bill</button>
+                <button class="button primary-button">🎛️ Manage Devices</button>
+                <button class="button secondary-button">Logout</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
