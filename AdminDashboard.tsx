@@ -1031,16 +1031,20 @@ const AdminDashboard: React.FC = () => {
                         <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
                           <th style={{ padding: "0.75rem", textAlign: "left", color: "#333", fontWeight: 600 }}>Month</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Consumption (m³)</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Total (m³)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx) => (
+                        {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx, arr) => {
+                          const totalConsumption = arr.slice(0, idx + 1).reduce((sum, b) => sum + parseFloat(b.consumption), 0);
+                          return (
                           <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0" }}>
                             <td style={{ padding: "0.75rem", color: "#333" }}>{bill.month}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.consumption}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{totalConsumption.toFixed(6)}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>
@@ -1053,7 +1057,8 @@ const AdminDashboard: React.FC = () => {
                               </span>
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
