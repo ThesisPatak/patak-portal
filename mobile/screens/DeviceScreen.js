@@ -51,19 +51,23 @@ export default function DeviceScreen({ token, onBack }) {
       setDeviceId('');
       setHouseId('');
       
-      // Show success
+      // Show success with LINK button
       Alert.alert(
-        'Device Registered!',
-        `Device ID: ${result.device.deviceId}\n\nDevice Token:\n${result.deviceToken}\n\nEnter this token on your ESP32 device.`,
+        '✓ Device Registered!',
+        `Device ID: ${result.device.deviceId}\nHouse: ${result.device.houseId || 'None'}\n\nNow link your ESP32 device to send data automatically.`,
         [
           {
-            text: 'Copy Token',
+            text: 'LINK Device',
             onPress: async () => {
-              await Clipboard.setString(result.deviceToken);
-              Alert.alert('✓ Token copied to clipboard!');
-            }
+              await handleLinkDevice(result.device.deviceId, result.deviceToken);
+            },
+            style: 'default'
           },
-          { text: 'OK', onPress: () => setRegistered(null) }
+          { 
+            text: 'Later', 
+            onPress: () => setRegistered(null),
+            style: 'cancel'
+          }
         ]
       );
 
@@ -75,6 +79,55 @@ export default function DeviceScreen({ token, onBack }) {
     } finally {
       setRegistering(false);
     }
+  };
+
+  const handleLinkDevice = async (deviceId, deviceToken) => {
+    Alert.prompt(
+      'Link Device to ESP32',
+      'Enter your ESP32 IP address (e.g., 192.168.1.100)\n\nMake sure ESP32 is on the same WiFi.',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => setRegistered(null),
+          style: 'cancel'
+        },
+        {
+          text: 'Link',
+          onPress: async (espIP) => {
+            if (!espIP || espIP.trim() === '') {
+              Alert.alert('Error', 'Please enter a valid IP address');
+              return;
+            }
+
+            try {
+              const baseUrl = 'https://patak-portal-production.up.railway.app';
+              const response = await fetch(`${baseUrl}/devices/send-token`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  deviceId,
+                  espIP: espIP.trim()
+                })
+              });
+
+              if (response.ok) {
+                Alert.alert('✓ Success!', 'Device token sent to ESP32. Your device should start sending data now.');
+                setRegistered(null);
+              } else {
+                const error = await response.json();
+                Alert.alert('Error', error.error || 'Failed to link device');
+              }
+            } catch (err) {
+              Alert.alert('Error', 'Failed to connect to ESP32. Make sure:\n1. ESP32 is powered on\n2. IP address is correct\n3. Phone and ESP32 are on same WiFi');
+            }
+          }
+        }
+      ],
+      'plain-text'
+    );
   };
 
   return (

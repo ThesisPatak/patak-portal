@@ -6,6 +6,7 @@
 #include <Preferences.h>
 // Networking
 #include <WiFi.h>
+#include <WebServer.h>
 #include <HTTPClient.h>
 #include <time.h>
 
@@ -41,6 +42,9 @@ unsigned long lastSaveMillis = 0;
 // Device Authentication
 String DEVICE_ID = "ESP32-001";  // Change per device or use MAC address
 String DEVICE_TOKEN = "";  // Will be set via serial command or loaded from Preferences
+
+// Web Server for token reception
+WebServer webServer(80);
 
 Preferences prefs;
 
@@ -271,6 +275,45 @@ void lcdPrintPadded(int col, int row, const char *s, int width) {
   for (int i = len; i < width; ++i) lcd->print(' ');
 }
 
+// Web Server Endpoints for token reception
+void setupWebServer() {
+  // Endpoint to receive device token from mobile app
+  webServer.on("/api/token", HTTP_POST, []() {
+    if (webServer.hasArg("plain")) {
+      String body = webServer.arg("plain");
+      // Parse JSON: {"token": "TOKEN_VALUE"}
+      int tokenStart = body.indexOf("\"token\":\"") + 9;
+      int tokenEnd = body.indexOf("\"", tokenStart);
+      if (tokenStart > 8 && tokenEnd > tokenStart) {
+        String newToken = body.substring(tokenStart, tokenEnd);
+        DEVICE_TOKEN = newToken;
+        prefs.begin("flow", false);
+        prefs.putString("deviceToken", DEVICE_TOKEN);
+        prefs.end();
+        Serial.println("[WEB] ✓ Device token received and saved!");
+        webServer.send(200, "application/json", "{\"ok\":true,\"message\":\"Token saved\"}");
+        return;
+      }
+    }
+    webServer.send(400, "application/json", "{\"error\":\"Invalid token\"}");
+  });
+
+  // Simple status page
+  webServer.on("/", HTTP_GET, []() {
+    String html = "<html><body style='font-family:Arial;'>";
+    html += "<h1>ESP32 Water Meter</h1>";
+    html += "<p><b>Device ID:</b> " + DEVICE_ID + "</p>";
+    html += "<p><b>Token Status:</b> " + (DEVICE_TOKEN.length() > 0 ? "✓ Connected" : "✗ Not linked") + "</p>";
+    html += "<p><b>WiFi:</b> " + (WiFi.status() == WL_CONNECTED ? "✓ Connected" : "✗ Disconnected") + "</p>";
+    html += "<p><b>Total Liters:</b> " + String(totalLiters, 2) + "</p>";
+    html += "</body></html>";
+    webServer.send(200, "text/html", html);
+  });
+
+  webServer.begin();
+  Serial.println("[WEB] Web server started on http://" + WiFi.localIP().toString());
+}
+
 void setup() {
   Serial.begin(115200);
   delay(200);
@@ -316,7 +359,7 @@ void setup() {
   if (DEVICE_TOKEN.length() > 0) {
     Serial.println("Device token loaded from Preferences (authenticated)");
   } else {
-    Serial.println("[!] No device token found. Register device in mobile app and enter: token <device_token>");
+    Serial.println("[!] No device token found. Register device in mobile app or use web interface.");
   }
   Serial.print("Loaded totalLiters = ");
   Serial.println(totalLiters, 6);
@@ -328,6 +371,26 @@ void setup() {
 
   lastMillis = millis();
   lastSaveMillis = lastMillis;
+  
+  // Initialize WiFi and web server
+  Serial.println("Starting WiFi connection...");
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  int wifiAttempts = 0;
+  while (WiFi.status() != WL_CONNECTED && wifiAttempts < 20) {
+    delay(500);
+    Serial.print(".");
+    wifiAttempts++;
+  }
+  
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\n✓ WiFi connected!");
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());
+    setupWebServer();  // Start web server for token reception
+  } else {
+    Serial.println("\n✗ WiFi connection failed");
+  }
+  
   Serial.println("Setup complete.\n");
 
   Serial.println("Serial commands:");
@@ -340,6 +403,9 @@ void setup() {
 
 void loop() {
   unsigned long now = millis();
+  
+  // Handle web server requests
+  webServer.handleClient();
   if (now - lastMillis >= INTERVAL_MS) {
     unsigned long elapsed = now - lastMillis;
     lastMillis = now;

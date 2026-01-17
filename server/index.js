@@ -823,6 +823,55 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
   console.log(`[DEVICE-REGISTER] ✓✓ SUCCESS - Device registered for user`)
 })
 
+// Send device token to ESP32 via HTTP request (one-click linking)
+app.post('/devices/send-token', authMiddleware, async (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { deviceId, espIP, espPort } = req.body || {}
+  console.log(`\n[${timestamp}] [SEND-TOKEN] Request to send token to ESP32`)
+  console.log(`[SEND-TOKEN] deviceId: ${deviceId}, ESP IP: ${espIP}:${espPort}`)
+  
+  if (!deviceId || !espIP) {
+    return res.status(400).json({ error: 'deviceId and espIP required' })
+  }
+  
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId && d.ownerUserId === req.user.userId)
+  
+  if (!device) {
+    return res.status(404).json({ error: 'Device not found or not owned by user' })
+  }
+  
+  // Generate fresh device token
+  const deviceToken = jwt.sign(
+    { deviceId, type: 'device' },
+    JWT_SECRET,
+    { expiresIn: '1y' }
+  )
+  
+  try {
+    const port = espPort || 80
+    const url = `http://${espIP}:${port}/api/token`
+    
+    console.log(`[SEND-TOKEN] Sending token to ${url}`)
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: deviceToken })
+    })
+    
+    if (!response.ok) {
+      throw new Error(`ESP32 returned ${response.status}`)
+    }
+    
+    console.log(`[SEND-TOKEN] ✓ Token sent successfully to ESP32`)
+    res.json({ ok: true, message: 'Token sent to device', deviceToken })
+  } catch (err) {
+    console.error(`[SEND-TOKEN] ✗ Failed to send token:`, err.message)
+    res.status(500).json({ error: 'Failed to send token to device: ' + err.message })
+  }
+})
+
 app.get('/devices/list', authMiddleware, (req, res) => {
   const userId = req.user.userId
   const devices = readJSON(DEVICES_FILE)
