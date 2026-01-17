@@ -33,10 +33,7 @@ const AdminDashboard: React.FC = () => {
 
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [userReadings, setUserReadings] = useState<any[]>([]);
-  const [readingsLoading, setReadingsLoading] = useState(false);
-  const [userConsumption, setUserConsumption] = useState<Record<string, { present: number; previous: number }>>({});
+  const [userConsumption, setUserConsumption] = useState<Record<string, { present: number; previous: number }>>({});;
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
@@ -60,7 +57,6 @@ const AdminDashboard: React.FC = () => {
     setToken("");
     setAdminUsername("");
     setUsers([]);
-    setSelectedUserId(null);
     setShowLogoutConfirm(false);
   };
 
@@ -112,24 +108,6 @@ const AdminDashboard: React.FC = () => {
       setUsers([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Load user readings
-  const loadUserReadings = async (userId: string) => {
-    setReadingsLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/admin/users/${userId}/readings`, {
-        headers: { Authorization: "Bearer " + token },
-      });
-      if (!res.ok) throw new Error("Failed to load readings");
-      const data = await res.json();
-      setUserReadings(data.readings || []);
-    } catch (err) {
-      console.error("Readings error:", err);
-      setUserReadings([]);
-    } finally {
-      setReadingsLoading(false);
     }
   };
 
@@ -673,27 +651,6 @@ const AdminDashboard: React.FC = () => {
                                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
                                   <button
                                     onClick={async () => {
-                                      setSelectedUserId(user.id);
-                                      await loadUserReadings(user.id);
-                                    }}
-                                    style={{
-                                      padding: "0.5rem 1rem",
-                                      background: "#0057b8",
-                                      color: "#fff",
-                                      border: "none",
-                                      borderRadius: "6px",
-                                      cursor: "pointer",
-                                      fontSize: "0.85rem",
-                                      fontWeight: 600,
-                                      transition: "background 0.2s",
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = "#004399"}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = "#0057b8"}
-                                  >
-                                    View
-                                  </button>
-                                  <button
-                                    onClick={async () => {
                                       if (!window.confirm(`Reset meter for "${user.username}"?`)) return;
                                       try {
                                         const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(user.username)}/reset-meter`, {
@@ -931,143 +888,6 @@ const AdminDashboard: React.FC = () => {
                 {passwordLoading ? "Changing..." : "Change Password"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* User Details Modal */}
-      {selectedUserId && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9998,
-            padding: "1rem",
-            boxSizing: "border-box",
-            overflowY: "auto",
-          }}
-          onClick={() => setSelectedUserId(null)}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: "12px",
-              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
-              maxWidth: "900px",
-              width: "100%",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              padding: isMobile ? "1.5rem" : "2rem",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {readingsLoading ? (
-              <div style={{ textAlign: "center", padding: "2rem" }}>Loading user details...</div>
-            ) : users.find(u => u.id === selectedUserId) ? (
-              <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
-                  <h2 style={{ color: "#0057b8", margin: 0, fontSize: isMobile ? "1.3rem" : "1.5rem" }}>
-                    {users.find(u => u.id === selectedUserId)?.username}
-                  </h2>
-                  <button
-                    onClick={() => setSelectedUserId(null)}
-                    style={{
-                      padding: "0.5rem 1rem",
-                      background: "#f5f5f5",
-                      border: "1px solid #ddd",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Close
-                  </button>
-                </div>
-
-                {/* User Info */}
-                <div style={{ background: "#f9f9f9", padding: "1.5rem", borderRadius: "8px", marginBottom: "2rem" }}>
-                  <h3 style={{ color: "#333", marginTop: 0, marginBottom: "1rem" }}>User Information</h3>
-                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: "1rem", fontSize: "0.95rem" }}>
-                    <div>
-                      <span style={{ color: "#666", fontWeight: 600 }}>Registered:</span>
-                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
-                        {users.find(u => u.id === selectedUserId)?.createdAt ? new Date(users.find(u => u.id === selectedUserId)!.createdAt!).toLocaleDateString() : "—"}
-                      </div>
-                    </div>
-                    <div>
-                      <span style={{ color: "#666", fontWeight: 600 }}>Devices:</span>
-                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
-                        {users.find(u => u.id === selectedUserId)?.deviceCount || 0}
-                      </div>
-                    </div>
-                    <div>
-                      <span style={{ color: "#666", fontWeight: 600 }}>Total Usage:</span>
-                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
-                        {users.find(u => u.id === selectedUserId)?.cubicMeters.toFixed(6) || "0.000000"} m³
-                      </div>
-                    </div>
-                    <div>
-                      <span style={{ color: "#666", fontWeight: 600 }}>Last Reading:</span>
-                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
-                        {users.find(u => u.id === selectedUserId)?.lastReading ? new Date(users.find(u => u.id === selectedUserId)!.lastReading!).toLocaleString() : "No data"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Billing History */}
-                <div>
-                  <h3 style={{ color: "#333", marginBottom: "1rem" }}>Billing History (Last 12 Months)</h3>
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: isMobile ? "0.8rem" : "0.9rem" }}>
-                      <thead>
-                        <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
-                          <th style={{ padding: "0.75rem", textAlign: "left", color: "#333", fontWeight: 600 }}>Month</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Consumption (m³)</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>User's Total Consumption (m³)</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx, arr) => {
-                          const userActualTotal = users.find(u => u.id === selectedUserId)?.cubicMeters || 0;
-                          const totalConsumption = arr.slice(0, idx + 1).reduce((sum, b) => sum + parseFloat(b.consumption), 0);
-                          const isLastRow = idx === arr.length - 1;
-                          const displayTotal = isLastRow ? userActualTotal : totalConsumption;
-                          return (
-                          <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isLastRow ? "#f0f8ff" : "transparent" }}>
-                            <td style={{ padding: "0.75rem", color: "#333", fontWeight: isLastRow ? 600 : 400 }}>{bill.month}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666", fontWeight: isLastRow ? 600 : 400 }}>{bill.consumption}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{displayTotal.toFixed(6)}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center" }}>
-                              <span style={{
-                                fontWeight: 600,
-                                color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#999',
-                                fontSize: isMobile ? "0.75rem" : "0.85rem"
-                              }}>
-                                {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : '—'}
-                              </span>
-                            </td>
-                          </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
-            ) : null}
           </div>
         </div>
       )}
