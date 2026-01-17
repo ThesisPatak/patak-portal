@@ -39,10 +39,15 @@ double totalLiters = 0.0;
 unsigned long long totalPulsesAccum = 0; // accumulated pulses across sessions (for calibration)
 unsigned long lastMillis = 0;
 unsigned long lastSaveMillis = 0;
+unsigned long lastTokenPollMillis = 0;  // For polling backend for pending tokens
 
 // Device Authentication
 String DEVICE_ID = "ESP32-001";  // Change per device or use MAC address
 String DEVICE_TOKEN = "";  // Will be set via serial command or loaded from Preferences
+
+// Backend URL for token claiming
+const char* BACKEND_URL = "https://patak-portal-production.up.railway.app";
+const unsigned long TOKEN_POLL_INTERVAL = 30000;  // Poll for token every 30 seconds
 
 // Web Server for token reception
 WebServer webServer(80);
@@ -276,6 +281,66 @@ void lcdPrintPadded(int col, int row, const char *s, int width) {
   for (int i = len; i < width; ++i) lcd->print(' ');
 }
 
+// Poll backend for pending token (cloud-based device linking)
+void pollForToken() {
+  if (DEVICE_TOKEN.length() > 0) {
+    // Already have token, no need to poll
+    return;
+  }
+  
+  if (WiFi.status() != WL_CONNECTED) {
+    // No internet, can't poll
+    return;
+  }
+  
+  unsigned long now = millis();
+  if (now - lastTokenPollMillis < TOKEN_POLL_INTERVAL) {
+    // Not time to poll yet
+    return;
+  }
+  
+  lastTokenPollMillis = now;
+  Serial.println("[TOKEN-POLL] Checking backend for pending token...");
+  
+  HTTPClient http;
+  String url = String(BACKEND_URL) + "/devices/claim-token";
+  
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+  
+  String jsonPayload = "{\"deviceId\":\"" + DEVICE_ID + "\"}";
+  int httpCode = http.POST(jsonPayload);
+  
+  if (httpCode == 200) {
+    // Token available
+    String response = http.getString();
+    Serial.println("[TOKEN-POLL] ✓ Received token!");
+    
+    // Parse JSON response to extract token
+    int tokenStart = response.indexOf("\"token\":\"") + 9;
+    int tokenEnd = response.indexOf("\"", tokenStart);
+    
+    if (tokenStart > 8 && tokenEnd > tokenStart) {
+      DEVICE_TOKEN = response.substring(tokenStart, tokenEnd);
+      
+      // Save to Preferences
+      prefs.begin("flow", false);
+      prefs.putString("deviceToken", DEVICE_TOKEN);
+      prefs.end();
+      
+      Serial.println("[TOKEN-POLL] ✓ Token saved to flash storage!");
+      Serial.println("[TOKEN-POLL] Device is now linked. Ready to send readings!");
+    }
+  } else if (httpCode == 202) {
+    // No token pending yet
+    Serial.println("[TOKEN-POLL] ℹ No pending token yet. User hasn't clicked LINK.");
+  } else {
+    Serial.println("[TOKEN-POLL] ✗ Error: " + String(httpCode));
+  }
+  
+  http.end();
+}
+
 // Web Server Endpoints for token reception
 void setupWebServer() {
   // Endpoint to receive device token from mobile app
@@ -422,6 +487,10 @@ void loop() {
   
   // Handle web server requests
   webServer.handleClient();
+  
+  // Poll backend for pending token (cloud-based linking)
+  pollForToken();
+  
   if (now - lastMillis >= INTERVAL_MS) {
     unsigned long elapsed = now - lastMillis;
     lastMillis = now;

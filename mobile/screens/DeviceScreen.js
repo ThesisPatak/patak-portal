@@ -85,58 +85,33 @@ export default function DeviceScreen({ token, onBack }) {
     try {
       Alert.alert(
         'Linking Device...',
-        'Make sure your phone and ESP32 are on the same WiFi network.',
+        'Sending token to backend. Your ESP32 will claim it when it connects.',
         [{ text: 'OK', onPress: () => {} }]
       );
 
-      // Try to auto-discover ESP32 using mDNS hostname
-      const espHostname = deviceId.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-      const espURLs = [
-        `http://${espHostname}.local`,
-        `http://esp32-patak.local`,
-        `http://esp32.local`
-      ];
+      // Send token to backend - ESP32 will claim it when it polls
+      const response = await fetch('https://patak-portal-production.up.railway.app/devices/link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ deviceId })
+      });
 
-      let success = false;
-      let lastError = '';
-
-      for (const espURL of espURLs) {
-        try {
-          const response = await Promise.race([
-            fetch(`${espURL}/api/token`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ token: deviceToken })
-            }),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout')), 3000)
-            )
-          ]);
-
-          if (response.ok) {
-            success = true;
-            break;
-          }
-        } catch (err) {
-          lastError = err.message;
-          continue;
-        }
-      }
-
-      if (success) {
+      if (response.ok) {
+        const data = await response.json();
         Alert.alert(
-          '✓ Success!',
-          'Device linked! Your ESP32 will now send data automatically.'
+          '✓ Token Ready!',
+          'Make sure your ESP32 is powered on and connected to the internet.\n\nYour device will claim the token automatically within 1 minute.'
         );
         setRegistered(null);
         loadDevices();
       } else {
+        const error = await response.json();
         Alert.alert(
-          'Connection Issue',
-          'Could not find ESP32 on your WiFi.\n\nMake sure:\n1. ESP32 is powered on\n2. Phone and ESP32 are on same WiFi\n3. Device ID matches: ' +
-            deviceId
+          'Error',
+          error.error || 'Failed to prepare token'
         );
       }
     } catch (err) {
@@ -269,15 +244,15 @@ export default function DeviceScreen({ token, onBack }) {
       {/* Instructions Card */}
       <View style={[styles.card, { marginTop: SPACING.large, backgroundColor: COLORS.infoBg }]}>
         <Text style={{ fontSize: TYPO.subtitleSize, fontWeight: '700', color: COLORS.glowBlue, marginBottom: SPACING.base }}>
-          📱 How to Set Up Your Device
+          📱 Cloud-Based Setup (Any WiFi)
         </Text>
         <Text style={{ fontSize: TYPO.smallSize, color: COLORS.text, lineHeight: 20 }}>
-          1. Enter your device ID (check ESP32 serial monitor or LCD){'\n'}
+          1. Enter your device ID (check ESP32 serial monitor){'\n'}
           2. Optionally enter a house name{'\n'}
           3. Tap "Register Device"{'\n'}
-          4. Copy the device token{'\n'}
-          5. Enter the token on your ESP32 using: <Text style={{ fontWeight: '600' }}>token &lt;device_token&gt;</Text>{'\n'}
-          6. Device will start sending readings
+          4. Tap "LINK Device"{'\n'}
+          5. Make sure ESP32 is powered on and connected to internet{'\n'}
+          6. Your device will claim the token automatically
         </Text>
       </View>
     </ScrollView>

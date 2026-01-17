@@ -872,6 +872,48 @@ app.post('/devices/send-token', authMiddleware, async (req, res) => {
   }
 })
 
+// Link device via backend (cloud-based, works over internet)
+app.post('/devices/link', authMiddleware, async (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { deviceId } = req.body || {}
+  console.log(`\n[${timestamp}] [DEVICE-LINK] Request from user ${req.user.userId}`)
+  console.log(`[DEVICE-LINK] deviceId: ${deviceId}`)
+  
+  if (!deviceId) {
+    return res.status(400).json({ error: 'deviceId required' })
+  }
+  
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId && d.ownerUserId === req.user.userId)
+  
+  if (!device) {
+    console.log(`[DEVICE-LINK] ✗ Device not found or not owned by user`)
+    return res.status(404).json({ error: 'Device not found or not owned by user' })
+  }
+  
+  // Generate fresh device token
+  const deviceToken = jwt.sign(
+    { deviceId, type: 'device' },
+    JWT_SECRET,
+    { expiresIn: '1y' }
+  )
+  
+  // Store as pending token - ESP32 will claim it when it connects
+  device.pendingToken = deviceToken
+  device.pendingTokenCreatedAt = new Date().toISOString()
+  console.log(`[DEVICE-LINK] ✓ Stored pending token for ESP32 to claim`)
+  
+  writeJSON(DEVICES_FILE, devices)
+  
+  res.status(200).json({
+    ok: true,
+    message: 'Device token pending. ESP32 will claim it when it connects.',
+    deviceId
+  })
+  
+  console.log(`[DEVICE-LINK] ✓✓ SUCCESS - Token ready for ESP32 to claim`)
+})
+
 app.get('/devices/list', authMiddleware, (req, res) => {
   const userId = req.user.userId
   const devices = readJSON(DEVICES_FILE)
@@ -897,6 +939,51 @@ app.post('/devices/check-commands', async (req, res) => {
   }
   
   res.json({ commands })
+})
+
+// Endpoint for ESP32 to claim its token (works over internet, not just local WiFi)
+app.post('/devices/claim-token', async (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { deviceId } = req.body || {}
+  
+  if (!deviceId) {
+    console.log(`[CLAIM-TOKEN] ✗ deviceId required`)
+    return res.status(400).json({ error: 'deviceId required' })
+  }
+  
+  console.log(`\n[${timestamp}] [CLAIM-TOKEN] ESP32 claiming token for deviceId: ${deviceId}`)
+  
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId)
+  
+  if (!device) {
+    console.log(`[CLAIM-TOKEN] ✗ Device not found`)
+    return res.status(404).json({ error: 'Device not found' })
+  }
+  
+  // Check if there's a pending token for this device
+  if (!device.pendingToken) {
+    console.log(`[CLAIM-TOKEN] ℹ No pending token for this device (user hasn't clicked LINK yet)`)
+    return res.status(202).json({ token: null, message: 'No token pending' })
+  }
+  
+  const token = device.pendingToken
+  console.log(`[CLAIM-TOKEN] ✓ Found pending token, sending to ESP32`)
+  
+  // Clear the pending token after sending
+  device.pendingToken = null
+  device.status = 'linked'
+  device.lastTokenClaimedAt = new Date().toISOString()
+  device.lastIP = req.ip
+  device.lastSeen = new Date().toISOString()
+  writeJSON(DEVICES_FILE, devices)
+  
+  console.log(`[CLAIM-TOKEN] ✓ Token claimed and cleared from pending`)
+  
+  res.status(200).json({
+    token,
+    message: 'Token claimed successfully'
+  })
 })
 
 app.post('/devices/heartbeat', async (req, res) => {
