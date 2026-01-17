@@ -81,7 +81,7 @@ export default function UsageScreen({ token, onBack }) {
         <Text style={{ color: COLORS.link, fontSize: 16 }}>← Back</Text>
       </TouchableOpacity>
 
-      <Text style={styles.title}>Water Usage History</Text>
+      <Text style={styles.title}>Water Consumption History</Text>
 
       {error && (
         <View style={{ backgroundColor: '#ff4444', padding: 12, marginBottom: 12, borderRadius: 8 }}>
@@ -96,7 +96,7 @@ export default function UsageScreen({ token, onBack }) {
               📱 No Device Registered
             </Text>
             <Text style={{ color: COLORS.text, fontSize: 14, textAlign: 'center', marginBottom: 16 }}>
-              Please register your water meter device to start viewing usage history.
+              Please register your water meter device to start viewing consumption history.</Text>
             </Text>
             <Text style={{ color: '#aaa', fontSize: 12, textAlign: 'center', fontStyle: 'italic' }}>
               Once your device is registered, readings will appear here.

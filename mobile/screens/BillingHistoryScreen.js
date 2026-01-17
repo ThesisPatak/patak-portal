@@ -192,7 +192,7 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
           </View>
 
           <View style={{ marginBottom: 8 }}>
-            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 2 }}>Total Usage</Text>
+            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 2 }}>Total Consumption</Text>
             <Text style={{ color: COLORS.glowBlue, fontSize: 14, fontWeight: '600' }}>
               {totalConsumption.toFixed(6)} m³
             </Text>
