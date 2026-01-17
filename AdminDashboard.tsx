@@ -1049,7 +1049,7 @@ const AdminDashboard: React.FC = () => {
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>User's Total Consumption (m³)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Status</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Payment Details</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1076,7 +1076,7 @@ const AdminDashboard: React.FC = () => {
                                 if (payment) {
                                   return (
                                     <div style={{ fontSize: isMobile ? "0.75rem" : "0.85rem" }}>
-                                      <div style={{ color: '#4caf50', fontWeight: 600 }}>✅ Paid</div>
+                                      <div style={{ color: '#4caf50', fontWeight: 600 }}>✅ Paid ₱{parseFloat(payment.amount).toFixed(2)}</div>
                                       <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '2px' }}>
                                         {new Date(payment.paymentDate).toLocaleDateString()}
                                       </div>
@@ -1090,7 +1090,7 @@ const AdminDashboard: React.FC = () => {
                                     color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#999',
                                     fontSize: isMobile ? "0.75rem" : "0.85rem"
                                   }}>
-                                    {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : '—'}
+                                    {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : bill.billStatus === 'Upcoming' ? '📅 Upcoming' : '—'}
                                   </span>
                                 );
                               })()}
