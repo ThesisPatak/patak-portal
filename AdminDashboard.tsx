@@ -181,6 +181,85 @@ const AdminDashboard: React.FC = () => {
     return Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
   };
 
+  // Generate billing history for a user (last 12 months)
+  const generateBillingHistory = (readings: any[], createdAt: string) => {
+    const history = [];
+    const now = new Date();
+    
+    // Check if we have actual data
+    const hasData = readings && readings.length > 0;
+    
+    if (hasData) {
+      // Option #2: Rolling billing cycles from first reading date
+      const firstReadingDate = new Date(readings[0].timestamp);
+      const billingStartDay = firstReadingDate.getDate();
+      const billingStartMonth = firstReadingDate.getMonth();
+      const billingStartYear = firstReadingDate.getFullYear();
+      
+      // Generate 12 rolling periods from first reading
+      for (let i = 11; i >= 0; i--) {
+        let periodStartDate = new Date(billingStartYear, billingStartMonth - i, billingStartDay);
+        let periodEndDate = new Date(billingStartYear, billingStartMonth - i + 1, billingStartDay);
+        
+        // Handle year rollover
+        if (periodEndDate < periodStartDate) {
+          periodEndDate = new Date(periodEndDate.getFullYear() + 1, periodEndDate.getMonth(), periodEndDate.getDate());
+        }
+        
+        const periodReadings = readings.filter((r: any) => {
+          const readingDate = new Date(r.timestamp);
+          return readingDate >= periodStartDate && readingDate < periodEndDate;
+        }).sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        
+        let consumption = 0;
+        if (periodReadings.length > 0) {
+          const firstReading = periodReadings[0];
+          const lastReading = periodReadings[periodReadings.length - 1];
+          consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+        }
+        
+        const monthStr = `${periodStartDate.toLocaleString('default', { month: 'short' })} ${periodStartDate.getDate()} - ${periodEndDate.toLocaleString('default', { month: 'short' })} ${periodEndDate.getDate()}`;
+        const amountDue = consumption * 15;
+        
+        // Determine bill status
+        let billStatus = 'Pending';
+        if (now > periodEndDate) {
+          billStatus = 'Overdue';
+        } else if (now < periodStartDate) {
+          billStatus = 'Upcoming';
+        }
+        
+        history.push({
+          month: monthStr,
+          monthDate: periodStartDate,
+          consumption: consumption.toFixed(6),
+          amountDue: amountDue.toFixed(2),
+          billStatus,
+          dueDate: periodEndDate.toISOString().split('T')[0],
+        });
+      }
+    } else {
+      // Option #1: Default calendar months (no data)
+      for (let i = 11; i >= 0; i--) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const nextMonthDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        
+        const monthStr = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        
+        history.push({
+          month: monthStr,
+          monthDate,
+          consumption: '0.000000',
+          amountDue: '0.00',
+          billStatus: 'Not yet active',
+          dueDate: nextMonthDate.toISOString().split('T')[0],
+        });
+      }
+    }
+    
+    return history;
+  };
+
   // Delete user account
   const deleteUser = async (userId: string, username: string) => {
     if (!window.confirm(`Are you sure you want to delete user "${username}" and all their data? This cannot be undone.`)) {
@@ -593,7 +672,10 @@ const AdminDashboard: React.FC = () => {
                               <td style={{ padding: "1rem", textAlign: "center" }}>
                                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
                                   <button
-                                    onClick={() => setSelectedUserId(user.id)}
+                                    onClick={async () => {
+                                      setSelectedUserId(user.id);
+                                      await loadUserReadings(user.id);
+                                    }}
                                     style={{
                                       padding: "0.5rem 1rem",
                                       background: "#0057b8",
@@ -849,6 +931,135 @@ const AdminDashboard: React.FC = () => {
                 {passwordLoading ? "Changing..." : "Change Password"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Details Modal */}
+      {selectedUserId && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9998,
+            padding: "1rem",
+            boxSizing: "border-box",
+            overflowY: "auto",
+          }}
+          onClick={() => setSelectedUserId(null)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "12px",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+              maxWidth: "900px",
+              width: "100%",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              padding: isMobile ? "1.5rem" : "2rem",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {readingsLoading ? (
+              <div style={{ textAlign: "center", padding: "2rem" }}>Loading user details...</div>
+            ) : users.find(u => u.id === selectedUserId) ? (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
+                  <h2 style={{ color: "#0057b8", margin: 0, fontSize: isMobile ? "1.3rem" : "1.5rem" }}>
+                    {users.find(u => u.id === selectedUserId)?.username}
+                  </h2>
+                  <button
+                    onClick={() => setSelectedUserId(null)}
+                    style={{
+                      padding: "0.5rem 1rem",
+                      background: "#f5f5f5",
+                      border: "1px solid #ddd",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+
+                {/* User Info */}
+                <div style={{ background: "#f9f9f9", padding: "1.5rem", borderRadius: "8px", marginBottom: "2rem" }}>
+                  <h3 style={{ color: "#333", marginTop: 0, marginBottom: "1rem" }}>User Information</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: "1rem", fontSize: "0.95rem" }}>
+                    <div>
+                      <span style={{ color: "#666", fontWeight: 600 }}>Registered:</span>
+                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
+                        {users.find(u => u.id === selectedUserId)?.createdAt ? new Date(users.find(u => u.id === selectedUserId)!.createdAt!).toLocaleDateString() : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ color: "#666", fontWeight: 600 }}>Devices:</span>
+                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
+                        {users.find(u => u.id === selectedUserId)?.deviceCount || 0}
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ color: "#666", fontWeight: 600 }}>Total Usage:</span>
+                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
+                        {users.find(u => u.id === selectedUserId)?.cubicMeters.toFixed(6) || "0.000000"} m³
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ color: "#666", fontWeight: 600 }}>Last Reading:</span>
+                      <div style={{ color: "#333", marginTop: "0.25rem" }}>
+                        {users.find(u => u.id === selectedUserId)?.lastReading ? new Date(users.find(u => u.id === selectedUserId)!.lastReading!).toLocaleString() : "No data"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Billing History */}
+                <div>
+                  <h3 style={{ color: "#333", marginBottom: "1rem" }}>Billing History (Last 12 Months)</h3>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: isMobile ? "0.8rem" : "0.9rem" }}>
+                      <thead>
+                        <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
+                          <th style={{ padding: "0.75rem", textAlign: "left", color: "#333", fontWeight: 600 }}>Month</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Consumption (m³)</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx) => (
+                          <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0" }}>
+                            <td style={{ padding: "0.75rem", color: "#333" }}>{bill.month}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.consumption}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center" }}>
+                              <span style={{
+                                fontWeight: 600,
+                                color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#999',
+                                fontSize: isMobile ? "0.75rem" : "0.85rem"
+                              }}>
+                                {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : '—'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
       )}
