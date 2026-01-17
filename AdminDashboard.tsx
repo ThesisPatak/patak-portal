@@ -461,7 +461,7 @@ const AdminDashboard: React.FC = () => {
                 {/* Total Stats Card */}
                 <div style={{ background: "#e2f0ff", padding: isMobile ? "1.5rem" : "2rem", borderRadius: "12px", width: isMobile ? "100%" : "300px", marginBottom: "2rem", margin: isMobile ? "0 0 2rem 0" : "0 auto 2rem auto", textAlign: "center" }}>
                   <div style={{ fontSize: isMobile ? "0.85rem" : "0.95rem", color: "#666", fontWeight: 500, marginBottom: "0.5rem" }}>
-                    Total (m³)
+                    User's Total Consumption (m³)
                   </div>
                   <div style={{ fontSize: isMobile ? "2rem" : "2.5rem", fontWeight: 700, color: "#0057b8" }}>
                     {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(6)} m³
@@ -603,7 +603,7 @@ const AdminDashboard: React.FC = () => {
                               Previous Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Total Consumption (m³)
+                              User's Total Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Amount Due (₱)
@@ -1031,7 +1031,7 @@ const AdminDashboard: React.FC = () => {
                         <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
                           <th style={{ padding: "0.75rem", textAlign: "left", color: "#333", fontWeight: 600 }}>Month</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Consumption (m³)</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Total (m³)</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>User's Total Consumption (m³)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Status</th>
