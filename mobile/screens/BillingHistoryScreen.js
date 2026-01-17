@@ -86,6 +86,7 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
   const [readings, setReadings] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const [billingHistory, setBillingHistory] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -107,6 +108,20 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
       const createdAt = userData.createdAt || new Date().toISOString();
       const bills = generateBillingHistory(history, createdAt);
       setBillingHistory(bills);
+      
+      // Get payment history
+      try {
+        const paymentsRes = await fetch(`https://patak-portal-production.up.railway.app/api/payments/${encodeURIComponent(username)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (paymentsRes.ok) {
+          const paymentsData = await paymentsRes.json();
+          setPayments(paymentsData.payments || []);
+        }
+      } catch (paymentErr) {
+        console.log('Could not load payments:', paymentErr);
+        setPayments([]);
+      }
     } catch (e) {
       console.error('Error loading data:', e);
       setError(e.message || 'Failed to load billing history');
@@ -252,20 +267,40 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
 
                   <View>
                     <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>Status</Text>
-                    <Text
-                      style={{
-                        color:
-                          item.billStatus === 'Paid'
-                            ? '#4caf50'
-                            : item.billStatus === 'Overdue'
-                            ? '#ff6b6b'
-                            : '#ff9800',
-                        fontSize: 12,
-                        fontWeight: '600',
-                      }}
-                    >
-                      {item.billStatus === 'Pending' && '⏳ '}{item.billStatus === 'Overdue' && '🔴 '}{item.billStatus === 'Upcoming' && '📅 '}{item.billStatus}
-                    </Text>
+                    {(() => {
+                      const payment = payments.find(p => {
+                        const billDate = new Date(item.dueDate);
+                        return p.billingMonth === (billDate.getMonth() + 1) && p.billingYear === billDate.getFullYear();
+                      });
+                      
+                      if (payment) {
+                        return (
+                          <View>
+                            <Text style={{ color: '#4caf50', fontSize: 12, fontWeight: '600' }}>
+                              ✅ Paid
+                            </Text>
+                            <Text style={{ color: '#aaa', fontSize: 10, marginTop: 2 }}>
+                              on {new Date(payment.paymentDate).toLocaleDateString()}
+                            </Text>
+                          </View>
+                        );
+                      }
+                      
+                      return (
+                        <Text
+                          style={{
+                            color:
+                              item.billStatus === 'Overdue'
+                                ? '#ff6b6b'
+                                : '#ff9800',
+                            fontSize: 12,
+                            fontWeight: '600',
+                          }}
+                        >
+                          {item.billStatus === 'Pending' && '⏳ '}{item.billStatus === 'Overdue' && '🔴 '}{item.billStatus === 'Upcoming' && '📅 '}{item.billStatus}
+                        </Text>
+                      );
+                    })()}
                   </View>
                 </View>
               );

@@ -35,6 +35,7 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userReadings, setUserReadings] = useState<any[]>([]);
+  const [userPayments, setUserPayments] = useState<any[]>([]);
   const [readingsLoading, setReadingsLoading] = useState(false);
   const [userConsumption, setUserConsumption] = useState<Record<string, { present: number; previous: number }>>({});
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -116,7 +117,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Load user readings
-  const loadUserReadings = async (userId: string) => {
+  const loadUserReadings = async (userId: string, username: string) => {
     setReadingsLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/users/${userId}/readings`, {
@@ -125,6 +126,20 @@ const AdminDashboard: React.FC = () => {
       if (!res.ok) throw new Error("Failed to load readings");
       const data = await res.json();
       setUserReadings(data.readings || []);
+      
+      // Load payments for this user
+      try {
+        const paymentsRes = await fetch(`${API_URL}/api/payments/${encodeURIComponent(username)}`, {
+          headers: { Authorization: "Bearer " + token },
+        });
+        if (paymentsRes.ok) {
+          const paymentsData = await paymentsRes.json();
+          setUserPayments(paymentsData.payments || []);
+        }
+      } catch (paymentErr) {
+        console.error("Payments error:", paymentErr);
+        setUserPayments([]);
+      }
     } catch (err) {
       console.error("Readings error:", err);
       setUserReadings([]);
@@ -674,7 +689,7 @@ const AdminDashboard: React.FC = () => {
                                   <button
                                     onClick={async () => {
                                       setSelectedUserId(user.id);
-                                      await loadUserReadings(user.id);
+                                      await loadUserReadings(user.id, user.username);
                                     }}
                                     style={{
                                       padding: "0.5rem 1rem",
@@ -1051,13 +1066,34 @@ const AdminDashboard: React.FC = () => {
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>
-                              <span style={{
-                                fontWeight: 600,
-                                color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#999',
-                                fontSize: isMobile ? "0.75rem" : "0.85rem"
-                              }}>
-                                {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : '—'}
-                              </span>
+                              {(() => {
+                                const billDate = new Date(bill.dueDate);
+                                const payment = userPayments.find(p => 
+                                  p.billingMonth === (billDate.getMonth() + 1) && 
+                                  p.billingYear === billDate.getFullYear()
+                                );
+                                
+                                if (payment) {
+                                  return (
+                                    <div style={{ fontSize: isMobile ? "0.75rem" : "0.85rem" }}>
+                                      <div style={{ color: '#4caf50', fontWeight: 600 }}>✅ Paid</div>
+                                      <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '2px' }}>
+                                        {new Date(payment.paymentDate).toLocaleDateString()}
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                
+                                return (
+                                  <span style={{
+                                    fontWeight: 600,
+                                    color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#999',
+                                    fontSize: isMobile ? "0.75rem" : "0.85rem"
+                                  }}>
+                                    {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : '—'}
+                                  </span>
+                                );
+                              })()}
                             </td>
                           </tr>
                           );

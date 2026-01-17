@@ -16,6 +16,7 @@ console.log(`[STARTUP] DATA_DIR environment variable: ${process.env.DATA_DIR}`)
 console.log(`[STARTUP] Using DATA_DIR: ${DATA_DIR}`)
 const USERS_FILE = path.join(DATA_DIR, 'users.json')
 const DEVICES_FILE = path.join(DATA_DIR, 'devices.json')
+const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
@@ -990,6 +991,83 @@ app.post('/api/admin/users/:username/reset-meter', authMiddleware, (req, res) =>
   console.log(`[RESET-METER] ✓ Meter reset for user: ${user.username}`)
   
   res.json({ ok: true, message: 'Meter reset successfully', username: user.username })
+})
+
+// User: Record a payment for their bill
+app.post('/api/payments/record', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [RECORD-PAYMENT] Request received`)
+  
+  const { amount, billingMonth, billingYear, paymentMethod } = req.body
+  const userId = req.user.userId
+  const username = req.user.username
+  
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid payment amount' })
+  }
+  
+  if (!billingMonth || !billingYear) {
+    return res.status(400).json({ error: 'Billing month and year required' })
+  }
+  
+  const payments = readJSON(PAYMENTS_FILE)
+  
+  // Create new payment record
+  const newPayment = {
+    id: `payment-${Date.now()}`,
+    userId,
+    username,
+    amount: parseFloat(amount),
+    paymentDate: timestamp,
+    billingMonth: parseInt(billingMonth),
+    billingYear: parseInt(billingYear),
+    paymentMethod: paymentMethod || 'manual',
+    status: 'confirmed'
+  }
+  
+  payments.push(newPayment)
+  writeJSON(PAYMENTS_FILE, payments)
+  
+  console.log(`[RECORD-PAYMENT] ✓ Payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear}`)
+  
+  res.json({ ok: true, message: 'Payment recorded successfully', payment: newPayment })
+})
+
+// User/Admin: Get payments for a user
+app.get('/api/payments/:username', authMiddleware, (req, res) => {
+  const { username } = req.params
+  const decodedUsername = decodeURIComponent(username)
+  
+  // Users can only see their own payments
+  if (!req.user.isAdmin && req.user.username !== decodedUsername) {
+    return res.status(403).json({ error: 'Access denied' })
+  }
+  
+  const payments = readJSON(PAYMENTS_FILE)
+  const userPayments = payments.filter(p => p.username === decodedUsername)
+  
+  res.json({ payments: userPayments })
+})
+
+// Admin: Get payment for specific billing period
+app.get('/api/admin/payments/:username/:billingMonth/:billingYear', authMiddleware, (req, res) => {
+  if (!req.user.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+  
+  const { username, billingMonth, billingYear } = req.params
+  const decodedUsername = decodeURIComponent(username)
+  const month = parseInt(billingMonth)
+  const year = parseInt(billingYear)
+  
+  const payments = readJSON(PAYMENTS_FILE)
+  const payment = payments.find(p => 
+    p.username === decodedUsername && 
+    p.billingMonth === month && 
+    p.billingYear === year
+  )
+  
+  res.json({ payment: payment || null })
 })
 
 // Admin: Delete a user by username
