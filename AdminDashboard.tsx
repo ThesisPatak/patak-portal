@@ -1039,12 +1039,15 @@ const AdminDashboard: React.FC = () => {
                       </thead>
                       <tbody>
                         {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx, arr) => {
+                          const userActualTotal = users.find(u => u.id === selectedUserId)?.cubicMeters || 0;
                           const totalConsumption = arr.slice(0, idx + 1).reduce((sum, b) => sum + parseFloat(b.consumption), 0);
+                          const isLastRow = idx === arr.length - 1;
+                          const displayTotal = isLastRow ? userActualTotal : totalConsumption;
                           return (
-                          <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0" }}>
-                            <td style={{ padding: "0.75rem", color: "#333" }}>{bill.month}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.consumption}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{totalConsumption.toFixed(6)}</td>
+                          <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isLastRow ? "#f0f8ff" : "transparent" }}>
+                            <td style={{ padding: "0.75rem", color: "#333", fontWeight: isLastRow ? 600 : 400 }}>{bill.month}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666", fontWeight: isLastRow ? 600 : 400 }}>{bill.consumption}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{displayTotal.toFixed(6)}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>
