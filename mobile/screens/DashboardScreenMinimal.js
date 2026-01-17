@@ -147,16 +147,16 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
         </Text>
       </View>
 
-      {/* Usage Circles - 3 Column Layout */}
+      {/* Consumption Circles - 3 Column Layout */}
       <View style={{ marginBottom: SPACING.large }}>
         <Text style={{ fontSize: 16, color: COLORS.glowBlue, fontWeight: '700', marginBottom: SPACING.large, textAlign: 'center' }}>
-          USAGE SUMMARY
+          CONSUMPTION SUMMARY
         </Text>
         
-        {/* Present Usage - Top Circle */}
+        {/* Present Consumption - Top Circle */}
         <View style={{ marginBottom: SPACING.large, alignItems: 'center' }}>
           <View style={[styles.card, { width: '100%', borderColor: '#1dd1a1', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
-            <Text style={{ fontSize: 12, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>PRESENT USAGE</Text>
+            <Text style={{ fontSize: 12, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>PRESENT CONSUMPTION (m³)</Text>
             
             {/* Circle */}
             <View style={{ width: 140, height: 140, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.base, position: 'relative' }}>
@@ -200,10 +200,10 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
 
         {/* Row with Previous and Total Usage */}
         <View style={{ flexDirection: 'row', gap: SPACING.base, marginBottom: SPACING.large }}>
-          {/* Previous Usage - Bottom Left Circle */}
+          {/* Previous Consumption - Bottom Left Circle */}
           <View style={{ flex: 1 }}>
             <View style={[styles.card, { borderColor: '#888888', borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
-              <Text style={{ fontSize: 11, color: '#888888', fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS</Text>
+              <Text style={{ fontSize: 11, color: '#888888', fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS CONSUMPTION (m³)</Text>
               
               {/* Circle */}
               <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.small, position: 'relative' }}>
@@ -245,10 +245,10 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
             </View>
           </View>
 
-          {/* Total Usage - Bottom Right Circle */}
+          {/* Total Consumption - Bottom Right Circle */}
           <View style={{ flex: 1 }}>
             <View style={[styles.card, { borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
-              <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>TOTAL</Text>
+              <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>TOTAL CONSUMPTION (m³)</Text>
               
               {/* Circle */}
               <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.small, position: 'relative' }}>
