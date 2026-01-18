@@ -141,36 +141,33 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
         </Text>
       </View>
 
-      {/* Consumption Circles - 3 Column Layout */}
+      {/* Consumption Circles - Vertical Stack Layout */}
       <View style={{ marginBottom: SPACING.large }}>
         <Text style={{ fontSize: 16, color: COLORS.glowBlue, fontWeight: '700', marginBottom: SPACING.large, textAlign: 'center' }}>
           CONSUMPTION SUMMARY
         </Text>
         
-        {/* Current Consumption - Top Circle */}
-        <View style={{ marginBottom: SPACING.large, alignItems: 'center' }}>
-          <View style={[styles.card, { width: '100%', borderColor: '#1dd1a1', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
-            <Text style={{ fontSize: 12, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>CURRENT CONSUMPTION (m³)</Text>
+        {/* Current Consumption */}
+        <View style={{ marginBottom: SPACING.base }}>
+          <View style={[styles.card, { borderColor: '#1dd1a1', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
+            <Text style={{ fontSize: 11, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>CURRENT CONSUMPTION (m³)</Text>
             
-            {/* Circle */}
-            <View style={{ width: 140, height: 140, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.base, position: 'relative' }}>
-              {/* Background circle */}
+            <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
               <View style={{
                 position: 'absolute',
-                width: 120,
-                height: 120,
-                borderRadius: 60,
-                borderWidth: 5,
+                width: 95,
+                height: 95,
+                borderRadius: 47.5,
+                borderWidth: 4,
                 borderColor: 'rgba(29, 209, 161, 0.2)',
                 backgroundColor: 'rgba(15, 36, 56, 0.6)',
               }} />
               
-              {/* Main circle with glow */}
               <Animated.View style={{
-                width: 120,
-                height: 120,
-                borderRadius: 60,
-                borderWidth: 5,
+                width: 95,
+                height: 95,
+                borderRadius: 47.5,
+                borderWidth: 4,
                 borderColor: '#1dd1a1',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -182,105 +179,96 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 10] }),
               }}>
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: COLORS.text }}>
                     {currentUsage.toFixed(6)}
                   </Text>
-                  <Text style={{ fontSize: 12, color: '#1dd1a1', marginTop: 2 }}>m³</Text>
+                  <Text style={{ fontSize: 10, color: '#1dd1a1', marginTop: 2 }}>m³</Text>
                 </View>
               </Animated.View>
             </View>
           </View>
         </View>
 
-        {/* Row with Previous and Total Usage */}
-        <View style={{ flexDirection: 'row', gap: SPACING.base, marginBottom: SPACING.large }}>
-          {/* Previous Consumption - Bottom Left Circle */}
-          <View style={{ flex: 1 }}>
-            <View style={[styles.card, { borderColor: '#888888', borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
-              <Text style={{ fontSize: 11, color: '#888888', fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS CONSUMPTION (m³)</Text>
+        {/* Previous Consumption */}
+        <View style={{ marginBottom: SPACING.base }}>
+          <View style={[styles.card, { borderColor: '#888888', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
+            <Text style={{ fontSize: 11, color: '#888888', fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS CONSUMPTION (m³)</Text>
+            
+            <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+              <View style={{
+                position: 'absolute',
+                width: 95,
+                height: 95,
+                borderRadius: 47.5,
+                borderWidth: 4,
+                borderColor: 'rgba(136, 136, 136, 0.2)',
+                backgroundColor: 'rgba(15, 36, 56, 0.6)',
+              }} />
               
-              {/* Circle */}
-              <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.small, position: 'relative' }}>
-                {/* Background circle */}
-                <View style={{
-                  position: 'absolute',
-                  width: 95,
-                  height: 95,
-                  borderRadius: 47.5,
-                  borderWidth: 4,
-                  borderColor: 'rgba(136, 136, 136, 0.2)',
-                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
-                }} />
-                
-                {/* Main circle */}
-                <Animated.View style={{
-                  width: 95,
-                  height: 95,
-                  borderRadius: 47.5,
-                  borderWidth: 4,
-                  borderColor: '#888888',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
-                  shadowColor: '#888888',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
-                  shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
-                  elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
-                }}>
-                  <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
-                      {previousUsage.toFixed(6)}
-                    </Text>
-                    <Text style={{ fontSize: 10, color: '#888888', marginTop: 2 }}>m³</Text>
-                  </View>
-                </Animated.View>
-              </View>
+              <Animated.View style={{
+                width: 95,
+                height: 95,
+                borderRadius: 47.5,
+                borderWidth: 4,
+                borderColor: '#888888',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(15, 36, 56, 0.6)',
+                shadowColor: '#888888',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
+                shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
+                elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
+              }}>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: COLORS.text }}>
+                    {previousUsage.toFixed(6)}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: '#888888', marginTop: 2 }}>m³</Text>
+                </View>
+              </Animated.View>
             </View>
           </View>
+        </View>
 
-          {/* Total Consumption - Bottom Right Circle */}
-          <View style={{ flex: 1 }}>
-            <View style={[styles.card, { borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.small, alignItems: 'center' }]}>
-              <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>TOTAL CONSUMPTION (m³)</Text>
+        {/* Total Consumption */}
+        <View style={{ marginBottom: SPACING.large }}>
+          <View style={[styles.card, { borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
+            <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>TOTAL CONSUMPTION (m³)</Text>
+            
+            <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+              <View style={{
+                position: 'absolute',
+                width: 95,
+                height: 95,
+                borderRadius: 47.5,
+                borderWidth: 4,
+                borderColor: 'rgba(0, 180, 255, 0.2)',
+                backgroundColor: 'rgba(15, 36, 56, 0.6)',
+              }} />
               
-              {/* Circle */}
-              <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.small, position: 'relative' }}>
-                {/* Background circle */}
-                <View style={{
-                  position: 'absolute',
-                  width: 95,
-                  height: 95,
-                  borderRadius: 47.5,
-                  borderWidth: 4,
-                  borderColor: 'rgba(0, 180, 255, 0.2)',
-                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
-                }} />
-                
-                {/* Main circle */}
-                <Animated.View style={{
-                  width: 95,
-                  height: 95,
-                  borderRadius: 47.5,
-                  borderWidth: 4,
-                  borderColor: totalConsumption > 100 ? COLORS.danger : COLORS.glowBlue,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: 'rgba(15, 36, 56, 0.6)',
-                  shadowColor: totalConsumption > 100 ? COLORS.danger : COLORS.glowBlue,
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
-                  shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
-                  elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
-                }}>
-                  <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
-                      {totalConsumption.toFixed(6)}
-                    </Text>
-                    <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
-                  </View>
-                </Animated.View>
-              </View>
+              <Animated.View style={{
+                width: 95,
+                height: 95,
+                borderRadius: 47.5,
+                borderWidth: 4,
+                borderColor: totalConsumption > 100 ? COLORS.danger : COLORS.glowBlue,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(15, 36, 56, 0.6)',
+                shadowColor: totalConsumption > 100 ? COLORS.danger : COLORS.glowBlue,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
+                shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
+                elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
+              }}>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '900', color: COLORS.text }}>
+                    {totalConsumption.toFixed(6)}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
+                </View>
+              </Animated.View>
             </View>
           </View>
         </View>
