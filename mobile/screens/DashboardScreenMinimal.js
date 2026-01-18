@@ -183,7 +183,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
               }}>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
-                    {currentUsage.toFixed(2)}
+                    {currentUsage.toFixed(6)}
                   </Text>
                   <Text style={{ fontSize: 12, color: '#1dd1a1', marginTop: 2 }}>m³</Text>
                 </View>
@@ -230,7 +230,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 }}>
                   <View style={{ alignItems: 'center' }}>
                     <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
-                      {previousUsage.toFixed(2)}
+                      {previousUsage.toFixed(6)}
                     </Text>
                     <Text style={{ fontSize: 10, color: '#888888', marginTop: 2 }}>m³</Text>
                   </View>
@@ -275,7 +275,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 }}>
                   <View style={{ alignItems: 'center' }}>
                     <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
-                      {totalConsumption.toFixed(2)}
+                      {totalConsumption.toFixed(6)}
                     </Text>
                     <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
                   </View>

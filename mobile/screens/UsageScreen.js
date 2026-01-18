@@ -133,7 +133,7 @@ export default function UsageScreen({ token, onBack }) {
               {/* Volume Data */}
               <View style={{ marginBottom: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#2a4a62' }}>
                 <Text style={{ color: COLORS.text, marginBottom: 2 }}>
-                  💧 Volume: {item.cubicMeters?.toFixed(4)} m³ ({item.totalLiters?.toFixed(0)} L)
+                  💧 Volume: {item.cubicMeters?.toFixed(6)} m³ ({item.totalLiters?.toFixed(0)} L)
                 </Text>
               </View>
 
