@@ -541,9 +541,18 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     
     const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
     
-    // Calculate consumption metrics
-    const currentConsumption = currentUsage
-    const previousConsumption = sortedReadings.length > 1 ? (sortedReadings[1].cubicMeters || 0) : 0
+    // Calculate consumption metrics (ESP32 sends cumulative readings like an odometer)
+    // Current Consumption = difference between latest and 2nd latest reading (usage this period)
+    const currentConsumption = sortedReadings.length > 1 
+      ? Math.max(0, (sortedReadings[0].cubicMeters || 0) - (sortedReadings[1].cubicMeters || 0))
+      : currentUsage
+    
+    // Previous Consumption = difference between 2nd and 3rd latest reading (usage in previous period)
+    const previousConsumption = sortedReadings.length > 2
+      ? Math.max(0, (sortedReadings[1].cubicMeters || 0) - (sortedReadings[2].cubicMeters || 0))
+      : 0
+    
+    // Total Consumption = latest cumulative reading (all time since device installed)
     const totalConsumption = currentUsage
     
     // Since ESP32 sends cumulative totals, use latest reading value as monthly usage
@@ -1608,14 +1617,19 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const latestReading = sortedReadings[0]
     
     // Calculate Current, Previous, and Total Consumption
-    // Current Consumption = latest reading (current billing period)
-    const currentConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
+    // ESP32 sends cumulative readings like an odometer
+    // Current Consumption = difference between latest and 2nd latest reading (usage this period)
+    const currentConsumption = sortedReadings.length > 1
+      ? Math.max(0, (sortedReadings[0].cubicMeters || 0) - (sortedReadings[1].cubicMeters || 0))
+      : (latestReading ? (latestReading.cubicMeters || 0) : 0)
     
-    // Previous Consumption = 2nd latest reading if available (previous billing period)
-    const previousConsumption = sortedReadings.length > 1 ? (sortedReadings[1].cubicMeters || 0) : 0
+    // Previous Consumption = difference between 2nd and 3rd latest reading (usage in previous period)
+    const previousConsumption = sortedReadings.length > 2
+      ? Math.max(0, (sortedReadings[1].cubicMeters || 0) - (sortedReadings[2].cubicMeters || 0))
+      : 0
     
-    // Total Consumption = Latest reading value (cumulative from device)
-    const totalConsumption = currentConsumption
+    // Total Consumption = latest cumulative reading (all time since device installed)
+    const totalConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
     
     const monthlyBill = calculateWaterBill(currentConsumption)
 
