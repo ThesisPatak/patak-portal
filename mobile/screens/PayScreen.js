@@ -5,7 +5,7 @@ import { COLORS, SPACING, TYPO } from './variables';
 
 export default function PayScreen({ payInfo, token, username, onBack, onPaymentSuccess }) {
   const amount = payInfo?.amount ?? 0;
-  const house = payInfo?.house ?? 'Unnamed';
+  const house = payInfo?.house ?? username ?? 'Account';
   const billingMonth = payInfo?.billingMonth || new Date().getMonth() + 1;
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
   const [loading, setLoading] = useState(false);
