@@ -1627,7 +1627,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       previousConsumption: previousConsumption,
       totalConsumption: totalConsumption,
       cubicMeters: currentConsumption,
-      totalLiters: presentConsumption * 1000,
+      totalLiters: currentConsumption * 1000,
       deviceCount: userDevices.length,
       lastReading: latestReading ? latestReading.timestamp : null,
       devices: userDevices.map(d => {
