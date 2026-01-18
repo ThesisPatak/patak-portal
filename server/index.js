@@ -237,6 +237,31 @@ function generateId(prefix = 'id') {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random()*1000)}`
 }
 
+// Tiered water billing calculation based on official schedule
+// Minimum: 255.00 PHP for up to 10 m³
+// Excess rates: 11-20: 33.00, 21-30: 40.50, 31-40: 48.00, 41+: 55.50 PHP per m³
+function calculateWaterBill(cubicMeters) {
+  const MINIMUM_CHARGE = 255.00
+  const FREE_USAGE = 10 // cubic meters included in minimum
+  
+  if (cubicMeters <= FREE_USAGE) {
+    return MINIMUM_CHARGE
+  }
+  
+  const excess = cubicMeters - FREE_USAGE
+  let excessCharge = 0
+  
+  // Apply tiered rates for usage above 10 m³
+  const tier1 = Math.min(excess, 10)           // 11-20 m³: 33.00 per m³
+  const tier2 = Math.min(Math.max(excess - 10, 0), 10)  // 21-30 m³: 40.50 per m³
+  const tier3 = Math.min(Math.max(excess - 20, 0), 10)  // 31-40 m³: 48.00 per m³
+  const tier4 = Math.max(excess - 30, 0)      // 41+ m³: 55.50 per m³
+  
+  excessCharge = (tier1 * 33.00) + (tier2 * 40.50) + (tier3 * 48.00) + (tier4 * 55.50)
+  
+  return Math.round((MINIMUM_CHARGE + excessCharge) * 100) / 100 // Round to 2 decimals
+}
+
 function authMiddleware(req, res, next) {
   // Support token from both Authorization header and query string
   // Query string is needed for EventSource which doesn't support custom headers
@@ -495,9 +520,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
     // Since ESP32 sends cumulative totals, use latest reading value as monthly usage
     const monthlyUsage = currentUsage
-    const ratePerCubicMeter = 15 // PHP per m³
-    const monthlyBill = monthlyUsage * ratePerCubicMeter
-    const estimatedMonthlyBill = monthlyBill * (30 / (new Date().getDate()))
+    const monthlyBill = calculateWaterBill(monthlyUsage)
+    const estimatedMonthlyBill = calculateWaterBill(monthlyUsage * (30 / (new Date().getDate())))
     
     const isOnline = device.lastSeen && (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 60 * 1000 // 5 min threshold
     const abnormalUsage = monthlyUsage > 100 // Alert if usage > 100 m³
@@ -1458,7 +1482,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     
     // Since ESP32 sends cumulative totals, use latest reading value
     const totalUsage = latestReading ? (latestReading.cubicMeters || 0) : 0
-    const totalBill = totalUsage * 50 // PHP per m³
+    const totalBill = calculateWaterBill(totalUsage)
 
     return {
       id: user.id,
