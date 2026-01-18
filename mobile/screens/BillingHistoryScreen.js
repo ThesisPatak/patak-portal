@@ -12,13 +12,14 @@ function generateBillingHistory(readings, createdAt) {
   const hasData = readings && readings.length > 0;
   
   if (hasData) {
-    // Rolling billing cycles from first reading date
-    const firstReadingDate = new Date(readings[0].timestamp);
-    const billingStartDay = firstReadingDate.getDate();
-    const billingStartMonth = firstReadingDate.getMonth();
-    const billingStartYear = firstReadingDate.getFullYear();
+    // Use account creation date for billing cycles, NOT the reading timestamp
+    // (readings may have incorrect 1970 timestamps due to NTP sync issues)
+    const startDate = createdAt ? new Date(createdAt) : new Date();
+    const billingStartDay = startDate.getDate();
+    const billingStartMonth = startDate.getMonth();
+    const billingStartYear = startDate.getFullYear();
     
-    // Generate 12 rolling periods from first reading
+    // Generate 12 rolling periods from account creation date
     for (let i = 11; i >= 0; i--) {
       let periodStartDate = new Date(billingStartYear, billingStartMonth - i, billingStartDay);
       let periodEndDate = new Date(billingStartYear, billingStartMonth - i + 1, billingStartDay);
@@ -29,9 +30,14 @@ function generateBillingHistory(readings, createdAt) {
       }
       
       const periodReadings = readings.filter((r) => {
-        const readingDate = new Date(r.timestamp);
+        // Use receivedAt (server time) instead of timestamp (may be 1970)
+        const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
         return readingDate >= periodStartDate && readingDate < periodEndDate;
-      }).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      }).sort((a, b) => {
+        const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+        const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+        return dateA.getTime() - dateB.getTime();
+      });
       
       let consumption = 0;
       if (periodReadings.length > 0) {
