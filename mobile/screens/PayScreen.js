@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Linking, ActivityIndicator, Share, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
@@ -7,40 +7,25 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const amount = payInfo?.amount ?? 0;
   const house = payInfo?.house ?? 'Unnamed';
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('gcash'); // Default to GCash
 
   // GCash Account (Philippines mobile payment service)
-  const GCASH_PHONE = '09171234567'; // Replace with actual GCash number
-  const PAYPAL_ID = 'PatakSupplier';
-
-  const gcashLink = `https://www.paymaya.com/send?amount=${Number(amount).toFixed(2)}`;
-  const paypalLink = `https://www.paypal.com/paypalme/${PAYPAL_ID}/${Number(amount).toFixed(2)}`;
+  const GCASH_PHONE = '09171234567'; // Replace with actual GCash merchant number
 
   // Handle GCash payment
   const handleGCashPayment = async () => {
     try {
       setLoading(true);
       
-      // Option 1: Open GCash app or GCash QR
-      const gcashAppLink = `https://www.gcash.com/`; // GCash app deep link
-      
-      // For now, we'll show instructions and record the payment
+      // Show GCash payment instructions
       Alert.alert(
         'GCash Payment',
-        `Send ₱${Number(amount).toFixed(2)} to GCash Number:\n\n${GCASH_PHONE}\n\nReference: ${house}`,
+        `Send ₱${Number(amount).toFixed(2)} to this GCash Number:\n\n${GCASH_PHONE}\n\nReference: ${house}`,
         [
           {
             text: 'I Paid with GCash',
             onPress: async () => {
-              // Record payment immediately
+              // Record payment
               await recordGCashPayment();
-            },
-          },
-          {
-            text: 'Copy Number',
-            onPress: async () => {
-              // Copy to clipboard (would need Clipboard module)
-              Alert.alert('Copied', `GCash Number: ${GCASH_PHONE}`);
             },
           },
           {
@@ -101,38 +86,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
     }
   };
 
-  const handleOpenPayPal = async () => {
-    try {
-      setLoading(true);
-      await Linking.openURL(paypalLink).catch(() => {
-        alert('Cannot open PayPal automatically.\n\nPayPal ID: ' + PAYPAL_ID + '\nAmount: ₱' + Number(amount).toFixed(2));
-      });
-    } catch (error) {
-      console.error('Error opening PayPal:', error);
-      alert('PayPal: ' + paypalLink);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleShare = async () => {
-    try {
-      const shareText = paymentMethod === 'gcash'
-        ? `Send ₱${Number(amount).toFixed(2)} to my GCash: ${GCASH_PHONE} for ${house}`
-        : `Pay ₱${Number(amount).toFixed(2)} via PayPal for ${house}:\n${paypalLink}`;
-      
-      await Share.share({
-        message: shareText,
-        title: `Payment for ${house}`,
-      }).catch(error => {
-        if (error.code !== 'E_CANCELLED') {
-          console.error('Share error:', error);
-        }
-      });
-    } catch (error) {
-      console.error('Share error:', error);
-    }
-  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }}>
@@ -147,113 +101,59 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           <Text style={{ fontSize: TYPO.bodySize + 8, fontWeight: '900', color: COLORS.glowBlue, marginTop: SPACING.small }}>₱{Number(amount).toFixed(2)}</Text>
 
           <View style={{ height: SPACING.base * 2 }} />
-          
-          {/* Payment Method Selection */}
-          <View style={{ width: '100%', marginBottom: SPACING.base }}>
-            <Text style={{ fontSize: TYPO.smallSize, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.small }}>
-              Select Payment Method
-            </Text>
-            
-            {/* GCash Option */}
-            <TouchableOpacity 
-              onPress={() => setPaymentMethod('gcash')}
-              style={{
-                padding: SPACING.base,
-                marginBottom: SPACING.small,
-                borderRadius: 12,
-                backgroundColor: paymentMethod === 'gcash' ? '#e7f5ff' : '#f5f5f5',
-                borderWidth: paymentMethod === 'gcash' ? 2 : 1,
-                borderColor: paymentMethod === 'gcash' ? COLORS.glowBlue : '#ddd',
-              }}
-            >
-              <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: paymentMethod === 'gcash' ? COLORS.glowBlue : COLORS.text }}>
-                💳 GCash (Recommended)
-              </Text>
-              <Text style={{ fontSize: TYPO.smallSize, color: paymentMethod === 'gcash' ? COLORS.glowBlue : COLORS.textMuted, marginTop: 4 }}>
-                Fast, secure, no fees
-              </Text>
-            </TouchableOpacity>
-
-            {/* PayPal Option */}
-            <TouchableOpacity 
-              onPress={() => setPaymentMethod('paypal')}
-              style={{
-                padding: SPACING.base,
-                borderRadius: 12,
-                backgroundColor: paymentMethod === 'paypal' ? '#e7f5ff' : '#f5f5f5',
-                borderWidth: paymentMethod === 'paypal' ? 2 : 1,
-                borderColor: paymentMethod === 'paypal' ? COLORS.glowBlue : '#ddd',
-              }}
-            >
-              <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: paymentMethod === 'paypal' ? COLORS.glowBlue : COLORS.text }}>
-                🅿️ PayPal
-              </Text>
-              <Text style={{ fontSize: TYPO.smallSize, color: paymentMethod === 'paypal' ? COLORS.glowBlue : COLORS.textMuted, marginTop: 4 }}>
-                International payments
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ height: SPACING.base }} />
 
           {/* GCash Payment Info */}
-          {paymentMethod === 'gcash' && (
-            <View style={{ width: '100%', padding: SPACING.base, backgroundColor: '#f0fff4', borderRadius: 12, marginVertical: SPACING.base }}>
-              <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: '#16a34a', textAlign: 'center', marginBottom: SPACING.small }}>
-                GCash Payment
-              </Text>
-              <Text style={{ fontSize: TYPO.bodySize - 2, color: '#666', textAlign: 'center', marginBottom: SPACING.small }}>
-                Send ₱{Number(amount).toFixed(2)} to the GCash number shown below
-              </Text>
-              <Text style={{ fontSize: TYPO.bodySize - 1, color: '#000', textAlign: 'center', fontWeight: '700', marginBottom: SPACING.small }}>
+          <View style={{ width: '100%', padding: SPACING.base, backgroundColor: '#f0fff4', borderRadius: 12, marginVertical: SPACING.base }}>
+            <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: '#16a34a', textAlign: 'center', marginBottom: SPACING.small }}>
+              💳 GCash Payment
+            </Text>
+            <Text style={{ fontSize: TYPO.bodySize - 2, color: '#666', textAlign: 'center', marginBottom: SPACING.base }}>
+              Send ₱{Number(amount).toFixed(2)} to the GCash number below
+            </Text>
+            <View style={{ backgroundColor: '#fff', padding: SPACING.base, borderRadius: 8, borderWidth: 1, borderColor: '#ddd', marginBottom: SPACING.base }}>
+              <Text style={{ fontSize: TYPO.bodySize + 2, color: '#000', textAlign: 'center', fontWeight: '800', letterSpacing: 1 }}>
                 {GCASH_PHONE}
               </Text>
-              <Text style={{ fontSize: TYPO.bodySize - 3, color: '#888', textAlign: 'center', fontStyle: 'italic' }}>
-                Reference: {house}
-              </Text>
             </View>
-          )}
-
-          {/* PayPal Payment Info */}
-          {paymentMethod === 'paypal' && (
-            <View style={{ width: '100%', padding: SPACING.base, backgroundColor: '#f0f7ff', borderRadius: 12, marginVertical: SPACING.base }}>
-              <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.glowBlue, textAlign: 'center', marginBottom: SPACING.small }}>
-                PayPal Payment
-              </Text>
-              <Text style={{ fontSize: TYPO.bodySize - 2, color: '#666', textAlign: 'center', marginBottom: SPACING.small }}>
-                Click below to open PayPal and complete your payment
-              </Text>
-              <Text style={{ fontSize: TYPO.bodySize - 3, color: '#999', textAlign: 'center', fontStyle: 'italic' }}>
-                PayPal ID: {PAYPAL_ID}
-              </Text>
-            </View>
-          )}
+            <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center', fontStyle: 'italic' }}>
+              Reference: <Text style={{ fontWeight: '700' }}>{house}</Text>
+            </Text>
+          </View>
 
           <View style={{ height: SPACING.base }} />
           
           {/* Payment Button */}
           <TouchableOpacity 
-            onPress={paymentMethod === 'gcash' ? handleGCashPayment : handleOpenPayPal}
+            onPress={handleGCashPayment}
             disabled={loading}
-            style={[styles.primaryButton, { opacity: loading ? 0.6 : 1 }]}
+            style={[styles.primaryButton, { opacity: loading ? 0.6 : 1, width: '100%' }]}
           >
             {loading ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
               <Text style={[styles.primaryButtonText]}>
-                {paymentMethod === 'gcash' ? 'Proceed with GCash' : 'Open PayPal Payment'}
+                Send Payment via GCash
               </Text>
             )}
           </TouchableOpacity>
 
-          <View style={{ height: SPACING.small }} />
+          <View style={{ height: SPACING.large }} />
           
-          <TouchableOpacity 
-            onPress={handleShare}
-            style={[styles.secondaryButton, { marginHorizontal: 0 }]}
-          >
-            <Text style={styles.secondaryButtonText}>Share Payment Details</Text>
-          </TouchableOpacity>
+          {/* Instructions */}
+          <View style={[styles.card, { backgroundColor: '#f5f5f5', marginTop: SPACING.base }]}>
+            <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.small }}>
+              📱 How to Pay via GCash
+            </Text>
+            <Text style={{ fontSize: TYPO.smallSize, color: COLORS.text, lineHeight: 22 }}>
+              1. Open your GCash app{'\n'}
+              2. Go to "Send Money"{'\n'}
+              3. Enter the GCash number above{'\n'}
+              4. Enter amount: ₱{Number(amount).toFixed(2)}{'\n'}
+              5. Add reference: {house}{'\n'}
+              6. Complete the transaction{'\n'}
+              7. Return to this app and tap confirmation
+            </Text>
+          </View>
 
           <View style={{ height: SPACING.small }} />
           <Text style={[styles.subtitle, { color: COLORS.muted, marginTop: SPACING.base, textAlign: 'center' }]}>
