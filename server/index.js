@@ -183,6 +183,26 @@ app.get('/debug/state', (req, res) => {
   }
 })
 
+// Debug endpoint - Check PayMongo configuration
+app.get('/debug/paymongo-config', (req, res) => {
+  const hasSecretKey = !!process.env.PAYMONGO_SECRET_KEY
+  const hasPublicKey = !!process.env.PAYMONGO_PUBLIC_KEY
+  const secretKeyPreview = hasSecretKey ? process.env.PAYMONGO_SECRET_KEY.slice(0, 10) + '...' + process.env.PAYMONGO_SECRET_KEY.slice(-10) : 'NOT SET'
+  const publicKeyPreview = hasPublicKey ? process.env.PAYMONGO_PUBLIC_KEY.slice(0, 10) + '...' + process.env.PAYMONGO_PUBLIC_KEY.slice(-10) : 'NOT SET'
+  
+  res.json({
+    timestamp: new Date().toISOString(),
+    paymongo: {
+      secretKeyConfigured: hasSecretKey,
+      secretKeyPreview: secretKeyPreview,
+      publicKeyConfigured: hasPublicKey,
+      publicKeyPreview: publicKeyPreview,
+      fullSecretKey: process.env.PAYMONGO_SECRET_KEY || 'NOT SET',
+      fullPublicKey: process.env.PAYMONGO_PUBLIC_KEY || 'NOT SET'
+    }
+  })
+})
+
 // Debug endpoint - Verify token validity
 app.post('/debug/verify-token', (req, res) => {
   const authHeader = req.headers.authorization
