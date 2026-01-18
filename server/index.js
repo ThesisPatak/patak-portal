@@ -522,7 +522,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
     
     // Calculate consumption metrics
-    const presentConsumption = currentUsage
+    const currentConsumption = currentUsage
     const previousConsumption = sortedReadings.length > 1 ? (sortedReadings[1].cubicMeters || 0) : 0
     const totalConsumption = currentUsage
     
@@ -540,7 +540,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       lastSeen: device.lastSeen,
       isOnline: isOnline,
       cubicMeters: currentUsage,
-      presentConsumption: presentConsumption,
+      currentConsumption: currentConsumption,
       previousConsumption: previousConsumption,
       totalConsumption: totalConsumption,
       totalLiters: currentUsage * 1000,
@@ -1492,26 +1492,26 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const sortedReadings = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     const latestReading = sortedReadings[0]
     
-    // Calculate Present, Previous, and Total Consumption
-    // Present Consumption = latest reading (current billing period)
-    const presentConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
+    // Calculate Current, Previous, and Total Consumption
+    // Current Consumption = latest reading (current billing period)
+    const currentConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
     
     // Previous Consumption = 2nd latest reading if available (previous billing period)
     const previousConsumption = sortedReadings.length > 1 ? (sortedReadings[1].cubicMeters || 0) : 0
     
     // Total Consumption = Latest reading value (cumulative from device)
-    const totalConsumption = presentConsumption
+    const totalConsumption = currentConsumption
     
-    const monthlyBill = calculateWaterBill(presentConsumption)
+    const monthlyBill = calculateWaterBill(currentConsumption)
 
     return {
       id: user.id,
       username: user.username,
       createdAt: user.createdAt,
-      presentConsumption: presentConsumption,
+      currentConsumption: currentConsumption,
       previousConsumption: previousConsumption,
       totalConsumption: totalConsumption,
-      cubicMeters: presentConsumption,
+      cubicMeters: currentConsumption,
       totalLiters: presentConsumption * 1000,
       deviceCount: userDevices.length,
       lastReading: latestReading ? latestReading.timestamp : null,

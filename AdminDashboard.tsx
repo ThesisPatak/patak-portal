@@ -7,7 +7,7 @@ interface UserData {
   username: string;
   createdAt?: string;
   cubicMeters: number;
-  presentConsumption?: number;
+  currentConsumption?: number;
   previousConsumption?: number;
   totalConsumption?: number;
   totalLiters: number;
@@ -638,7 +638,7 @@ const AdminDashboard: React.FC = () => {
                               Household
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Present Consumption (m³)
+                              Current Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Previous Consumption (m³)
@@ -691,7 +691,7 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {(user.presentConsumption || 0).toFixed(2)}
+                                {(user.currentConsumption || 0).toFixed(2)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
                                 {(user.previousConsumption || 0).toFixed(2)}

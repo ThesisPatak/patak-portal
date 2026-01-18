@@ -103,7 +103,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
   const totalUsage = devices.reduce((sum, d) => sum + (Number(d?.cubicMeters) || 0), 0);
   
   // Get consumption metrics directly from API response
-  const presentUsage = devices.reduce((sum, d) => sum + (Number(d?.presentConsumption) || 0), 0);
+  const currentUsage = devices.reduce((sum, d) => sum + (Number(d?.currentConsumption) || 0), 0);
   const previousUsage = devices.reduce((sum, d) => sum + (Number(d?.previousConsumption) || 0), 0);
   const totalConsumption = devices.reduce((sum, d) => sum + (Number(d?.totalConsumption) || 0), 0);
   
@@ -147,10 +147,10 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           CONSUMPTION SUMMARY
         </Text>
         
-        {/* Present Consumption - Top Circle */}
+        {/* Current Consumption - Top Circle */}
         <View style={{ marginBottom: SPACING.large, alignItems: 'center' }}>
           <View style={[styles.card, { width: '100%', borderColor: '#1dd1a1', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
-            <Text style={{ fontSize: 12, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>PRESENT CONSUMPTION (m³)</Text>
+            <Text style={{ fontSize: 12, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>CURRENT CONSUMPTION (m³)</Text>
             
             {/* Circle */}
             <View style={{ width: 140, height: 140, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.base, position: 'relative' }}>
@@ -183,7 +183,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
               }}>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
-                    {presentUsage.toFixed(2)}
+                    {currentUsage.toFixed(2)}
                   </Text>
                   <Text style={{ fontSize: 12, color: '#1dd1a1', marginTop: 2 }}>m³</Text>
                 </View>
