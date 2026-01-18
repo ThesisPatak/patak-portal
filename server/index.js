@@ -1173,15 +1173,110 @@ app.post('/api/admin/users/:username/reset-meter', authMiddleware, (req, res) =>
     return res.status(404).json({ error: 'User not found' })
   }
   
-  // Reset user consumption to 0
+  // Get user's devices to send reset command to ESP32
+  const devices = readJSON(DEVICES_FILE)
+  const userDevices = devices.filter(d => d.ownerUserId === user.id)
+  
+  if (userDevices.length === 0) {
+    console.log(`[RESET-METER] ✗ No devices registered for user`)
+    return res.status(400).json({ error: 'No devices registered for this user' })
+  }
+  
+  // Create reset commands file if it doesn't exist
+  const RESET_COMMANDS_FILE = path.join(DATA_DIR, 'reset_commands.json')
+  let resetCommands = []
+  try {
+    if (fs.existsSync(RESET_COMMANDS_FILE)) {
+      resetCommands = JSON.parse(fs.readFileSync(RESET_COMMANDS_FILE, 'utf8'))
+      if (!Array.isArray(resetCommands)) resetCommands = []
+    }
+  } catch (e) {
+    console.error('[RESET-METER] Error reading reset commands:', e)
+    resetCommands = []
+  }
+  
+  // Add reset command for each device
+  userDevices.forEach(device => {
+    resetCommands.push({
+      deviceId: device.deviceId,
+      username: user.username,
+      userId: user.id,
+      timestamp: timestamp,
+      executed: false
+    })
+    console.log(`[RESET-METER] Reset command queued for device: ${device.deviceId}`)
+  })
+  
+  // Save reset commands
+  try {
+    fs.writeFileSync(RESET_COMMANDS_FILE, JSON.stringify(resetCommands, null, 2))
+  } catch (e) {
+    console.error('[RESET-METER] Error saving reset commands:', e)
+    return res.status(500).json({ error: 'Failed to queue reset command' })
+  }
+  
+  // Also reset server data for immediate effect
   user.cubicMeters = 0
   user.totalLiters = 0
   user.lastReading = null
-  
   writeJSON(USERS_FILE, users)
-  console.log(`[RESET-METER] ✓ Meter reset for user: ${user.username}`)
   
-  res.json({ ok: true, message: 'Meter reset successfully', username: user.username })
+  console.log(`[RESET-METER] ✓ Reset command queued for user: ${user.username}`)
+  res.json({ 
+    ok: true, 
+    message: 'Reset command sent to device. The meter will reset when ESP32 receives the command.',
+    username: user.username,
+    deviceCount: userDevices.length
+  })
+})
+
+// ESP32: Check for pending reset commands
+app.get('/api/device/:deviceId/pending-commands', (req, res) => {
+  const { deviceId } = req.params
+  const timestamp = new Date().toISOString()
+  
+  console.log(`[${timestamp}] [PENDING-CMD] Device checking for commands: ${deviceId}`)
+  
+  const RESET_COMMANDS_FILE = path.join(DATA_DIR, 'reset_commands.json')
+  let resetCommands = []
+  
+  try {
+    if (fs.existsSync(RESET_COMMANDS_FILE)) {
+      resetCommands = JSON.parse(fs.readFileSync(RESET_COMMANDS_FILE, 'utf8'))
+      if (!Array.isArray(resetCommands)) resetCommands = []
+    }
+  } catch (e) {
+    console.error('[PENDING-CMD] Error reading commands:', e)
+    return res.status(500).json({ error: 'Failed to read commands' })
+  }
+  
+  // Find pending commands for this device
+  const pendingCommands = resetCommands.filter(cmd => cmd.deviceId === deviceId && !cmd.executed)
+  
+  if (pendingCommands.length > 0) {
+    console.log(`[PENDING-CMD] ✓ Found ${pendingCommands.length} pending command(s) for device: ${deviceId}`)
+    // Mark as executed
+    const updatedCommands = resetCommands.map(cmd => {
+      if (cmd.deviceId === deviceId && !cmd.executed) {
+        cmd.executed = true
+        cmd.executedAt = timestamp
+      }
+      return cmd
+    })
+    fs.writeFileSync(RESET_COMMANDS_FILE, JSON.stringify(updatedCommands, null, 2))
+    
+    return res.json({
+      hasPendingCommands: true,
+      commands: pendingCommands.map(cmd => ({
+        type: 'reset',
+        command: 'RESET_METER',
+        username: cmd.username
+      }))
+    })
+  }
+  
+  console.log(`[PENDING-CMD] No pending commands for device: ${deviceId}`)
+  res.json({ hasPendingCommands: false, commands: [] })
 })
 
 // User: Record a payment for their bill

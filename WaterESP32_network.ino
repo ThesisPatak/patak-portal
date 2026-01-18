@@ -482,6 +482,45 @@ void setup() {
   Serial.println();
 }
 
+// Check for reset commands from server
+void checkForResetCommand() {
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+  
+  HTTPClient http;
+  String url = String(BACKEND_URL) + "/api/device/" + DEVICE_ID + "/pending-commands";
+  http.begin(url);
+  
+  int httpCode = http.GET();
+  if (httpCode == 200) {
+    String response = http.getString();
+    Serial.print("[RESET-CHECK] Response: ");
+    Serial.println(response);
+    
+    if (response.indexOf("\"hasPendingCommands\":true") != -1 && 
+        response.indexOf("\"RESET_METER\"") != -1) {
+      Serial.println("[RESET-CHECK] ✓ Reset command received from server!");
+      
+      // Execute reset
+      noInterrupts();
+      pulseCount = 0;
+      interrupts();
+      
+      totalLiters = 0.0;
+      totalPulsesAccum = 0;
+      saveState();
+      
+      Serial.println("[RESET-CHECK] ✓ Meter reset to 0 by admin command");
+      Serial.println("[RESET-CHECK] Next reading will show 0.0 m³");
+    }
+  } else if (httpCode > 0) {
+    Serial.print("[RESET-CHECK] HTTP error: ");
+    Serial.println(httpCode);
+  }
+  http.end();
+}
+
 void loop() {
   unsigned long now = millis();
   
@@ -490,6 +529,13 @@ void loop() {
   
   // Poll backend for pending token (cloud-based linking)
   pollForToken();
+  
+  // Check for reset commands from admin dashboard (every 5 seconds)
+  static unsigned long lastCmdCheck = 0;
+  if (now - lastCmdCheck >= 5000) {
+    lastCmdCheck = now;
+    checkForResetCommand();
+  }
   
   if (now - lastMillis >= INTERVAL_MS) {
     unsigned long elapsed = now - lastMillis;
