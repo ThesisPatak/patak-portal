@@ -152,21 +152,21 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           <View style={[styles.card, { borderColor: '#1dd1a1', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
             <Text style={{ fontSize: 11, color: '#1dd1a1', fontWeight: '600', marginBottom: SPACING.small }}>CURRENT CONSUMPTION (m³)</Text>
             
-            <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+            <View style={{ width: 130, height: 130, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
               <View style={{
                 position: 'absolute',
-                width: 95,
-                height: 95,
-                borderRadius: 47.5,
+                width: 110,
+                height: 110,
+                borderRadius: 55,
                 borderWidth: 4,
                 borderColor: 'rgba(29, 209, 161, 0.2)',
                 backgroundColor: 'rgba(15, 36, 56, 0.6)',
               }} />
               
               <Animated.View style={{
-                width: 95,
-                height: 95,
-                borderRadius: 47.5,
+                width: 110,
+                height: 110,
+                borderRadius: 55,
                 borderWidth: 4,
                 borderColor: '#1dd1a1',
                 justifyContent: 'center',
@@ -179,7 +179,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [3, 10] }),
               }}>
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 14, fontWeight: '900', color: COLORS.text }}>
+                  <Text style={{ fontSize: 13, fontWeight: '900', color: COLORS.text }}>
                     {currentUsage.toFixed(6)}
                   </Text>
                   <Text style={{ fontSize: 10, color: '#1dd1a1', marginTop: 2 }}>m³</Text>
@@ -194,21 +194,21 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           <View style={[styles.card, { borderColor: '#888888', borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
             <Text style={{ fontSize: 11, color: '#888888', fontWeight: '600', marginBottom: SPACING.small }}>PREVIOUS CONSUMPTION (m³)</Text>
             
-            <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+            <View style={{ width: 130, height: 130, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
               <View style={{
                 position: 'absolute',
-                width: 95,
-                height: 95,
-                borderRadius: 47.5,
+                width: 110,
+                height: 110,
+                borderRadius: 55,
                 borderWidth: 4,
                 borderColor: 'rgba(136, 136, 136, 0.2)',
                 backgroundColor: 'rgba(15, 36, 56, 0.6)',
               }} />
               
               <Animated.View style={{
-                width: 95,
-                height: 95,
-                borderRadius: 47.5,
+                width: 110,
+                height: 110,
+                borderRadius: 55,
                 borderWidth: 4,
                 borderColor: '#888888',
                 justifyContent: 'center',
@@ -221,7 +221,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
               }}>
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 14, fontWeight: '900', color: COLORS.text }}>
+                  <Text style={{ fontSize: 13, fontWeight: '900', color: COLORS.text }}>
                     {previousUsage.toFixed(6)}
                   </Text>
                   <Text style={{ fontSize: 10, color: '#888888', marginTop: 2 }}>m³</Text>
@@ -236,21 +236,21 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           <View style={[styles.card, { borderColor: COLORS.glowBlue, borderWidth: 2, padding: SPACING.base, alignItems: 'center' }]}>
             <Text style={{ fontSize: 11, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.small }}>TOTAL CONSUMPTION (m³)</Text>
             
-            <View style={{ width: 110, height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+            <View style={{ width: 130, height: 130, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
               <View style={{
                 position: 'absolute',
-                width: 95,
-                height: 95,
-                borderRadius: 47.5,
+                width: 110,
+                height: 110,
+                borderRadius: 55,
                 borderWidth: 4,
                 borderColor: 'rgba(0, 180, 255, 0.2)',
                 backgroundColor: 'rgba(15, 36, 56, 0.6)',
               }} />
               
               <Animated.View style={{
-                width: 95,
-                height: 95,
-                borderRadius: 47.5,
+                width: 110,
+                height: 110,
+                borderRadius: 55,
                 borderWidth: 4,
                 borderColor: totalConsumption > 100 ? COLORS.danger : COLORS.glowBlue,
                 justifyContent: 'center',
@@ -263,7 +263,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [2, 8] }),
               }}>
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 14, fontWeight: '900', color: COLORS.text }}>
+                  <Text style={{ fontSize: 13, fontWeight: '900', color: COLORS.text }}>
                     {totalConsumption.toFixed(6)}
                   </Text>
                   <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PATAK Portal - Updated Mobile Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mobile-frame {
+            width: 390px;
+            height: 844px;
+            background: #0f2438;
+            border-radius: 50px;
+            border: 15px solid #1a1a1a;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 180, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #0a1929;
+            border-bottom: 1px solid rgba(0, 180, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .screen-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .screen-content::-webkit-scrollbar-track {
+            background: rgba(0, 180, 255, 0.1);
+        }
+
+        .screen-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 180, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .title {
+            font-size: 32px;
+            color: #00b4ff;
+            font-weight: 900;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 16px;
+            color: #00b4ff;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        /* Card */
+        .card {
+            background: rgba(15, 36, 56, 0.8);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card.current {
+            border-color: #1dd1a1;
+        }
+
+        .card.previous {
+            border-color: #888888;
+        }
+
+        .card.total {
+            border-color: #00b4ff;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card.current .card-label {
+            color: #1dd1a1;
+        }
+
+        .card.previous .card-label {
+            color: #888888;
+        }
+
+        .card.total .card-label {
+            color: #00b4ff;
+        }
+
+        /* Circle */
+        .circle-container {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-bg {
+            position: absolute;
+            width: 95px;
+            height: 95px;
+            border-radius: 47.5px;
+            border: 4px solid;
+            background: rgba(15, 36, 56, 0.6);
+        }
+
+        .card.current .circle-bg {
+            border-color: rgba(29, 209, 161, 0.2);
+            box-shadow: 0 0 20px rgba(29, 209, 161, 0.4);
+        }
+
+        .card.previous .circle-bg {
+            border-color: rgba(136, 136, 136, 0.2);
+            box-shadow: 0 0 15px rgba(136, 136, 136, 0.3);
+        }
+
+        .card.total .circle-bg {
+            border-color: rgba(0, 180, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 180, 255, 0.4);
+        }
+
+        .circle-main {
+            position: relative;
+            z-index: 10;
+            width: 95px;
+            height: 95px;
+            border-radius: 47.5px;
+            border: 4px solid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 36, 56, 0.6);
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .card.current .circle-main {
+            border-color: #1dd1a1;
+            box-shadow: 0 0 15px rgba(29, 209, 161, 0.5);
+        }
+
+        .card.previous .circle-main {
+            border-color: #888888;
+            box-shadow: 0 0 12px rgba(136, 136, 136, 0.4);
+        }
+
+        .card.total .circle-main {
+            border-color: #00b4ff;
+            box-shadow: 0 0 15px rgba(0, 180, 255, 0.5);
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 180, 255, 0.6);
+            }
+        }
+
+        .circle-value {
+            font-size: 14px;
+            font-weight: 900;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .circle-unit {
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        .card.current .circle-unit {
+            color: #1dd1a1;
+        }
+
+        .card.previous .circle-unit {
+            color: #888888;
+        }
+
+        .card.total .circle-unit {
+            color: #00b4ff;
+        }
+
+        /* Bill Section */
+        .bill-card {
+            background: rgba(15, 36, 56, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #00b4ff;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .bill-label {
+            font-size: 14px;
+            color: #00b4ff;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .bill-amount {
+            font-size: 36px;
+            font-weight: 900;
+            color: #00b4ff;
+        }
+
+        .bill-due {
+            font-size: 12px;
+            color: #e0e0e0;
+            margin-top: 8px;
+        }
+
+        /* Devices Section */
+        .devices-title {
+            font-size: 16px;
+            color: #00b4ff;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .device-card {
+            background: rgba(15, 36, 56, 0.8);
+            border-radius: 12px;
+            padding: 12px;
+            border-left: 4px solid #00b4ff;
+            margin-bottom: 8px;
+        }
+
+        .device-id {
+            color: #00b4ff;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .device-info {
+            color: #aaa;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+        }
+
+        .label {
+            color: #888;
+        }
+
+        .value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        /* Home Indicator */
+        .home-indicator {
+            height: 34px;
+            background: #0a1929;
+            border-top: 1px solid rgba(0, 180, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-bar {
+            width: 120px;
+            height: 4px;
+            background: #888;
+            border-radius: 2px;
+        }
+
+        /* Info text */
+        .info-text {
+            color: #666;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(0, 180, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 180, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-frame">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>●●●●●</span>
+        </div>
+
+        <!-- Screen Content -->
+        <div class="screen-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="subtitle">Welcome back</div>
+                <div class="title">John</div>
+            </div>
+
+            <!-- Consumption Section -->
+            <div class="section-title">CONSUMPTION SUMMARY</div>
+
+            <!-- Current Consumption Card -->
+            <div class="card current">
+                <div class="card-label">Current Consumption (m³)</div>
+                <div class="circle-container">
+                    <div class="circle-bg"></div>
+                    <div class="circle-main">
+                        <div class="circle-value">0.008786</div>
+                        <div class="circle-unit">m³</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Previous Consumption Card -->
+            <div class="card previous">
+                <div class="card-label">Previous Consumption (m³)</div>
+                <div class="circle-container">
+                    <div class="circle-bg"></div>
+                    <div class="circle-main">
+                        <div class="circle-value">0.000000</div>
+                        <div class="circle-unit">m³</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Consumption Card -->
+            <div class="card total">
+                <div class="card-label">Total Consumption (m³)</div>
+                <div class="circle-container">
+                    <div class="circle-bg"></div>
+                    <div class="circle-main">
+                        <div class="circle-value">0.008786</div>
+                        <div class="circle-unit">m³</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bill Section -->
+            <div class="bill-card">
+                <div class="bill-label">MONTHLY BILL</div>
+                <div class="bill-amount">₱255.00</div>
+                <div class="bill-due">Due: 2026-02-19</div>
+            </div>
+
+            <!-- Devices Section -->
+            <div class="devices-title">🎛️ Devices (1)</div>
+
+            <div class="device-card">
+                <div class="device-id">ESP32-WM-001</div>
+                <div class="device-info">
+                    <div class="info-row">
+                        <span class="label">Current:</span>
+                        <span class="value">0.008786 m³</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Previous:</span>
+                        <span class="value">0.000000 m³</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Total:</span>
+                        <span class="value">0.008786 m³</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Status:</span>
+                        <span class="value" style="color: #1dd1a1;">Connected</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-text">
+                ✓ All consumption values shown with 6 decimals
+            </div>
+        </div>
+
+        <!-- Home Indicator -->
+        <div class="home-indicator">
+            <div class="home-bar"></div>
+        </div>
+    </div>
+</body>
+</html>
