@@ -1408,6 +1408,9 @@ app.post('/api/paymongo/create-link', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'PayMongo not configured' })
   }
   
+  // Debug: Log key preview
+  console.log(`[PAYMONGO-CREATE] Using Secret Key: ${PAYMONGO_API_KEY.substring(0, 15)}...${PAYMONGO_API_KEY.substring(PAYMONGO_API_KEY.length - 15)}`)
+  
   try {
     // Create checkout session with PayMongo
     const checkoutPayload = {
