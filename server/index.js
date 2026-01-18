@@ -541,15 +541,41 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     
     const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
     
-    // Calculate consumption metrics (ESP32 sends cumulative readings like an odometer)
-    // Current Consumption = difference between latest and 2nd latest reading (usage this period)
-    const currentConsumption = sortedReadings.length > 1 
-      ? Math.max(0, (sortedReadings[0].cubicMeters || 0) - (sortedReadings[1].cubicMeters || 0))
-      : currentUsage
+    // Calculate consumption by billing period (billing starts from user's account createdAt day each month)
+    // Get the user's billing start day
+    const userCreatedDate = new Date(device.createdAt || Date.now())
+    const billingStartDay = userCreatedDate.getDate()
     
-    // Previous Consumption = difference between 2nd and 3rd latest reading (usage in previous period)
-    const previousConsumption = sortedReadings.length > 2
-      ? Math.max(0, (sortedReadings[1].cubicMeters || 0) - (sortedReadings[2].cubicMeters || 0))
+    // Get readings for current billing period (from day 19 of current month to now)
+    const now = new Date()
+    let currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), billingStartDay)
+    if (now < currentPeriodStart) {
+      // If today is before the billing day, go back to previous month's billing date
+      currentPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, billingStartDay)
+    }
+    
+    // Get readings for previous billing period (from day 19 of previous month to day 19 of current month)
+    const previousPeriodStart = new Date(currentPeriodStart)
+    previousPeriodStart.setMonth(previousPeriodStart.getMonth() - 1)
+    const previousPeriodEnd = new Date(currentPeriodStart)
+    
+    const currentPeriodReadings = sortedReadings.filter(r => {
+      const date = new Date(r.timestamp)
+      return date >= currentPeriodStart && date <= now
+    })
+    const previousPeriodReadings = sortedReadings.filter(r => {
+      const date = new Date(r.timestamp)
+      return date >= previousPeriodStart && date < currentPeriodStart
+    })
+    
+    // Current Consumption = readings in current period (latest in period - oldest in period)
+    const currentConsumption = currentPeriodReadings.length > 0
+      ? Math.max(0, (currentPeriodReadings[0].cubicMeters || 0) - (currentPeriodReadings[currentPeriodReadings.length - 1].cubicMeters || 0))
+      : 0
+    
+    // Previous Consumption = readings in previous period (latest in period - oldest in period)
+    const previousConsumption = previousPeriodReadings.length > 0
+      ? Math.max(0, (previousPeriodReadings[0].cubicMeters || 0) - (previousPeriodReadings[previousPeriodReadings.length - 1].cubicMeters || 0))
       : 0
     
     // Total Consumption = latest cumulative reading (all time since device installed)
@@ -1616,16 +1642,40 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const sortedReadings = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     const latestReading = sortedReadings[0]
     
-    // Calculate Current, Previous, and Total Consumption
-    // ESP32 sends cumulative readings like an odometer
-    // Current Consumption = difference between latest and 2nd latest reading (usage this period)
-    const currentConsumption = sortedReadings.length > 1
-      ? Math.max(0, (sortedReadings[0].cubicMeters || 0) - (sortedReadings[1].cubicMeters || 0))
-      : (latestReading ? (latestReading.cubicMeters || 0) : 0)
+    // Calculate Current, Previous, and Total Consumption by billing period
+    // Billing periods are based on user's account creation date (same day each month)
+    const userCreatedDate = new Date(user.createdAt)
+    const billingStartDay = userCreatedDate.getDate()
     
-    // Previous Consumption = difference between 2nd and 3rd latest reading (usage in previous period)
-    const previousConsumption = sortedReadings.length > 2
-      ? Math.max(0, (sortedReadings[1].cubicMeters || 0) - (sortedReadings[2].cubicMeters || 0))
+    // Get readings for current billing period
+    const now = new Date()
+    let currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), billingStartDay)
+    if (now < currentPeriodStart) {
+      currentPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, billingStartDay)
+    }
+    
+    // Get readings for previous billing period
+    const previousPeriodStart = new Date(currentPeriodStart)
+    previousPeriodStart.setMonth(previousPeriodStart.getMonth() - 1)
+    const previousPeriodEnd = new Date(currentPeriodStart)
+    
+    const currentPeriodReadings = sortedReadings.filter(r => {
+      const date = new Date(r.timestamp)
+      return date >= currentPeriodStart && date <= now
+    })
+    const previousPeriodReadings = sortedReadings.filter(r => {
+      const date = new Date(r.timestamp)
+      return date >= previousPeriodStart && date < currentPeriodStart
+    })
+    
+    // Current Consumption = usage in current billing period
+    const currentConsumption = currentPeriodReadings.length > 0
+      ? Math.max(0, (currentPeriodReadings[0].cubicMeters || 0) - (currentPeriodReadings[currentPeriodReadings.length - 1].cubicMeters || 0))
+      : 0
+    
+    // Previous Consumption = usage in previous billing period
+    const previousConsumption = previousPeriodReadings.length > 0
+      ? Math.max(0, (previousPeriodReadings[0].cubicMeters || 0) - (previousPeriodReadings[previousPeriodReadings.length - 1].cubicMeters || 0))
       : 0
     
     // Total Consumption = latest cumulative reading (all time since device installed)
