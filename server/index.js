@@ -511,6 +511,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     console.log('[HOUSES] Device', device.deviceId, 'has', deviceReadings.length, 'readings')
     const lastReading = deviceReadings[0]
+    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    
     const readingsThisMonth = deviceReadings.filter(r => {
       const date = new Date(r.timestamp)
       const now = new Date()
@@ -518,6 +520,12 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     })
     
     const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
+    
+    // Calculate consumption metrics
+    const presentConsumption = currentUsage
+    const previousConsumption = sortedReadings.length > 1 ? (sortedReadings[1].cubicMeters || 0) : 0
+    const totalConsumption = currentUsage
+    
     // Since ESP32 sends cumulative totals, use latest reading value as monthly usage
     const monthlyUsage = currentUsage
     const monthlyBill = calculateWaterBill(monthlyUsage)
@@ -532,6 +540,9 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       lastSeen: device.lastSeen,
       isOnline: isOnline,
       cubicMeters: currentUsage,
+      presentConsumption: presentConsumption,
+      previousConsumption: previousConsumption,
+      totalConsumption: totalConsumption,
       totalLiters: currentUsage * 1000,
       monthlyUsage: monthlyUsage,
       monthlyBill: monthlyBill,
@@ -1478,18 +1489,30 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     // Users must explicitly register a device to see readings
     
     // Sort by timestamp descending to get latest reading
-    const latestReading = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
+    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    const latestReading = sortedReadings[0]
     
-    // Since ESP32 sends cumulative totals, use latest reading value
-    const totalUsage = latestReading ? (latestReading.cubicMeters || 0) : 0
-    const totalBill = calculateWaterBill(totalUsage)
+    // Calculate Present, Previous, and Total Consumption
+    // Present Consumption = latest reading (current billing period)
+    const presentConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
+    
+    // Previous Consumption = 2nd latest reading if available (previous billing period)
+    const previousConsumption = sortedReadings.length > 1 ? (sortedReadings[1].cubicMeters || 0) : 0
+    
+    // Total Consumption = Latest reading value (cumulative from device)
+    const totalConsumption = presentConsumption
+    
+    const monthlyBill = calculateWaterBill(presentConsumption)
 
     return {
       id: user.id,
       username: user.username,
       createdAt: user.createdAt,
-      cubicMeters: totalUsage,
-      totalLiters: totalUsage * 1000,
+      presentConsumption: presentConsumption,
+      previousConsumption: previousConsumption,
+      totalConsumption: totalConsumption,
+      cubicMeters: presentConsumption,
+      totalLiters: presentConsumption * 1000,
       deviceCount: userDevices.length,
       lastReading: latestReading ? latestReading.timestamp : null,
       devices: userDevices.map(d => {
@@ -1519,7 +1542,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
           createdAt: d.createdAt
         };
       }),
-      monthlyBill: totalBill,
+      monthlyBill: monthlyBill,
       dataSource: userDevices.length > 0 ? 'registered_devices' : (deviceReadings.length > 0 ? 'fallback_all_readings' : 'no_data')
     }
   })

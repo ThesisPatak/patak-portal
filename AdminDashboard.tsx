@@ -7,10 +7,14 @@ interface UserData {
   username: string;
   createdAt?: string;
   cubicMeters: number;
+  presentConsumption?: number;
+  previousConsumption?: number;
+  totalConsumption?: number;
   totalLiters: number;
   deviceCount: number;
   lastReading: string | null;
   devices: Array<{ deviceId: string; status: string; lastSeen: string | null }>;
+  monthlyBill?: number;
 }
 
 const API_URL = "https://patak-portal-production.up.railway.app";
@@ -687,13 +691,13 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {(userConsumption[user.id]?.present || 0).toFixed(6)}
+                                {(user.presentConsumption || 0).toFixed(2)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {(userConsumption[user.id]?.previous || 0).toFixed(6)}
+                                {(user.previousConsumption || 0).toFixed(2)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>
-                                {((userConsumption[user.id]?.present || 0) + (userConsumption[user.id]?.previous || 0)).toFixed(6)}
+                                {(user.totalConsumption || 0).toFixed(2)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
                                 ₱{user.monthlyBill.toFixed(2)}

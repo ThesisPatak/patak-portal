@@ -97,43 +97,15 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
     );
   }
 
-  // Use same logic as web app - access cubicMeters directly from summary
+  // Use same logic as web app - access consumption metrics from summary
   const summaryData = summary?.summary || summary || {};
   const devices = Object.values(summaryData);
   const totalUsage = devices.reduce((sum, d) => sum + (Number(d?.cubicMeters) || 0), 0);
   
-  // Calculate present and previous usage from history
-  const calculateUsageMetrics = () => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    
-    let presentUsage = 0;
-    let previousUsage = 0;
-    
-    if (Array.isArray(usageHistory) && usageHistory.length > 0) {
-      // Group readings by month
-      const monthlyUsage = {};
-      usageHistory.forEach(reading => {
-        const date = new Date(reading.timestamp || new Date());
-        const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-        if (!monthlyUsage[monthKey]) {
-          monthlyUsage[monthKey] = 0;
-        }
-        monthlyUsage[monthKey] += Number(reading.cubicMeters) || 0;
-      });
-      
-      const currentMonthKey = `${currentYear}-${currentMonth}`;
-      const previousMonthKey = `${currentMonth === 0 ? currentYear - 1 : currentYear}-${currentMonth === 0 ? 11 : currentMonth - 1}`;
-      
-      presentUsage = monthlyUsage[currentMonthKey] || 0;
-      previousUsage = monthlyUsage[previousMonthKey] || 0;
-    }
-    
-    return { presentUsage, previousUsage };
-  };
-  
-  const { presentUsage, previousUsage } = calculateUsageMetrics();
+  // Get consumption metrics directly from API response
+  const presentUsage = devices.reduce((sum, d) => sum + (Number(d?.presentConsumption) || 0), 0);
+  const previousUsage = devices.reduce((sum, d) => sum + (Number(d?.previousConsumption) || 0), 0);
+  const totalConsumption = devices.reduce((sum, d) => sum + (Number(d?.totalConsumption) || 0), 0);
   
   // Calculate due date from first device's first reading
   const getDueDate = () => {
@@ -291,11 +263,11 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                   height: 95,
                   borderRadius: 47.5,
                   borderWidth: 4,
-                  borderColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+                  borderColor: totalConsumption > 100 ? COLORS.danger : COLORS.glowBlue,
                   justifyContent: 'center',
                   alignItems: 'center',
                   backgroundColor: 'rgba(15, 36, 56, 0.6)',
-                  shadowColor: totalUsage > 100 ? COLORS.danger : COLORS.glowBlue,
+                  shadowColor: totalConsumption > 100 ? COLORS.danger : COLORS.glowBlue,
                   shadowOffset: { width: 0, height: 0 },
                   shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
                   shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
@@ -303,7 +275,7 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
                 }}>
                   <View style={{ alignItems: 'center' }}>
                     <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
-                      {totalUsage.toFixed(2)}
+                      {totalConsumption.toFixed(2)}
                     </Text>
                     <Text style={{ fontSize: 10, color: COLORS.glowBlue, marginTop: 2 }}>m³</Text>
                   </View>
