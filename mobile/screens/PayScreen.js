@@ -118,49 +118,6 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
         </View>
 
-        {/* Transaction Reference */}
-        <View style={[styles.card, { backgroundColor: '#fff9e6', borderRadius: 12, marginBottom: SPACING.base }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginBottom: SPACING.small }}>REFERENCE #</Text>
-              <Text style={{ fontFamily: 'monospace', fontSize: TYPO.smallSize + 1, fontWeight: '600', color: COLORS.text }}>
-                {referenceNumber}
-              </Text>
-            </View>
-            <TouchableOpacity 
-              onPress={handleCopyReference}
-              style={{ padding: SPACING.small, backgroundColor: '#0066CC', borderRadius: 8 }}
-            >
-              <Text style={{ color: 'white', fontWeight: '600', fontSize: TYPO.smallSize }}>📋 Copy</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={{ fontSize: TYPO.smallSize - 2, color: '#999', marginTop: SPACING.small, fontStyle: 'italic' }}>
-            Use this to track your payment
-          </Text>
-        </View>
-
-        {/* GCash Wallet Status */}
-        <View style={[styles.card, { backgroundColor: '#e6f7ff', borderRadius: 12, marginBottom: SPACING.base }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: TYPO.bodySize - 2, fontWeight: '700', color: '#0066CC', marginBottom: SPACING.small }}>
-                📱 GCash Wallet
-              </Text>
-              <Text style={{ fontSize: TYPO.smallSize, color: '#666', lineHeight: 20 }}>
-                Please ensure your GCash wallet has sufficient balance before paying.
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity 
-            style={{ marginTop: SPACING.base, paddingVertical: SPACING.small, borderTopWidth: 1, borderTopColor: '#bdd9f1' }}
-            onPress={() => Alert.alert('GCash', 'Open your GCash app to check balance')}
-          >
-            <Text style={{ color: '#0066CC', fontWeight: '600', fontSize: TYPO.smallSize, textAlign: 'center' }}>
-              Check Balance in GCash App →
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Transaction Breakdown */}
         <View style={[styles.card, { marginBottom: SPACING.base }]}>
           <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.base }}>
@@ -276,22 +233,6 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
           <Text style={{ fontSize: TYPO.smallSize - 2, color: '#666', lineHeight: 18 }}>
             Your payment is protected by industry-standard security. Your GCash account will not be charged until payment is successfully processed.
-          </Text>
-        </View>
-
-        {/* Support Section */}
-        <View style={[styles.card, { backgroundColor: '#fef3f2', marginBottom: SPACING.large }]}>
-          <Text style={{ fontSize: TYPO.bodySize - 2, fontWeight: '700', color: '#dc2626', marginBottom: SPACING.base }}>
-            ❓ Need Help?
-          </Text>
-          <Text style={{ fontSize: TYPO.smallSize, color: '#666', lineHeight: 20, marginBottom: SPACING.base }}>
-            If you encounter any issues during payment, please:
-          </Text>
-          <Text style={{ fontSize: TYPO.smallSize, color: '#666', lineHeight: 20 }}>
-            • Verify sufficient GCash balance{'\n'}
-            • Check your internet connection{'\n'}
-            • Contact support with Reference #{'\n'}
-            <Text style={{ fontWeight: '600', fontFamily: 'monospace' }}>{referenceNumber}</Text>
           </Text>
         </View>
       </View>
