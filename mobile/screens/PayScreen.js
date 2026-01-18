@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Linking } from 'react-native';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
@@ -9,7 +9,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const [loading, setLoading] = useState(false);
 
   // GCash Account (Philippines mobile payment service)
-  const GCASH_PHONE = '09171234567'; // Replace with actual GCash merchant number
+  const GCASH_PHONE = '09660246456'; // Patak Supplier GCash number
 
   // Handle GCash payment
   const handleGCashPayment = async () => {
@@ -42,7 +42,57 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
     }
   };
 
-  // Record GCash payment to backend
+  // Create PayMongo payment link
+  const handlePayMongoPayment = async () => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: Number(amount),
+          billingMonth: payInfo?.billingMonth || new Date().getMonth() + 1,
+          billingYear: payInfo?.billingYear || new Date().getFullYear(),
+          description: `Water bill for ${house}`
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('PayMongo checkout URL:', data.checkoutUrl);
+        
+        // Open PayMongo checkout
+        await Linking.openURL(data.checkoutUrl);
+        
+        Alert.alert(
+          'Payment Redirected',
+          'You will be redirected to PayMongo to complete your payment. Please complete the transaction.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setLoading(false);
+                // Payment will be confirmed via webhook
+                onBack();
+              },
+            },
+          ]
+        );
+      } else {
+        const error = await response.json();
+        Alert.alert('Error', error.error || 'Failed to create payment link');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('PayMongo error:', err);
+      Alert.alert('Error', 'Failed to initiate PayMongo payment: ' + err.message);
+      setLoading(false);
+    }
+  };
   const recordGCashPayment = async () => {
     try {
       const response = await fetch('https://patak-portal-production.up.railway.app/api/payments/record', {
@@ -122,17 +172,39 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
           <View style={{ height: SPACING.base }} />
           
-          {/* Payment Button */}
+          {/* Payment Button - PayMongo */}
           <TouchableOpacity 
-            onPress={handleGCashPayment}
+            onPress={handlePayMongoPayment}
             disabled={loading}
-            style={[styles.primaryButton, { opacity: loading ? 0.6 : 1, width: '100%' }]}
+            style={[styles.primaryButton, { opacity: loading ? 0.6 : 1, width: '100%', marginBottom: SPACING.small }]}
           >
             {loading ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
               <Text style={[styles.primaryButtonText]}>
-                Send Payment via GCash
+                💳 Pay with Card/GCash (PayMongo)
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginVertical: SPACING.base }} />
+          <Text style={{ fontSize: TYPO.smallSize, color: COLORS.textMuted, textAlign: 'center', marginVertical: SPACING.small }}>
+            OR
+          </Text>
+          <View style={{ width: '100%', height: 1, backgroundColor: '#ddd', marginVertical: SPACING.base }} />
+          
+          {/* Payment Button - Manual GCash */}
+          <TouchableOpacity 
+            onPress={handleGCashPayment}
+            disabled={loading}
+            style={[styles.secondaryButton, { opacity: loading ? 0.6 : 1, width: '100%' }]}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color={COLORS.glowBlue} />
+            ) : (
+              <Text style={[styles.secondaryButtonText]}>
+                📱 Manual GCash Transfer
               </Text>
             )}
           </TouchableOpacity>

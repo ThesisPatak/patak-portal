@@ -1203,6 +1203,141 @@ app.post('/api/gcash/webhook', (req, res) => {
   res.json({ ok: true, message: 'Webhook received' })
 })
 
+// PayMongo: Create payment checkout link
+app.post('/api/paymongo/create-link', authMiddleware, async (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { amount, billingMonth, billingYear, description } = req.body
+  const userId = req.user.userId
+  const username = req.user.username
+  
+  console.log(`\n[${timestamp}] [PAYMONGO-CREATE] Creating payment link for ${username}`)
+  console.log(`[PAYMONGO-CREATE] Amount: ${amount}, Billing: ${billingMonth}/${billingYear}`)
+  
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid amount' })
+  }
+  
+  const PAYMONGO_API_KEY = process.env.PAYMONGO_SECRET_KEY
+  if (!PAYMONGO_API_KEY) {
+    console.error(`[PAYMONGO-CREATE] ✗ PAYMONGO_SECRET_KEY not configured`)
+    return res.status(500).json({ error: 'PayMongo not configured' })
+  }
+  
+  try {
+    // Create checkout session with PayMongo
+    const checkoutPayload = {
+      data: {
+        attributes: {
+          amount: Math.round(amount * 100), // Convert to centavos
+          currency: 'PHP',
+          description: description || `Water billing for ${username} - ${billingMonth}/${billingYear}`,
+          line_items: [
+            {
+              currency: 'PHP',
+              amount: Math.round(amount * 100),
+              description: `Monthly water bill`,
+              name: `Water Bill`,
+              quantity: 1
+            }
+          ],
+          payment_method_types: ['gcash', 'card'],
+          success_url: `https://patak-portal-production.up.railway.app/payment-success?id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `https://patak-portal-production.up.railway.app/payment-cancel`,
+          metadata: {
+            userId,
+            username,
+            billingMonth,
+            billingYear
+          }
+        }
+      }
+    }
+    
+    const response = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Buffer.from(PAYMONGO_API_KEY + ':').toString('base64')}`
+      },
+      body: JSON.stringify(checkoutPayload)
+    })
+    
+    const data = await response.json()
+    
+    if (!response.ok) {
+      console.error(`[PAYMONGO-CREATE] ✗ Error:`, data)
+      return res.status(response.status).json({ error: data.errors?.[0]?.detail || 'Failed to create payment link' })
+    }
+    
+    const checkoutUrl = data.data.attributes.checkout_url
+    console.log(`[PAYMONGO-CREATE] ✓ Payment link created: ${checkoutUrl}`)
+    
+    res.json({
+      ok: true,
+      checkoutUrl,
+      sessionId: data.data.id
+    })
+  } catch (error) {
+    console.error(`[PAYMONGO-CREATE] ✗ Exception:`, error.message)
+    res.status(500).json({ error: 'Failed to create payment link' })
+  }
+})
+
+// PayMongo: Webhook for payment notifications
+app.post('/api/paymongo/webhook', (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { data } = req.body || {}
+  
+  if (!data) {
+    return res.status(400).json({ error: 'Invalid webhook payload' })
+  }
+  
+  console.log(`\n[${timestamp}] [PAYMONGO-WEBHOOK] Received webhook`)
+  
+  const eventType = data.type
+  const attributes = data.attributes || {}
+  const checkoutId = attributes.checkout_session_id || data.id
+  
+  console.log(`[PAYMONGO-WEBHOOK] Event: ${eventType}, Checkout: ${checkoutId}`)
+  
+  // Handle payment.paid event
+  if (eventType === 'payment.paid' || eventType === 'charge.paid') {
+    console.log(`[PAYMONGO-WEBHOOK] ✓ Payment confirmed`)
+    
+    const metadata = attributes.metadata || {}
+    const { username, billingMonth, billingYear } = metadata
+    
+    if (username && billingMonth && billingYear) {
+      // Record payment automatically
+      const payments = readJSON(PAYMENTS_FILE)
+      const amount = (attributes.amount || 0) / 100 // Convert from centavos
+      
+      const newPayment = {
+        id: `payment-${Date.now()}`,
+        username,
+        amount,
+        paymentDate: timestamp,
+        billingMonth: parseInt(billingMonth),
+        billingYear: parseInt(billingYear),
+        paymentMethod: 'paymongo',
+        status: 'confirmed',
+        paymongo_charge_id: data.id
+      }
+      
+      payments.push(newPayment)
+      writeJSON(PAYMENTS_FILE, payments)
+      
+      console.log(`[PAYMONGO-WEBHOOK] ✓ Payment recorded automatically for ${username}: ₱${amount}`)
+    }
+  }
+  
+  if (eventType === 'payment.failed' || eventType === 'charge.failed') {
+    console.log(`[PAYMONGO-WEBHOOK] ✗ Payment failed`)
+  }
+  
+  res.json({ ok: true, message: 'Webhook processed' })
+})
+
 // User/Admin: Get payments for a user
 app.get('/api/payments/:username', authMiddleware, (req, res) => {
   const { username } = req.params
