@@ -18,10 +18,26 @@ function calculateFlowRate(liters, durationSeconds) {
   return (liters / durationSeconds) * 60; // liters per minute
 }
 
-function calculateCost(cubicMeters) {
-  // Philippine water rate: approximately ₱15 per cubic meter (matches dashboard calculation)
-  const RATE_PER_CUBIC_METER = 15;
-  return cubicMeters * RATE_PER_CUBIC_METER;
+// Tiered water billing calculation - MUST MATCH SERVER & DASHBOARD
+function calculateWaterBill(cubicMeters) {
+  const MINIMUM_CHARGE = 255.00;
+  const FREE_USAGE = 10; // cubic meters included in minimum
+  
+  if (cubicMeters <= FREE_USAGE) {
+    return MINIMUM_CHARGE;
+  }
+  
+  const excess = cubicMeters - FREE_USAGE;
+  
+  // Apply tiered rates for usage above 10 m³
+  const tier1 = Math.min(excess, 10);           // 11-20 m³: 33.00 per m³
+  const tier2 = Math.min(Math.max(excess - 10, 0), 10);  // 21-30 m³: 40.50 per m³
+  const tier3 = Math.min(Math.max(excess - 20, 0), 10);  // 31-40 m³: 48.00 per m³
+  const tier4 = Math.max(excess - 30, 0);      // 41+ m³: 55.50 per m³
+  
+  const excessCharge = (tier1 * 33.00) + (tier2 * 40.50) + (tier3 * 48.00) + (tier4 * 55.50);
+  
+  return Math.round((MINIMUM_CHARGE + excessCharge) * 100) / 100;
 }
 
 export default function UsageScreen({ token, onBack }) {
@@ -137,7 +153,7 @@ export default function UsageScreen({ token, onBack }) {
 
               {/* Cost */}
               <Text style={{ color: '#FFD700', fontSize: 12, fontWeight: '600', marginBottom: 4 }}>
-                💰 Cost: ₱{calculateCost(item.cubicMeters || 0).toFixed(2)}
+                💰 Estimated Bill: ₱{calculateWaterBill(item.cubicMeters || 0).toFixed(2)}
               </Text>
 
               {/* Device ID */}
