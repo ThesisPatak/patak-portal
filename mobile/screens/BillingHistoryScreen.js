@@ -19,15 +19,26 @@ function generateBillingHistory(readings, createdAt) {
     const billingStartMonth = startDate.getMonth();
     const billingStartYear = startDate.getFullYear();
     
-    // Generate 12 rolling periods from account creation date
-    for (let i = 11; i >= 0; i--) {
-      let periodStartDate = new Date(billingStartYear, billingStartMonth - i, billingStartDay);
-      let periodEndDate = new Date(billingStartYear, billingStartMonth - i + 1, billingStartDay);
+    // Find current billing period (which month cycle are we in?)
+    let currentMonthOffset = 0;
+    let foundCurrentPeriod = false;
+    
+    // Look backwards to find where current date falls
+    for (let i = -12; i <= 0; i++) {
+      let periodStartDate = new Date(billingStartYear, billingStartMonth + i, billingStartDay);
+      let periodEndDate = new Date(billingStartYear, billingStartMonth + i + 1, billingStartDay);
       
-      // Handle year rollover
-      if (periodEndDate < periodStartDate) {
-        periodEndDate = new Date(periodEndDate.getFullYear() + 1, periodEndDate.getMonth(), periodEndDate.getDate());
+      if (now >= periodStartDate && now < periodEndDate) {
+        currentMonthOffset = i;
+        foundCurrentPeriod = true;
+        break;
       }
+    }
+    
+    // Generate 12 periods: current period + next 11 months (forward from now)
+    for (let i = 0; i < 12; i++) {
+      let periodStartDate = new Date(billingStartYear, billingStartMonth + currentMonthOffset + i, billingStartDay);
+      let periodEndDate = new Date(billingStartYear, billingStartMonth + currentMonthOffset + i + 1, billingStartDay);
       
       const periodReadings = readings.filter((r) => {
         // Use receivedAt (server time) instead of timestamp (may be 1970)
@@ -53,6 +64,8 @@ function generateBillingHistory(readings, createdAt) {
       let billStatus = 'Pending';
       if (now > periodEndDate) {
         billStatus = 'Overdue';
+      } else if (now >= periodStartDate && now < periodEndDate) {
+        billStatus = 'Current';
       } else if (now < periodStartDate) {
         billStatus = 'Upcoming';
       }
@@ -68,18 +81,25 @@ function generateBillingHistory(readings, createdAt) {
     }
   } else {
     // Default calendar months (no data)
-    for (let i = 11; i >= 0; i--) {
-      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const nextMonthDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+    for (let i = 0; i < 12; i++) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
       
       const monthStr = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      
+      let billStatus = 'Not yet active';
+      if (i === 0) {
+        billStatus = 'Current';
+      } else if (i > 0) {
+        billStatus = 'Upcoming';
+      }
       
       history.push({
         month: monthStr,
         monthDate,
         consumption: '0.000000',
         amountDue: '0.00',
-        billStatus: 'Not yet active',
+        billStatus,
         dueDate: nextMonthDate.toISOString().split('T')[0],
       });
     }
