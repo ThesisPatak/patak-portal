@@ -187,7 +187,25 @@ void ensureWiFi() {
     Serial.print("WiFi connected, IP="); Serial.println(WiFi.localIP());
     // initialize NTP time so we can send ISO timestamps
     configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-    Serial.println("NTP requested");
+    Serial.println("NTP requested - waiting for time sync...");
+    
+    // Wait for NTP time sync (max 30 seconds)
+    time_t now = time(nullptr);
+    int ntp_wait = 0;
+    while (now < 24 * 3600 && ntp_wait < 60) {  // 24 hours = 86400 seconds
+      delay(500);
+      now = time(nullptr);
+      ntp_wait++;
+      if (ntp_wait % 4 == 0) Serial.print('.');
+    }
+    Serial.println();
+    
+    if (now > 24 * 3600) {
+      Serial.print("✓ NTP synced! Current time: ");
+      Serial.println(now);
+    } else {
+      Serial.println("⚠ NTP sync timeout - using epoch time, readings may show 1970-01-01");
+    }
   } else {
     Serial.println("WiFi connect failed (timeout).");
   }
