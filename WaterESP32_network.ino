@@ -369,8 +369,8 @@ void setupWebServer() {
     String html = "<html><body style='font-family:Arial;'>";
     html += "<h1>ESP32 Water Meter</h1>";
     html += "<p><b>Device ID:</b> " + DEVICE_ID + "</p>";
-    html += "<p><b>Token Status:</b> " + (DEVICE_TOKEN.length() > 0 ? "✓ Connected" : "✗ Not linked") + "</p>";
-    html += "<p><b>WiFi:</b> " + (WiFi.status() == WL_CONNECTED ? "✓ Connected" : "✗ Disconnected") + "</p>";
+    html += "<p><b>Token Status:</b> " + String(DEVICE_TOKEN.length() > 0 ? "✓ Connected" : "✗ Not linked") + "</p>";
+    html += "<p><b>WiFi:</b> " + String(WiFi.status() == WL_CONNECTED ? "✓ Connected" : "✗ Disconnected") + "</p>";
     html += "<p><b>Total Liters:</b> " + String(totalLiters, 2) + "</p>";
     html += "</body></html>";
     webServer.send(200, "text/html", html);
