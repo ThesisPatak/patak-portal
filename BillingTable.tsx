@@ -85,7 +85,7 @@ const BillingTable: React.FC = () => {
               // Calculate bill status
               const getBillStatus = () => {
                 const num = Number(usageRaw || 0);
-                if (num === 0 || !summary[houseKey]?.lastReading?.timestamp) return { text: 'Not yet active', color: '#999' };
+                if (num === 0 || !summary[houseKey]?.lastReading?.timestamp) return { text: 'Not yet active', color: '#999', icon: '⏸️' };
                 
                 const firstReadingDate = new Date(summary[houseKey].lastReading.timestamp);
                 const dueDate = new Date(firstReadingDate);
@@ -93,9 +93,9 @@ const BillingTable: React.FC = () => {
                 
                 const now = new Date();
                 if (now > dueDate) {
-                  return { text: '🔴 Overdue', color: '#ff6b6b' };
+                  return { text: 'Overdue', color: '#ff6b6b', icon: '🔴' };
                 } else {
-                  return { text: '⏳ Pending', color: '#ff9800' };
+                  return { text: 'Pending', color: '#ff9800', icon: '⏳' };
                 }
               };
               
@@ -118,7 +118,7 @@ const BillingTable: React.FC = () => {
                     dueDate.setMonth(dueDate.getMonth() + 1);
                     return dueDate.toISOString().slice(0,10);
                   })()}</td>
-                  <td style={{ padding: '10px 12px', color: billStatus.color, fontWeight: '600' }}>{billStatus.text}</td>
+                  <td style={{ padding: '10px 12px', color: billStatus.color, fontWeight: '600' }}>{billStatus.icon} {billStatus.text}</td>
                 </tr>
               );
             })}

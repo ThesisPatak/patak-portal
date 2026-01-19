@@ -4,32 +4,6 @@ import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, SPACING } from './variables';
 
-function computeResidentialBill(usage) {
-  const MINIMUM = 255.0;
-  if (!usage || usage <= 10) return Number(MINIMUM.toFixed(2));
-  let excess = usage - 10;
-  let total = MINIMUM;
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 33.0;
-    excess -= m3;
-  }
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 40.5;
-    excess -= m3;
-  }
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 48.0;
-    excess -= m3;
-  }
-  if (excess > 0) {
-    total += excess * 55.5;
-  }
-  return Number(total.toFixed(2));
-}
-
 export default function BillingScreen({ onBack, token, username }) {
   const [summary, setSummary] = useState(null);
   const [userCreatedAt, setUserCreatedAt] = useState(null);
@@ -56,6 +30,27 @@ export default function BillingScreen({ onBack, token, username }) {
 
   const houses = summary ? Object.keys(summary) : [];
 
+  // Helper function to determine bill status
+  const getBillStatus = (deviceData) => {
+    const usage = deviceData.cubicMeters ?? 0;
+    
+    if (usage === 0 || !deviceData.lastReading?.timestamp) {
+      return { text: 'Not yet active', color: '#999', icon: '⏸️' };
+    }
+    
+    // Calculate if bill is overdue based on reading date + 1 month
+    const firstReadingDate = new Date(deviceData.lastReading.timestamp);
+    const dueDate = new Date(firstReadingDate);
+    dueDate.setMonth(dueDate.getMonth() + 1);
+    
+    const now = new Date();
+    if (now > dueDate) {
+      return { text: 'Overdue', color: '#ff6b6b', icon: '🔴' };
+    } else {
+      return { text: 'Pending', color: '#ff9800', icon: '⏳' };
+    }
+  };
+
   return (
     <View style={{ padding: SPACING.base, flex: 1 }}>
       <TouchableOpacity onPress={onBack} style={[styles.secondaryButton, { alignSelf: 'flex-start', marginBottom: SPACING.small }]}>
@@ -73,7 +68,7 @@ export default function BillingScreen({ onBack, token, username }) {
             renderItem={({ item }) => {
               const s = summary[item] || {};
               const usage = s.cubicMeters ?? 0;
-              const amount = s.monthlyBill ?? 0;
+              const amount = s.monthlyBill ?? 0; // Use server's calculated bill
               
               // Due date: from first reading timestamp + 1 month (or "Not yet active")
               const due = (() => { 
@@ -84,7 +79,7 @@ export default function BillingScreen({ onBack, token, username }) {
                 return dueDate.toISOString().slice(0,10);
               })();
               
-              const status = Number(usage) === 0 ? 'No data' : 'Unpaid';
+              const billStatus = getBillStatus(s);
               const isOnline = s.isOnline ?? false;
               const deviceStatus = isOnline ? '🟢 Online' : '🔴 Offline';
               
@@ -97,7 +92,9 @@ export default function BillingScreen({ onBack, token, username }) {
                   <Text style={styles.subtitle}>Usage (m³): {typeof usage === 'number' ? usage.toFixed(6) : usage}</Text>
                   <Text style={styles.subtitle}>Amount Due (₱): ₱{amount.toFixed(2)}</Text>
                   <Text style={styles.subtitle}>Due Date: {due}</Text>
-                  <Text style={[styles.subtitle, { color: status === 'Unpaid' ? COLORS.danger : COLORS.muted }]}>{status}</Text>
+                  <Text style={[styles.subtitle, { color: billStatus.color, fontWeight: '600' }]}>
+                    {billStatus.icon} {billStatus.text}
+                  </Text>
                 </View>
               );
             }}

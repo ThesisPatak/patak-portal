@@ -4,6 +4,33 @@ import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, SPACING } from './variables';
 
+// Tiered billing formula matching web app (BillingTable.tsx)
+function computeResidentialBill(usage) {
+  const MINIMUM = 255.0;
+  if (!usage || usage <= 10) return Number(MINIMUM.toFixed(2));
+  let excess = usage - 10;
+  let total = MINIMUM;
+  if (excess > 0) {
+    const m3 = Math.min(excess, 10);
+    total += m3 * 33.0; // 11-20 m³
+    excess -= m3;
+  }
+  if (excess > 0) {
+    const m3 = Math.min(excess, 10);
+    total += m3 * 40.5; // 21-30 m³
+    excess -= m3;
+  }
+  if (excess > 0) {
+    const m3 = Math.min(excess, 10);
+    total += m3 * 48.0; // 31-40 m³
+    excess -= m3;
+  }
+  if (excess > 0) {
+    total += excess * 55.5; // 41+ m³
+  }
+  return Number(total.toFixed(2));
+}
+
 function generateBillingHistory(readings, createdAt) {
   const history = [];
   const now = new Date();
@@ -58,16 +85,25 @@ function generateBillingHistory(readings, createdAt) {
       }
       
       const monthStr = `${periodStartDate.toLocaleString('default', { month: 'short' })} ${periodStartDate.getDate()} - ${periodEndDate.toLocaleString('default', { month: 'short' })} ${periodEndDate.getDate()}`;
-      const amountDue = consumption * 15;
+      const amountDue = computeResidentialBill(consumption);
       
       // Determine bill status
       let billStatus = 'Pending';
+      let statusColor = '#ff9800';
+      let statusIcon = '⏳';
+      
       if (now > periodEndDate) {
         billStatus = 'Overdue';
+        statusColor = '#ff6b6b';
+        statusIcon = '🔴';
       } else if (now >= periodStartDate && now < periodEndDate) {
-        billStatus = 'Current';
+        billStatus = 'Pending';
+        statusColor = '#ff9800';
+        statusIcon = '⏳';
       } else if (now < periodStartDate) {
         billStatus = 'Upcoming';
+        statusColor = '#2196F3';
+        statusIcon = '📅';
       }
       
       history.push({
@@ -76,6 +112,8 @@ function generateBillingHistory(readings, createdAt) {
         consumption: consumption.toFixed(6),
         amountDue: amountDue.toFixed(2),
         billStatus,
+        statusColor,
+        statusIcon,
         dueDate: periodEndDate.toISOString().split('T')[0],
       });
     }
@@ -234,7 +272,7 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
       {/* Billing History Table */}
       <View style={{ backgroundColor: '#1a3a52', padding: 16, borderRadius: 12, marginBottom: SPACING.large }}>
         <Text style={{ color: COLORS.glowBlue, fontSize: 16, fontWeight: 'bold', marginBottom: 12 }}>
-          Last 12 Months
+          Current Month + Upcoming
         </Text>
 
         {billingHistory.length === 0 ? (
@@ -315,15 +353,12 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
                       return (
                         <Text
                           style={{
-                            color:
-                              item.billStatus === 'Overdue'
-                                ? '#ff6b6b'
-                                : '#ff9800',
+                            color: item.statusColor || '#ff9800',
                             fontSize: 12,
                             fontWeight: '600',
                           }}
                         >
-                          {item.billStatus === 'Pending' && '⏳ '}{item.billStatus === 'Overdue' && '🔴 '}{item.billStatus === 'Upcoming' && '📅 '}{item.billStatus}
+                          {item.statusIcon} {item.billStatus}
                         </Text>
                       );
                     })()}
