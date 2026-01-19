@@ -310,7 +310,12 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           <Text style={styles.primaryButtonText}>📋 Billing History</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.primaryButton]} onPress={() => onPay(null, calculateWaterBill(totalUsage))}>
+        <TouchableOpacity style={[styles.primaryButton]} onPress={() => {
+          const currentDate = new Date();
+          const billingMonth = currentDate.getMonth() + 1;
+          const billingYear = currentDate.getFullYear();
+          onPay(username || 'Account', calculateWaterBill(totalUsage), billingMonth, billingYear);
+        }}>
           <Text style={styles.primaryButtonText}>💳 Pay Bill</Text>
         </TouchableOpacity>
 

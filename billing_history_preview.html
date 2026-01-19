@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing History Preview - Web vs Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0057b8;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #0057b8;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #0057b8;
+            padding-bottom: 10px;
+        }
+
+        /* WEB VERSION */
+        .web-billing {
+            background: white;
+        }
+
+        .web-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: #f3f7fb;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e8f0;
+        }
+
+        .summary-card label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .summary-card .value {
+            font-size: 1.4rem;
+            color: #0057b8;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        thead tr {
+            background: #f3f7fb;
+        }
+
+        thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #0057b8;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        tbody tr {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-pending {
+            color: #ff9800;
+            font-weight: 600;
+        }
+
+        .status-overdue {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        .status-upcoming {
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .status-active {
+            color: #999;
+            font-weight: 600;
+        }
+
+        /* MOBILE VERSION */
+        .mobile-phone {
+            background: #1a1a1a;
+            border: 8px solid #1a1a1a;
+            border-radius: 40px;
+            overflow: hidden;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3), inset 0 0 0 1px #444;
+            position: relative;
+        }
+
+        .mobile-phone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #1a1a1a;
+            border-radius: 0 0 25px 25px;
+            z-index: 10;
+        }
+
+        .mobile-screen {
+            background: #0a1628;
+            min-height: 700px;
+            overflow-y: auto;
+            padding: 30px 16px 20px;
+        }
+
+        .mobile-header {
+            color: #00b4d8;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .mobile-billing-item {
+            background: #1a3a52;
+            border-left: 3px solid #00b4d8;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+        }
+
+        .mobile-billing-item .period {
+            color: #00b4d8;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .mobile-billing-item .row {
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .mobile-billing-item .label {
+            color: #aaa;
+        }
+
+        .mobile-billing-item .value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .mobile-billing-item .amount {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .mobile-status {
+            font-size: 0.85rem;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .mobile-status.pending {
+            color: #ff9800;
+        }
+
+        .mobile-status.overdue {
+            color: #ff6b6b;
+        }
+
+        .mobile-status.upcoming {
+            color: #2196F3;
+        }
+
+        .mobile-status.active {
+            color: #999;
+        }
+
+        /* FEATURES HIGHLIGHT */
+        .features {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-top: 40px;
+        }
+
+        .features h3 {
+            color: #0057b8;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feature-item {
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #0057b8;
+            border-radius: 4px;
+        }
+
+        .feature-item strong {
+            color: #0057b8;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .feature-item p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .note {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Billing History Preview</h1>
+        <p class="subtitle">Web vs Mobile - Updated January 2026</p>
+
+        <div class="layout">
+            <!-- WEB VERSION -->
+            <div class="section web-billing">
+                <h2>🌐 Web App View</h2>
+                
+                <div class="web-summary">
+                    <div class="summary-card">
+                        <label>Current Month Consumption</label>
+                        <div class="value">5.2 m³</div>
+                    </div>
+                    <div class="summary-card">
+                        <label>Amount Due</label>
+                        <div class="value">₱423</div>
+                    </div>
+                    <div class="summary-card">
+                        <label>Total Accounts</label>
+                        <div class="value">3</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #0057b8; font-size: 1rem; margin-bottom: 15px;">📋 User's Accounts</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Household</th>
+                            <th>Usage (m³)</th>
+                            <th>Amount Due (₱)</th>
+                            <th>Due Date</th>
+                            <th>Bill Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>House 1</td>
+                            <td>18.235</td>
+                            <td>₱870.58</td>
+                            <td>2026-02-18</td>
+                            <td><span class="status-pending">⏳ Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td>House 2</td>
+                            <td>5.200</td>
+                            <td>₱423.00</td>
+                            <td>2026-02-19</td>
+                            <td><span class="status-pending">⏳ Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td>House 3</td>
+                            <td>0.000</td>
+                            <td>₱255.00</td>
+                            <td>Not yet active</td>
+                            <td><span class="status-active">⏸️ Not yet active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="note">
+                    ℹ️ Displays all current accounts with their cumulative readings and current billing status
+                </div>
+            </div>
+
+            <!-- MOBILE VERSION -->
+            <div class="section">
+                <h2>📱 Mobile App View</h2>
+                
+                <div class="mobile-phone">
+                    <div class="mobile-screen">
+                        <div class="mobile-header">📋 Billing History</div>
+
+                        <div class="mobile-billing-item">
+                            <div class="period">Jan 19 - Feb 19</div>
+                            <div class="row">
+                                <span class="label">Consumption</span>
+                                <span class="value">18.235 m³</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Total Used</span>
+                                <span class="value">18.235 m³</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Amount Due</span>
+                                <span class="amount">₱870.58</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Due Date</span>
+                                <span class="value">2026-02-19</span>
+                            </div>
+                            <div class="mobile-status pending">⏳ Pending</div>
+                        </div>
+
+                        <div class="mobile-billing-item">
+                            <div class="period">Feb 19 - Mar 19</div>
+                            <div class="row">
+                                <span class="label">Consumption</span>
+                                <span class="value">0.000 m³</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Total Used</span>
+                                <span class="value">18.235 m³</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Amount Due</span>
+                                <span class="amount">₱255.00</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Due Date</span>
+                                <span class="value">2026-03-19</span>
+                            </div>
+                            <div class="mobile-status upcoming">📅 Upcoming</div>
+                        </div>
+
+                        <div class="mobile-billing-item">
+                            <div class="period">Mar 19 - Apr 19</div>
+                            <div class="row">
+                                <span class="label">Consumption</span>
+                                <span class="value">0.000 m³</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Total Used</span>
+                                <span class="value">18.235 m³</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Amount Due</span>
+                                <span class="amount">₱255.00</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Due Date</span>
+                                <span class="value">2026-04-19</span>
+                            </div>
+                            <div class="mobile-status upcoming">📅 Upcoming</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note" style="margin-top: 20px;">
+                    ℹ️ Shows 12 billing periods: current month first, then next 11 months with color-coded status
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURES -->
+        <div class="features">
+            <h3>✨ Key Features & Updates</h3>
+            
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <strong>🔄 Unified Billing Formula <span class="badge">NEW</span></strong>
+                    <p>Both web and mobile use the same tiered pricing: ₱255 minimum + progressive rates based on usage tiers.</p>
+                </div>
+
+                <div class="feature-item">
+                    <strong>📊 Consistent Status Labels <span class="badge">NEW</span></strong>
+                    <p>Standardized across platforms: ⏳ Pending, 🔴 Overdue, 📅 Upcoming, ⏸️ Not yet active</p>
+                </div>
+
+                <div class="feature-item">
+                    <strong>💾 Server-Calculated Bills <span class="badge">NEW</span></strong>
+                    <p>Mobile no longer recalculates—uses server's <code>monthlyBill</code> for single source of truth.</p>
+                </div>
+
+                <div class="feature-item">
+                    <strong>📅 Chronological Order <span class="badge">NEW</span></strong>
+                    <p>Billing history shows current month on top, followed by upcoming months (not past months).</p>
+                </div>
+
+                <div class="feature-item">
+                    <strong>🎯 Clear Labels</strong>
+                    <p>Web dashboard now clearly indicates "Total Consumption (m³)" vs "Per-device readings".</p>
+                </div>
+
+                <div class="feature-item">
+                    <strong>🎨 Color-Coded Status</strong>
+                    <p>Visual indicators help users quickly identify bill status (orange=pending, red=overdue, blue=upcoming).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPARISON TABLE -->
+        <div class="section" style="margin-top: 40px;">
+            <h3 style="color: #0057b8; margin-bottom: 20px; font-size: 1.1rem;">📋 Platform Comparison</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Web App</th>
+                        <th>Mobile App</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>What it shows</strong></td>
+                        <td>Current accounts with latest readings</td>
+                        <td>12 billing periods (current + upcoming)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Billing Calculation</strong></td>
+                        <td>Tiered rates (₱255 min + excesses)</td>
+                        <td>Tiered rates (₱255 min + excesses)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status Labels</strong></td>
+                        <td>⏳ Pending / 🔴 Overdue / ⏸️ Not yet active</td>
+                        <td>⏳ Pending / 🔴 Overdue / 📅 Upcoming / ⏸️ Not yet active</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Data Source</strong></td>
+                        <td>API /api/houses (monthly bill included)</td>
+                        <td>API /api/user/readings (then calculated)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Update Frequency</strong></td>
+                        <td>Real-time via SSE stream</td>
+                        <td>Every 2 seconds polling</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Payment History</strong></td>
+                        <td>Not shown</td>
+                        <td>Shows paid status with date</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- DEPLOYMENT INFO -->
+        <div class="note" style="margin-top: 40px; background: #e3f2fd; border-color: #bbdefb; color: #1565c0;">
+            <strong>🚀 Deployment Status:</strong>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                <li>✅ Web version: Ready (no rebuild needed)</li>
+                <li>✅ Backend: Already deployed</li>
+                <li>⚠️ Mobile: APK rebuild required for new changes</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -52,7 +52,7 @@ export default function App() {
           username={username}
           onOpenBilling={() => setScreen('billing')}
           onLogout={() => { setToken(null); setUsername(null); setScreen('dashboard'); }}
-          onPay={(house, amount) => { setPayInfo({ house, amount }); setScreen('pay'); }}
+          onPay={(house, amount, billingMonth, billingYear) => { setPayInfo({ house, amount, billingMonth, billingYear }); setScreen('pay'); }}
           onOpenDevices={() => setScreen('devices')}
         />
       );
