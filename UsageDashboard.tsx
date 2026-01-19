@@ -263,16 +263,16 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
         ) : (
           <div style={{ display: "flex", gap: "1rem", marginTop: "1rem", flexWrap: "wrap" }}>
             <div style={{ padding: "1rem", background: "#e2f3ff", borderRadius: "12px", flex: "1 1 140px", minWidth: "140px" }}>
-              <h4 style={{ margin: "0" }}>Total (m³)</h4>
+              <h4 style={{ margin: "0" }}>📊 Total Consumption (m³)</h4>
               <p style={{ fontSize: "1.5rem", margin: "0.25rem 0", color: "#0057b8" }}>{Number(totalUsage).toFixed(3)}</p>
-              <small>Across all houses</small>
+              <small>Cumulative across all devices</small>
             </div>
 
             {houses.map((h) => (
               <div key={h} style={{ padding: "1rem", background: "#fff", borderRadius: "10px", flex: "1 1 240px", minWidth: "240px", boxShadow: "0 2px 6px #0000000f" }}>
-                <h4 style={{ margin: "0 0 0.5rem 0" }}>{HOUSE_LABELS[h] || h}</h4>
-                <p style={{ margin: 0, fontSize: "1.1rem" }}>{Number(summary[keyMap[h]]?.cubicMeters ?? 0).toFixed(3)} m³</p>
-                <small style={{ color: "#666" }}> {
+                <h4 style={{ margin: "0 0 0.5rem 0" }}>💧 {HOUSE_LABELS[h] || h}</h4>
+                <p style={{ margin: 0, fontSize: "1.1rem" }}>{Number(summary[keyMap[h]]?.cubicMeters ?? 0).toFixed(3)} m³ <span style={{fontSize: "0.8rem", color: "#999"}}>total</span></p>
+                <small style={{ color: "#666" }}> Last reading: {
                   summary[keyMap[h]]?.last && summary[keyMap[h]].last.timestamp
                     ? new Date(summary[keyMap[h]].last.timestamp).toLocaleTimeString()
                     : (loading ? "loading..." : "no data")
@@ -283,7 +283,7 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
                     <ul style={{ fontSize: '0.95rem', color: '#333', margin: 0, padding: 0, listStyle: 'none' }}>
                       {Object.entries(deviceReadings[h]).map(([dev, readings]) => (
                         <li key={dev} style={{ marginBottom: 4 }}>
-                          <span style={{ fontWeight: 600 }}>{dev}:</span> {Array.isArray(readings) && readings.length > 0 ? `${readings[readings.length-1].data?.cubicMeters ?? readings[readings.length-1].data?.volume ?? '-'} m³ (last)` : 'no data'}
+                          <span style={{ fontWeight: 600 }}>{dev}:</span> {Array.isArray(readings) && readings.length > 0 ? `${readings[readings.length-1].data?.cubicMeters ?? readings[readings.length-1].data?.volume ?? '-'} m³ (latest)` : 'no data'}
                         </li>
                       ))}
                     </ul>

@@ -1065,7 +1065,7 @@ const AdminDashboard: React.FC = () => {
 
                 {/* Billing History */}
                 <div>
-                  <h3 style={{ color: "#333", marginBottom: "1rem" }}>Billing History (Last 12 Months)</h3>
+                  <h3 style={{ color: "#333", marginBottom: "1rem" }}>Billing History (Current Month + Upcoming)</h3>
                   <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: isMobile ? "0.8rem" : "0.9rem" }}>
                       <thead>
