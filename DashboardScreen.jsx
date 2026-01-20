@@ -89,7 +89,7 @@ export default function DashboardScreen() {
       <View style={styles.card}>
         <Text style={styles.h4}>Automated Billing</Text>
         <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-          <Text>Current Consumption</Text>
+          <Text>Usage (m³)</Text>
           <Text>{usage}</Text>
         </View>
         <View style={{flexDirection:'row',justifyContent:'space-between',marginTop:8}}>
