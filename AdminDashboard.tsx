@@ -1075,6 +1075,7 @@ const AdminDashboard: React.FC = () => {
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Total Consumption (m³)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Status</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Payment Details</th>
                         </tr>
                       </thead>
@@ -1082,15 +1083,25 @@ const AdminDashboard: React.FC = () => {
                         {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx, arr) => {
                           const userActualTotal = users.find(u => u.id === selectedUserId)?.cubicMeters || 0;
                           const totalConsumption = arr.slice(0, idx + 1).reduce((sum, b) => sum + parseFloat(b.consumption), 0);
-                          const isLastRow = idx === arr.length - 1;
-                          const displayTotal = isLastRow ? userActualTotal : totalConsumption;
+                          const now = new Date();
+                          const isCurrentPeriod = bill.billStatus === 'Pending';
+                          const displayTotal = totalConsumption;
                           return (
-                          <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isLastRow ? "#f0f8ff" : "transparent" }}>
-                            <td style={{ padding: "0.75rem", color: "#333", fontWeight: isLastRow ? 600 : 400 }}>{bill.month}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666", fontWeight: isLastRow ? 600 : 400 }}>{bill.consumption}</td>
+                          <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isCurrentPeriod ? "#f0f8ff" : "transparent" }}>
+                            <td style={{ padding: "0.75rem", color: "#333", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.month}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.consumption}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{displayTotal.toFixed(6)}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center" }}>
+                              <span style={{
+                                fontWeight: 600,
+                                color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#2196F3',
+                                fontSize: isMobile ? "0.75rem" : "0.85rem"
+                              }}>
+                                {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : bill.billStatus === 'Upcoming' ? '📅 Upcoming' : '—'}
+                              </span>
+                            </td>
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>
                               {(() => {
                                 const billDate = new Date(bill.dueDate);
@@ -1110,15 +1121,7 @@ const AdminDashboard: React.FC = () => {
                                   );
                                 }
                                 
-                                return (
-                                  <span style={{
-                                    fontWeight: 600,
-                                    color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#999',
-                                    fontSize: isMobile ? "0.75rem" : "0.85rem"
-                                  }}>
-                                    {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : bill.billStatus === 'Upcoming' ? '📅 Upcoming' : '—'}
-                                  </span>
-                                );
+                                return <span style={{ color: '#aaa' }}>—</span>;
                               })()}
                             </td>
                           </tr>
