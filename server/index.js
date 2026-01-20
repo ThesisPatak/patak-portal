@@ -167,7 +167,6 @@ function writeJSON(file, obj) {
     throw e // Rethrow to caller so they know write failed
   }
 }
-}
 
 ensureDataFiles()
 
