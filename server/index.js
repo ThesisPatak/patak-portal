@@ -528,13 +528,14 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   let totalBill = 0
   
   userDevices.forEach(device => {
-    const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
     console.log('[HOUSES] Device', device.deviceId, 'has', deviceReadings.length, 'readings')
     const lastReading = deviceReadings[0]
-    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
     
     const readingsThisMonth = deviceReadings.filter(r => {
-      const date = new Date(r.timestamp)
+      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
+      const date = new Date(r.receivedAt || r.timestamp)
       const now = new Date()
       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
     })
@@ -554,17 +555,14 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       currentPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, billingStartDay)
     }
     
-    // Get readings for previous billing period (from day 19 of previous month to day 19 of current month)
-    const previousPeriodStart = new Date(currentPeriodStart)
-    previousPeriodStart.setMonth(previousPeriodStart.getMonth() - 1)
-    const previousPeriodEnd = new Date(currentPeriodStart)
-    
     const currentPeriodReadings = sortedReadings.filter(r => {
-      const date = new Date(r.timestamp)
+      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
+      const date = new Date(r.receivedAt || r.timestamp)
       return date >= currentPeriodStart && date <= now
     })
     const previousPeriodReadings = sortedReadings.filter(r => {
-      const date = new Date(r.timestamp)
+      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
+      const date = new Date(r.receivedAt || r.timestamp)
       return date >= previousPeriodStart && date < currentPeriodStart
     })
     
@@ -782,8 +780,9 @@ app.get('/api/user/readings', authMiddleware, (req, res) => {
   // Security: Do NOT return all readings if no devices registered
   // Users must explicitly register a device to see readings
   
-  // Sort by timestamp descending (newest first)
-  const sortedReadings = userReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  // Sort by receivedAt descending (newest first)
+  // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
+  const sortedReadings = userReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
   
   res.json({ 
     history: sortedReadings,
@@ -828,17 +827,19 @@ app.get('/api/usage/history', authMiddleware, (req, res) => {
   }
   
   // Filter by date range if provided
+  // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to ESP32 NTP issues)
   if (startDate) {
     const start = new Date(startDate).getTime()
-    userReadings = userReadings.filter(r => new Date(r.timestamp).getTime() >= start)
+    userReadings = userReadings.filter(r => new Date(r.receivedAt || r.timestamp).getTime() >= start)
   }
   if (endDate) {
     const end = new Date(endDate).getTime()
-    userReadings = userReadings.filter(r => new Date(r.timestamp).getTime() <= end)
+    userReadings = userReadings.filter(r => new Date(r.receivedAt || r.timestamp).getTime() <= end)
   }
   
-  // Sort by timestamp descending (newest first)
-  const sortedReadings = userReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  // Sort by receivedAt descending (newest first)
+  // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
+  const sortedReadings = userReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
   
   // Apply pagination
   const total = sortedReadings.length
@@ -1641,8 +1642,9 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     // Security: Do NOT return readings if user has no devices registered
     // Users must explicitly register a device to see readings
     
-    // Sort by timestamp descending to get latest reading
-    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    // Sort by receivedAt (server timestamp) descending to get latest reading
+    // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
+    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
     const latestReading = sortedReadings[0]
     
     // Calculate Current, Previous, and Total Consumption by billing period
@@ -1657,17 +1659,14 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, billingStartDay)
     }
     
-    // Get readings for previous billing period
-    const previousPeriodStart = new Date(currentPeriodStart)
-    previousPeriodStart.setMonth(previousPeriodStart.getMonth() - 1)
-    const previousPeriodEnd = new Date(currentPeriodStart)
-    
     const currentPeriodReadings = sortedReadings.filter(r => {
-      const date = new Date(r.timestamp)
+      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
+      const date = new Date(r.receivedAt || r.timestamp)
       return date >= currentPeriodStart && date <= now
     })
     const previousPeriodReadings = sortedReadings.filter(r => {
-      const date = new Date(r.timestamp)
+      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
+      const date = new Date(r.receivedAt || r.timestamp)
       return date >= previousPeriodStart && date < currentPeriodStart
     })
     

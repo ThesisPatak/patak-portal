@@ -100,12 +100,12 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
   // Use same logic as web app - access consumption metrics from summary
   const summaryData = summary?.summary || summary || {};
   const devices = Object.values(summaryData);
-  const totalUsage = devices.reduce((sum, d) => sum + (Number(d?.cubicMeters) || 0), 0);
   
   // Get consumption metrics directly from API response
   const currentUsage = devices.reduce((sum, d) => sum + (Number(d?.currentConsumption) || 0), 0);
   const previousUsage = devices.reduce((sum, d) => sum + (Number(d?.previousConsumption) || 0), 0);
   const totalConsumption = devices.reduce((sum, d) => sum + (Number(d?.totalConsumption) || 0), 0);
+  const totalUsage = totalConsumption; // Alias for clarity
   
   // Calculate due date from first device's first reading
   const getDueDate = () => {
