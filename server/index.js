@@ -117,16 +117,30 @@ function readJSON(file) {
 
 function writeJSON(file, obj) {
   try {
+    // Create directory if it doesn't exist
+    const dir = path.dirname(file)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+      console.log(`[IO] Created directory: ${dir}`)
+    }
+    
     // Write to temporary file first, then rename (atomic operation)
     const tempFile = file + '.tmp'
     const jsonStr = JSON.stringify(obj, null, 2)
+    
+    // Make sure temp file is deleted if it exists
+    if (fs.existsSync(tempFile)) {
+      fs.unlinkSync(tempFile)
+    }
+    
+    // Write to temp file
     fs.writeFileSync(tempFile, jsonStr)
     
     // Atomic rename (overwrites original)
     fs.renameSync(tempFile, file)
-    console.log(`[IO] Saved ${obj.length || Object.keys(obj).length} items to ${path.basename(file)}`)
+    console.log(`[IO] ✓ Saved ${obj.length || Object.keys(obj).length} items to ${path.basename(file)}`)
   } catch (e) {
-    console.error(`[IO] ERROR writing to ${file}: ${e.message}`)
+    console.error(`[IO] ✗ ERROR writing to ${file}: ${e.message}`)
     throw e // Rethrow to caller so they know write failed
   }
 }
@@ -802,39 +816,49 @@ app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
 
 // Endpoint to get all historical readings for the authenticated user
 app.get('/api/user/readings', authMiddleware, (req, res) => {
-  const userId = req.user.userId
-  
-  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
-  let allReadings = []
   try {
-    if (fs.existsSync(READINGS_FILE)) {
-      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    const userId = req.user.userId
+    
+    const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+    let allReadings = []
+    try {
+      if (fs.existsSync(READINGS_FILE)) {
+        allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+      }
+    } catch (e) {
+      console.warn('[READINGS] Failed to load readings:', e.message)
     }
-  } catch (e) {
-    console.error('Failed to load readings:', e)
-  }
-  
-  // Filter by user's registered devices only
-  const devices = readJSON(DEVICES_FILE)
-  const userDevices = devices.filter(d => d.ownerUserId === userId)
-  let userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
-  
-  // Security: Do NOT return all readings if no devices registered
-  // Users must explicitly register a device to see readings
-  
-  // Sort by receivedAt descending (newest first)
-  // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
-  const sortedReadings = userReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
-  
-  res.json({ 
-    history: sortedReadings,
-    summary: {
-      totalReadings: sortedReadings.length,
-      deviceCount: userDevices.length,
-      latestReading: sortedReadings[0] || null,
-      deviceRegistered: userDevices.length > 0
+    
+    // Filter by user's registered devices only
+    const devices = readJSON(DEVICES_FILE)
+    if (!Array.isArray(devices)) {
+      console.error('[READINGS] ERROR: devices is not an array')
+      return res.status(500).json({ error: 'Corrupted device data' })
     }
+    
+    const userDevices = devices.filter(d => d.ownerUserId === userId)
+    let userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+    
+    // Security: Do NOT return all readings if no devices registered
+    // Users must explicitly register a device to see readings
+    
+    // Sort by receivedAt descending (newest first)
+    // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
+    const sortedReadings = userReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
+    
+    res.json({ 
+      history: sortedReadings,
+      summary: {
+        totalReadings: sortedReadings.length,
+        deviceCount: userDevices.length,
+        latestReading: sortedReadings[0] || null,
+        deviceRegistered: userDevices.length > 0
+      }
   })
+  } catch (err) {
+    console.error('[READINGS] ERROR:', err.message, err.stack)
+    res.status(500).json({ error: 'Failed to load readings: ' + err.message })
+  }
 })
 
 // Endpoint to get usage history with filtering and pagination
