@@ -237,10 +237,10 @@ const AdminDashboard: React.FC = () => {
       const billingStartMonth = firstReadingDate.getMonth();
       const billingStartYear = firstReadingDate.getFullYear();
       
-      // Generate 12 rolling periods from first reading
-      for (let i = 11; i >= 0; i--) {
-        let periodStartDate = new Date(billingStartYear, billingStartMonth - i, billingStartDay);
-        let periodEndDate = new Date(billingStartYear, billingStartMonth - i + 1, billingStartDay);
+      // Generate 12 rolling periods from first reading (forward chronologically)
+      for (let i = 0; i < 12; i++) {
+        let periodStartDate = new Date(billingStartYear, billingStartMonth - 11 + i, billingStartDay);
+        let periodEndDate = new Date(billingStartYear, billingStartMonth - 11 + i + 1, billingStartDay);
         
         // Handle year rollover
         if (periodEndDate < periodStartDate) {
@@ -280,10 +280,10 @@ const AdminDashboard: React.FC = () => {
         });
       }
     } else {
-      // Option #1: Default calendar months (no data)
-      for (let i = 11; i >= 0; i--) {
-        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const nextMonthDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      // Option #1: Default calendar months (no data) - forward chronologically
+      for (let i = 0; i < 12; i++) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
         
         const monthStr = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
         
