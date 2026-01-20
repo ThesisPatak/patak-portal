@@ -176,10 +176,26 @@ const BillingTable: React.FC = () => {
           if (mounted) {
             setUsageData(dashboardData);
 
+            // Use userCreatedAt from dashboard, fallback to first device's createdAt
+            let createdAt = dashboardData.userCreatedAt;
+            
+            // If not available, try to get from first device in summary
+            if (!createdAt && dashboardData.summary) {
+              const firstDeviceKey = Object.keys(dashboardData.summary)[0];
+              if (firstDeviceKey) {
+                createdAt = dashboardData.summary[firstDeviceKey].createdAt;
+              }
+            }
+            
+            // Final fallback to today
+            if (!createdAt) {
+              createdAt = new Date().toISOString();
+            }
+
             // Generate billing history matching mobile app logic
             const history = generateBillingHistory(
               usageDataRaw.history || [],
-              dashboardData.userCreatedAt || new Date().toISOString()
+              createdAt
             );
 
             setBillingHistory(history);
