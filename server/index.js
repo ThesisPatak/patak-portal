@@ -383,9 +383,9 @@ app.post('/auth/register', async (req, res) => {
     console.log(`[REGISTER] Hashing password...`)
     const passwordHash = await bcrypt.hash(password, 10)
     const userId = generateId('user')
-    const user = { id: userId, email: email || null, username: username || null, passwordHash, createdAt: new Date().toISOString() }
+    const user = { id: userId, email: email || null, username: username || null, passwordHash, isAdmin: false, createdAt: new Date().toISOString() }
     
-    console.log(`[REGISTER] Created user object:`, { id: user.id, username: user.username, email: user.email, createdAt: user.createdAt })
+    console.log(`[REGISTER] Created user object:`, { id: user.id, username: user.username, email: user.email, isAdmin: user.isAdmin, createdAt: user.createdAt })
     users.push(user)
     console.log(`[REGISTER] Writing ${users.length} users to disk...`)
     writeJSON(USERS_FILE, users)
