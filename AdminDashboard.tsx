@@ -691,13 +691,13 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {(user.currentConsumption || 0).toFixed(2)}
+                                {(user.currentConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {(user.previousConsumption || 0).toFixed(2)}
+                                {(user.previousConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>
-                                {(user.totalConsumption || 0).toFixed(2)}
+                                {(user.totalConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
                                 ₱{user.monthlyBill.toFixed(2)}
