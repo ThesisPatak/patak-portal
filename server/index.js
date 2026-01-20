@@ -607,6 +607,10 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       currentPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, billingStartDay)
     }
     
+    // Calculate previous period start
+    let previousPeriodStart = new Date(currentPeriodStart)
+    previousPeriodStart.setMonth(previousPeriodStart.getMonth() - 1)
+    
     const currentPeriodReadings = sortedReadings.filter(r => {
       // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
       const date = new Date(r.receivedAt || r.timestamp)
