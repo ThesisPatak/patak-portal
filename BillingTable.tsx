@@ -59,7 +59,7 @@ const BillingTable: React.FC = () => {
       // Find current billing period (which month cycle are we in?)
       let currentMonthOffset = 0;
 
-      for (let i = -12; i <= 0; i++) {
+      for (let i = -24; i <= 24; i++) {
         let periodStartDate = new Date(billingStartYear, billingStartMonth + i, billingStartDay);
         let periodEndDate = new Date(billingStartYear, billingStartMonth + i + 1, billingStartDay);
 
@@ -176,26 +176,10 @@ const BillingTable: React.FC = () => {
           if (mounted) {
             setUsageData(dashboardData);
 
-            // Use userCreatedAt from dashboard, fallback to first device's createdAt
-            let createdAt = dashboardData.userCreatedAt;
-            
-            // If not available, try to get from first device in summary
-            if (!createdAt && dashboardData.summary) {
-              const firstDeviceKey = Object.keys(dashboardData.summary)[0];
-              if (firstDeviceKey) {
-                createdAt = dashboardData.summary[firstDeviceKey].createdAt;
-              }
-            }
-            
-            // Final fallback to today
-            if (!createdAt) {
-              createdAt = new Date().toISOString();
-            }
-
             // Generate billing history matching mobile app logic
             const history = generateBillingHistory(
               usageDataRaw.history || [],
-              createdAt
+              dashboardData.userCreatedAt || new Date().toISOString()
             );
 
             setBillingHistory(history);

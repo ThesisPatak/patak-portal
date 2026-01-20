@@ -589,7 +589,6 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     
     summary[device.deviceId] = {
       deviceId: device.deviceId,
-      createdAt: device.createdAt,
       status: isOnline ? 'online' : 'offline',
       lastSeen: device.lastSeen,
       isOnline: isOnline,

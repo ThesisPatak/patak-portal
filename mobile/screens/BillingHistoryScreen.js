@@ -50,8 +50,8 @@ function generateBillingHistory(readings, createdAt) {
     let currentMonthOffset = 0;
     let foundCurrentPeriod = false;
     
-    // Look backwards to find where current date falls
-    for (let i = -12; i <= 0; i++) {
+    // Look back and forward to find where current date falls
+    for (let i = -24; i <= 24; i++) {
       let periodStartDate = new Date(billingStartYear, billingStartMonth + i, billingStartDay);
       let periodEndDate = new Date(billingStartYear, billingStartMonth + i + 1, billingStartDay);
       
