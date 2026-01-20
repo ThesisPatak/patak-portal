@@ -593,7 +593,7 @@ const AdminDashboard: React.FC = () => {
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", fontSize: "0.85rem" }}>
                               <div>
-                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Usage (m³)</div>
+                                <div style={{ color: "#666", marginBottom: "0.2rem" }}>Current Consumption</div>
                                 <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "#0057b8" }}>
                                   {user.cubicMeters.toFixed(6)}
                                 </div>
