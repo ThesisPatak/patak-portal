@@ -1249,7 +1249,8 @@ app.post('/api/admin/users', authMiddleware, async (req, res) => {
       id: generateId('user'), 
       email: null, 
       username: houseId,  // Use houseId as username
-      passwordHash, 
+      passwordHash,
+      isAdmin: false,
       createdAt: new Date().toISOString() 
     }
     users.push(user)
