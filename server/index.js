@@ -127,6 +127,8 @@ function writeJSON(file, obj) {
     // Write to temporary file first, then rename (atomic operation)
     const tempFile = file + '.tmp'
     const jsonStr = JSON.stringify(obj, null, 2)
+    console.log(`[IO] Writing ${obj.length || Object.keys(obj).length} items to ${path.basename(file)}`)
+    console.log(`[IO] JSON size: ${jsonStr.length} bytes`)
     
     // Make sure temp file is deleted if it exists
     if (fs.existsSync(tempFile)) {
@@ -134,15 +136,37 @@ function writeJSON(file, obj) {
     }
     
     // Write to temp file
-    fs.writeFileSync(tempFile, jsonStr)
+    fs.writeFileSync(tempFile, jsonStr, { flag: 'w' })
+    console.log(`[IO] ✓ Wrote to temp file: ${tempFile}`)
+    
+    // Verify temp file was written
+    if (!fs.existsSync(tempFile)) {
+      throw new Error(`Temp file not created: ${tempFile}`)
+    }
+    const tempStats = fs.statSync(tempFile)
+    console.log(`[IO] ✓ Temp file verified: ${tempStats.size} bytes`)
     
     // Atomic rename (overwrites original)
     fs.renameSync(tempFile, file)
-    console.log(`[IO] ✓ Saved ${obj.length || Object.keys(obj).length} items to ${path.basename(file)}`)
+    console.log(`[IO] ✓ Renamed temp to final: ${file}`)
+    
+    // Verify final file exists and has content
+    if (!fs.existsSync(file)) {
+      throw new Error(`Final file not found after rename: ${file}`)
+    }
+    const finalStats = fs.statSync(file)
+    console.log(`[IO] ✓ Final file verified: ${finalStats.size} bytes`)
+    
+    // Double-check by reading back
+    const readBack = JSON.parse(fs.readFileSync(file, 'utf8'))
+    const itemCount = Array.isArray(readBack) ? readBack.length : Object.keys(readBack).length
+    console.log(`[IO] ✓ READ VERIFICATION PASSED - File contains ${itemCount} items`)
   } catch (e) {
     console.error(`[IO] ✗ ERROR writing to ${file}: ${e.message}`)
+    console.error(`[IO] Stack:`, e.stack)
     throw e // Rethrow to caller so they know write failed
   }
+}
 }
 
 ensureDataFiles()
@@ -387,9 +411,19 @@ app.post('/auth/register', async (req, res) => {
     
     console.log(`[REGISTER] Created user object:`, { id: user.id, username: user.username, email: user.email, isAdmin: user.isAdmin, createdAt: user.createdAt })
     users.push(user)
-    console.log(`[REGISTER] Writing ${users.length} users to disk...`)
+    console.log(`[REGISTER] Users array after push: ${users.length} users`)
+    console.log(`[REGISTER] Array contents:`, users.map(u => ({ id: u.id, username: u.username, isAdmin: u.isAdmin })))
+    
+    console.log(`[REGISTER] About to write ${users.length} users to disk (${USERS_FILE})...`)
     writeJSON(USERS_FILE, users)
     console.log(`[REGISTER] ✓ SAVED - User file now contains ${users.length} users`)
+    
+    // Verify the write was successful by reading back
+    const verifyRead = readJSON(USERS_FILE)
+    console.log(`[REGISTER] ✓ VERIFICATION: Read back ${verifyRead.length} users from disk`)
+    if (verifyRead.length !== users.length) {
+      console.error(`[REGISTER] ✗ CRITICAL: Written ${users.length} users but read back ${verifyRead.length}!`)
+    }
     
     const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
     console.log(`[REGISTER] ✓✓ SUCCESS - User registered: ${username} (${user.id}), token issued`)
@@ -1253,8 +1287,20 @@ app.post('/api/admin/users', authMiddleware, async (req, res) => {
       isAdmin: false,
       createdAt: new Date().toISOString() 
     }
+    console.log(`[ADMIN-CREATE-USER] Created user object:`, { id: user.id, username: user.username, isAdmin: user.isAdmin })
     users.push(user)
+    console.log(`[ADMIN-CREATE-USER] Users array after push: ${users.length} users`)
+    
+    console.log(`[ADMIN-CREATE-USER] About to write ${users.length} users to disk...`)
     writeJSON(USERS_FILE, users)
+    console.log(`[ADMIN-CREATE-USER] ✓ SAVED - User file now contains ${users.length} users`)
+    
+    // Verify the write was successful
+    const verifyRead = readJSON(USERS_FILE)
+    console.log(`[ADMIN-CREATE-USER] ✓ VERIFICATION: Read back ${verifyRead.length} users from disk`)
+    if (verifyRead.length !== users.length) {
+      console.error(`[ADMIN-CREATE-USER] ✗ CRITICAL: Written ${users.length} users but read back ${verifyRead.length}!`)
+    }
     
     res.status(201).json({ ok: true, user: { id: user.id, username: user.username } })
   } catch (err) {
