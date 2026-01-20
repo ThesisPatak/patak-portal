@@ -644,7 +644,7 @@ const AdminDashboard: React.FC = () => {
                               Previous Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              User's Total Consumption (m³)
+                              Total Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Amount Due (₱)
@@ -1072,7 +1072,7 @@ const AdminDashboard: React.FC = () => {
                         <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
                           <th style={{ padding: "0.75rem", textAlign: "left", color: "#333", fontWeight: 600 }}>Month</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Consumption (m³)</th>
-                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>User's Total Consumption (m³)</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Total Consumption (m³)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Payment Details</th>
