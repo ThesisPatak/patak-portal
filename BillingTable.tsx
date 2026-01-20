@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { usageData } from "./sampleData";
 
-// Dynamically label all houses as 'House 1', 'House 2', etc.
-const getHouseLabel = (houseKey: string, index: number) => `House ${index + 1}`;
+interface BillingPeriod {
+  month: string;
+  monthDate: Date;
+  consumption: string;
+  amountDue: string;
+  billStatus: string;
+  statusColor: string;
+  statusIcon: string;
+  dueDate: string;
+}
 
 const BillingTable: React.FC = () => {
-  const [summary, setSummary] = useState<Record<string, any>>({});
-  const [userCreatedAt, setUserCreatedAt] = useState<string>(new Date().toISOString());
+  const [billingHistory, setBillingHistory] = useState<BillingPeriod[]>([]);
+  const [usageData, setUsageData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   function computeResidentialBill(usage: number) {
     const MINIMUM = 255.0;
@@ -34,94 +43,214 @@ const BillingTable: React.FC = () => {
     return Number(total.toFixed(2));
   }
 
+  // Match mobile app logic - generates billing history for 12 months
+  function generateBillingHistory(readings: any[], createdAt: string): BillingPeriod[] {
+    const history: BillingPeriod[] = [];
+    const now = new Date();
+
+    const hasData = readings && readings.length > 0;
+
+    if (hasData) {
+      const startDate = createdAt ? new Date(createdAt) : new Date();
+      const billingStartDay = startDate.getDate();
+      const billingStartMonth = startDate.getMonth();
+      const billingStartYear = startDate.getFullYear();
+
+      // Find current billing period (which month cycle are we in?)
+      let currentMonthOffset = 0;
+
+      for (let i = -12; i <= 0; i++) {
+        let periodStartDate = new Date(billingStartYear, billingStartMonth + i, billingStartDay);
+        let periodEndDate = new Date(billingStartYear, billingStartMonth + i + 1, billingStartDay);
+
+        if (now >= periodStartDate && now < periodEndDate) {
+          currentMonthOffset = i;
+          break;
+        }
+      }
+
+      // Generate 12 periods: current period + next 11 months
+      for (let i = 0; i < 12; i++) {
+        let periodStartDate = new Date(billingStartYear, billingStartMonth + currentMonthOffset + i, billingStartDay);
+        let periodEndDate = new Date(billingStartYear, billingStartMonth + currentMonthOffset + i + 1, billingStartDay);
+
+        const periodReadings = readings
+          .filter((r) => {
+            const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
+            return readingDate >= periodStartDate && readingDate < periodEndDate;
+          })
+          .sort((a, b) => {
+            const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+            const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+            return dateA.getTime() - dateB.getTime();
+          });
+
+        let consumption = 0;
+        if (periodReadings.length > 0) {
+          const firstReading = periodReadings[0];
+          const lastReading = periodReadings[periodReadings.length - 1];
+          consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+        }
+
+        const monthStr = `${periodStartDate.toLocaleString('default', { month: 'short' })} ${periodStartDate.getDate()} - ${periodEndDate.toLocaleString('default', { month: 'short' })} ${periodEndDate.getDate()}`;
+        const amountDue = computeResidentialBill(consumption);
+
+        // Determine bill status
+        let billStatus = 'Pending';
+        let statusColor = '#ff9800';
+        let statusIcon = '⏳';
+
+        if (now > periodEndDate) {
+          billStatus = 'Overdue';
+          statusColor = '#ff6b6b';
+          statusIcon = '🔴';
+        } else if (now >= periodStartDate && now < periodEndDate) {
+          billStatus = 'Pending';
+          statusColor = '#ff9800';
+          statusIcon = '⏳';
+        } else if (now < periodStartDate) {
+          billStatus = 'Upcoming';
+          statusColor = '#2196F3';
+          statusIcon = '📅';
+        }
+
+        history.push({
+          month: monthStr,
+          monthDate: periodStartDate,
+          consumption: consumption.toFixed(6),
+          amountDue: amountDue.toFixed(2),
+          billStatus,
+          statusColor,
+          statusIcon,
+          dueDate: periodEndDate.toISOString().split('T')[0],
+        });
+      }
+    } else {
+      // Default calendar months (no data)
+      for (let i = 0; i < 12; i++) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
+
+        const monthStr = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+        let billStatus = 'Not yet active';
+        if (i === 0) {
+          billStatus = 'Current';
+        } else if (i > 0) {
+          billStatus = 'Upcoming';
+        }
+
+        history.push({
+          month: monthStr,
+          monthDate,
+          consumption: '0.000000',
+          amountDue: '0.00',
+          billStatus,
+          statusColor: '#999',
+          statusIcon: '⏸️',
+          dueDate: nextMonthDate.toISOString().split('T')[0],
+        });
+      }
+    }
+
+    return history;
+  }
+
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/houses');
-        if (!res.ok) throw new Error('no summary');
-        const json = await res.json();
-        if (mounted) {
-          setSummary(json.summary || {});
-          setUserCreatedAt(json.userCreatedAt || new Date().toISOString());
+        setLoading(true);
+        setError(null);
+
+        // Get dashboard and usage data
+        const [dashboardRes, usageRes] = await Promise.all([
+          fetch('/api/houses'),
+          fetch('/api/user/readings'),
+        ]);
+
+        if (dashboardRes.ok && usageRes.ok) {
+          const dashboardData = await dashboardRes.json();
+          const usageDataRaw = await usageRes.json();
+
+          if (mounted) {
+            setUsageData(dashboardData);
+
+            // Generate billing history matching mobile app logic
+            const history = generateBillingHistory(
+              usageDataRaw.history || [],
+              dashboardData.userCreatedAt || new Date().toISOString()
+            );
+
+            setBillingHistory(history);
+          }
+        } else {
+          setError('Failed to load billing data');
         }
       } catch (e) {
-        // ignore, we'll fallback to local sampleData
+        if (mounted) {
+          setError((e as Error).message || 'Error loading billing history');
+          setBillingHistory([]);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
+
     load();
-    return () => { mounted = false };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // List all houses only if real backend data exists
-  const houseKeys = Object.keys(summary).length ? Object.keys(summary) : [];
+  if (loading) {
+    return (
+      <section>
+        <h2 style={{ color: "#0057b8", marginBottom: 12 }}>Billing History</h2>
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#0057b8' }}>Loading billing history...</div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section>
+        <h2 style={{ color: "#0057b8", marginBottom: 12 }}>Billing History</h2>
+        <div style={{ padding: '1rem', background: '#ffe6e6', color: '#c00', borderRadius: 6 }}>⚠️ {error}</div>
+      </section>
+    );
+  }
 
   return (
     <section>
-      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>User's Accounts</h2>
-      {houseKeys.length === 0 ? (
-        <div style={{ padding: '1rem', color: '#888' }}>No houses or devices yet.</div>
+      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>📋 Billing History (12 Months)</h2>
+      {billingHistory.length === 0 ? (
+        <div style={{ padding: '1rem', color: '#888' }}>No billing history available.</div>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '12px 8px', background: '#fff' }}>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Household</th>
-              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Usage (m³)</th>
-              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
-              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
-              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Bill Status</th>
+              <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Billing Period</th>
+              <th style={{ textAlign: 'right', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Consumption (m³)</th>
+              <th style={{ textAlign: 'right', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
+              <th style={{ textAlign: 'center', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
+              <th style={{ textAlign: 'center', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Status</th>
             </tr>
           </thead>
           <tbody>
-            {houseKeys.map((houseKey, idx) => {
-              const label = getHouseLabel(houseKey, idx);
-              const fromSummary = summary[houseKey]?.cubicMeters;
-              const usageRaw = fromSummary ?? 0;
-              const usage = typeof usageRaw === 'number' ? usageRaw.toFixed(6) : usageRaw;
-              const isOnline = summary[houseKey]?.isOnline ?? false;
-              const statusColor = isOnline ? '#4caf50' : '#ff6b6b';
-              const statusText = isOnline ? '🟢 Online' : '🔴 Offline';
-              
-              // Calculate bill status
-              const getBillStatus = () => {
-                const num = Number(usageRaw || 0);
-                if (num === 0 || !summary[houseKey]?.lastReading?.timestamp) return { text: 'Not yet active', color: '#999', icon: '⏸️' };
-                
-                const firstReadingDate = new Date(summary[houseKey].lastReading.timestamp);
-                const dueDate = new Date(firstReadingDate);
-                dueDate.setMonth(dueDate.getMonth() + 1);
-                
-                const now = new Date();
-                if (now > dueDate) {
-                  return { text: 'Overdue', color: '#ff6b6b', icon: '🔴' };
-                } else {
-                  return { text: 'Pending', color: '#ff9800', icon: '⏳' };
-                }
-              };
-              
-              const billStatus = getBillStatus();
-              
-              return (
-                <tr key={houseKey} style={{ background: '#ffffff', boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
-                  <td style={{ padding: '10px 12px' }}>{label}</td>
-                  <td style={{ padding: '10px 12px' }}>{usage}</td>
-                  <td style={{ padding: '10px 12px' }}>{(() => {
-                    const num = Number(usageRaw || 0);
-                    const amt = computeResidentialBill(num);
-                    return `₱${amt.toFixed(2)}`;
-                  })()}</td>
-                  <td style={{ padding: '10px 12px' }}>{(() => {
-                    const num = Number(usageRaw || 0);
-                    if (num === 0 || !summary[houseKey]?.lastReading?.timestamp) return 'Not yet active';
-                    const firstReadingDate = new Date(summary[houseKey].lastReading.timestamp);
-                    const dueDate = new Date(firstReadingDate);
-                    dueDate.setMonth(dueDate.getMonth() + 1);
-                    return dueDate.toISOString().slice(0,10);
-                  })()}</td>
-                  <td style={{ padding: '10px 12px', color: billStatus.color, fontWeight: '600' }}>{billStatus.icon} {billStatus.text}</td>
-                </tr>
-              );
-            })}
+            {billingHistory.map((period, idx) => (
+              <tr key={idx} style={{ background: '#ffffff', boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
+                <td style={{ padding: '10px 12px', fontWeight: '500' }}>{period.month}</td>
+                <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'monospace' }}>{period.consumption}</td>
+                <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: '600' }}>₱{period.amountDue}</td>
+                <td style={{ padding: '10px 12px', textAlign: 'center', color: '#555' }}>{period.dueDate}</td>
+                <td style={{ padding: '10px 12px', textAlign: 'center', color: period.statusColor, fontWeight: '600' }}>
+                  {period.statusIcon} {period.billStatus}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}
