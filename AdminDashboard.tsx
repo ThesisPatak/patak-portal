@@ -690,10 +690,10 @@ const AdminDashboard: React.FC = () => {
                               <td style={{ padding: "1rem", color: "#333", fontSize: "0.95rem" }}>
                                 {user.username}
                               </td>
-                              <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
+                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
                                 {(user.currentConsumption || 0).toFixed(6)}
                               </td>
-                              <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
+                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
                                 {(user.previousConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>
@@ -1089,7 +1089,7 @@ const AdminDashboard: React.FC = () => {
                           return (
                           <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isCurrentPeriod ? "#f0f8ff" : "transparent" }}>
                             <td style={{ padding: "0.75rem", color: "#333", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.month}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", color: "#666", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.consumption}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{bill.consumption}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{displayTotal.toFixed(6)}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
