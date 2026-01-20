@@ -102,11 +102,33 @@ function ensureDataFiles() {
 }
 
 function readJSON(file) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')) } catch (e) { return [] }
+  try { 
+    const data = fs.readFileSync(file, 'utf8')
+    if (!data || !data.trim()) {
+      console.warn(`[IO] Warning: File ${file} is empty, returning []`)
+      return []
+    }
+    return JSON.parse(data)
+  } catch (e) { 
+    console.warn(`[IO] Error reading ${file}: ${e.message}, returning []`)
+    return [] 
+  }
 }
 
 function writeJSON(file, obj) {
-  fs.writeFileSync(file, JSON.stringify(obj, null, 2))
+  try {
+    // Write to temporary file first, then rename (atomic operation)
+    const tempFile = file + '.tmp'
+    const jsonStr = JSON.stringify(obj, null, 2)
+    fs.writeFileSync(tempFile, jsonStr)
+    
+    // Atomic rename (overwrites original)
+    fs.renameSync(tempFile, file)
+    console.log(`[IO] Saved ${obj.length || Object.keys(obj).length} items to ${path.basename(file)}`)
+  } catch (e) {
+    console.error(`[IO] ERROR writing to ${file}: ${e.message}`)
+    throw e // Rethrow to caller so they know write failed
+  }
 }
 
 ensureDataFiles()
@@ -503,13 +525,29 @@ app.get('/api/stream', authMiddleware, (req, res) => {
 
 // Dashboard: Return comprehensive user dashboard with devices, readings, and billing
 app.get('/api/houses', authMiddleware, (req, res) => {
-  const userId = req.user.userId
-  const users = readJSON(USERS_FILE)
-  const user = users.find(u => u.id === userId)
-  const userCreatedAt = user?.createdAt || new Date().toISOString()
-  
-  const devices = readJSON(DEVICES_FILE)
-  const userDevices = devices.filter(d => d.ownerUserId === userId)
+  try {
+    const userId = req.user.userId
+    const users = readJSON(USERS_FILE)
+    if (!Array.isArray(users)) {
+      console.error('[HOUSES] ERROR: users is not an array, got:', typeof users)
+      return res.status(500).json({ error: 'Corrupted user data' })
+    }
+    
+    const user = users.find(u => u.id === userId)
+    if (!user) {
+      console.warn(`[HOUSES] User ${userId} not found in ${users.length} users`)
+      return res.status(404).json({ error: 'User not found' })
+    }
+    
+    const userCreatedAt = user?.createdAt || new Date().toISOString()
+    
+    const devices = readJSON(DEVICES_FILE)
+    if (!Array.isArray(devices)) {
+      console.error('[HOUSES] ERROR: devices is not an array, got:', typeof devices)
+      return res.status(500).json({ error: 'Corrupted device data' })
+    }
+    
+    const userDevices = devices.filter(d => d.ownerUserId === userId)
   
   // Mock readings file path
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
@@ -623,6 +661,10 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     currentDay: new Date().getDate(),
     userCreatedAt: userCreatedAt
   })
+  } catch (err) {
+    console.error('[HOUSES] ERROR:', err.message, err.stack)
+    res.status(500).json({ error: 'Failed to load dashboard: ' + err.message })
+  }
 })
 
 // ESP32 Device readings submission (no auth for now, can add device token validation later)
@@ -874,44 +916,49 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     return res.status(400).json({ error: 'deviceId required' })
   }
   
-  const devices = readJSON(DEVICES_FILE)
-  const exists = devices.find(d => d.deviceId === deviceId)
-  console.log(`[DEVICE-REGISTER] Device already exists: ${!!exists}`)
-  
-  // Generate device token (JWT that ESP32 can use to authenticate)
-  const deviceToken = jwt.sign(
-    { deviceId, type: 'device' },
-    JWT_SECRET,
-    { expiresIn: '1y' }
-  )
-  console.log(`[DEVICE-REGISTER] Generated device token`)
-  
-  // Create or update device record
-  const device = {
-    deviceId,
-    ownerUserId: req.user.userId,
-    houseId: houseId || null,
-    meta: meta || {},
-    status: 'registered',
-    lastSeen: null,
-    createdAt: exists ? exists.createdAt : new Date().toISOString()
+  try {
+    const devices = readJSON(DEVICES_FILE)
+    const exists = devices.find(d => d.deviceId === deviceId)
+    console.log(`[DEVICE-REGISTER] Device already exists: ${!!exists}`)
+    
+    // Generate device token (JWT that ESP32 can use to authenticate)
+    const deviceToken = jwt.sign(
+      { deviceId, type: 'device' },
+      JWT_SECRET,
+      { expiresIn: '1y' }
+    )
+    console.log(`[DEVICE-REGISTER] Generated device token`)
+    
+    // Create or update device record
+    const device = {
+      deviceId,
+      ownerUserId: req.user.userId,
+      houseId: houseId || null,
+      meta: meta || {},
+      status: 'registered',
+      lastSeen: null,
+      createdAt: exists ? exists.createdAt : new Date().toISOString()
+    }
+    console.log(`[DEVICE-REGISTER] Created device object:`, device)
+    
+    const filtered = devices.filter(d => d.deviceId !== deviceId)
+    filtered.push(device)
+    writeJSON(DEVICES_FILE, filtered)
+    console.log(`[DEVICE-REGISTER] ✓ Saved to devices file. Total devices: ${filtered.length}`)
+    
+    res.status(201).json({
+      device: {
+        deviceId: device.deviceId,
+        owner: device.ownerUserId,
+        houseId: device.houseId
+      },
+      deviceToken
+    })
+    console.log(`[DEVICE-REGISTER] ✓✓ SUCCESS - Device registered for user`)
+  } catch (err) {
+    console.error(`[DEVICE-REGISTER] ✗ ERROR:`, err.message)
+    res.status(500).json({ error: 'Failed to register device: ' + err.message })
   }
-  console.log(`[DEVICE-REGISTER] Created device object:`, device)
-  
-  const filtered = devices.filter(d => d.deviceId !== deviceId)
-  filtered.push(device)
-  writeJSON(DEVICES_FILE, filtered)
-  console.log(`[DEVICE-REGISTER] ✓ Saved to devices file. Total devices: ${filtered.length}`)
-  
-  res.status(201).json({
-    device: {
-      deviceId: device.deviceId,
-      owner: device.ownerUserId,
-      houseId: device.houseId
-    },
-    deviceToken
-  })
-  console.log(`[DEVICE-REGISTER] ✓✓ SUCCESS - Device registered for user`)
 })
 
 // Send device token to ESP32 via HTTP request (one-click linking)
