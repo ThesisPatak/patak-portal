@@ -592,7 +592,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
     })
     
-    const currentUsage = lastReading ? (lastReading.cubicMeters || 0) : 0
+    const currentConsumptionValue = lastReading ? (lastReading.cubicMeters || 0) : 0
     
     // Calculate consumption by billing period (billing starts from user's account createdAt day each month)
     // Get the user's billing start day
@@ -629,31 +629,31 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       : 0
     
     // Total Consumption = latest cumulative reading (all time since device installed)
-    const totalConsumption = currentUsage
+    const totalConsumptionValue = currentConsumptionValue
     
-    // Since ESP32 sends cumulative totals, use latest reading value as monthly usage
-    const monthlyUsage = currentUsage
-    const monthlyBill = calculateWaterBill(monthlyUsage)
-    const estimatedMonthlyBill = calculateWaterBill(monthlyUsage * (30 / (new Date().getDate())))
+    // Since ESP32 sends cumulative totals, use latest reading value as monthly consumption
+    const monthlyConsumption = currentConsumptionValue
+    const monthlyBill = calculateWaterBill(monthlyConsumption)
+    const estimatedMonthlyBill = calculateWaterBill(monthlyConsumption * (30 / (new Date().getDate())))
     
     const isOnline = device.lastSeen && (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 60 * 1000 // 5 min threshold
-    const abnormalUsage = monthlyUsage > 100 // Alert if usage > 100 m³
+    const hasAlert = monthlyConsumption > 100 // Alert if consumption > 100 m³
     
     summary[device.deviceId] = {
       deviceId: device.deviceId,
       status: isOnline ? 'online' : 'offline',
       lastSeen: device.lastSeen,
       isOnline: isOnline,
-      cubicMeters: currentUsage,
+      cubicMeters: currentConsumptionValue,
       currentConsumption: currentConsumption,
       previousConsumption: previousConsumption,
-      totalConsumption: totalConsumption,
-      totalLiters: currentUsage * 1000,
-      monthlyUsage: monthlyUsage,
+      totalConsumption: totalConsumptionValue,
+      totalLiters: currentConsumptionValue * 1000,
+      monthlyConsumption: monthlyConsumption,
       monthlyBill: monthlyBill,
       estimatedMonthlyBill: Math.ceil(estimatedMonthlyBill),
-      hasAlert: abnormalUsage,
-      alertMessage: abnormalUsage ? 'High water consumption detected' : null,
+      hasAlert: hasAlert,
+      alertMessage: hasAlert ? 'High water consumption detected' : null,
       lastReading: lastReading ? {
         timestamp: lastReading.timestamp,
         cubicMeters: lastReading.cubicMeters,

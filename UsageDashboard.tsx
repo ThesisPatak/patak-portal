@@ -191,9 +191,9 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
       if (cm === 0.1 || tl === 100) return false;
       return true;
     });
-  const totalUsageNumber = houses.reduce((s, h) => s + (summary[keyMap[h]]?.cubicMeters || 0), 0);
-  const totalUsage = totalUsageNumber.toFixed(3);
-  const totalBill = calculateWaterBill(totalUsageNumber).toFixed(2);
+  const totalConsumptionNumber = houses.reduce((s, h) => s + (summary[keyMap[h]]?.cubicMeters || 0), 0);
+  const totalConsumption = totalConsumptionNumber.toFixed(3);
+  const totalBill = calculateWaterBill(totalConsumptionNumber).toFixed(2);
   // Label houses as 'House 1', 'House 2', etc.
   const HOUSE_LABELS: Record<string, string> = {};
   houses.forEach((h, i) => {
@@ -238,7 +238,7 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
       }}>
         <div>
           <h2 style={{ margin: 0, color: "#0057b8" }}>Welcome, {username}</h2>
-          <small style={{ color: "#666" }}>Your water usage dashboard</small>
+          <small style={{ color: "#666" }}>Your water consumption dashboard</small>
         </div>
         <button
           onClick={onLogout}
@@ -257,14 +257,14 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
       </div>
 
       <section>
-        <h2 style={{ color: "#0057b8" }}>Real-Time Water Usage</h2>
+        <h2 style={{ color: "#0057b8" }}>Real-Time Water Consumption</h2>
         {houses.length === 0 ? (
           <div style={{ padding: '1rem', color: '#888' }}>No houses or devices yet.</div>
         ) : (
           <div style={{ display: "flex", gap: "1rem", marginTop: "1rem", flexWrap: "wrap" }}>
             <div style={{ padding: "1rem", background: "#e2f3ff", borderRadius: "12px", flex: "1 1 140px", minWidth: "140px" }}>
               <h4 style={{ margin: "0" }}>📊 Total Consumption (m³)</h4>
-              <p style={{ fontSize: "1.5rem", margin: "0.25rem 0", color: "#0057b8" }}>{Number(totalUsage).toFixed(3)}</p>
+              <p style={{ fontSize: "1.5rem", margin: "0.25rem 0", color: "#0057b8" }}>{Number(totalConsumption).toFixed(3)}</p>
               <small>Cumulative across all devices</small>
             </div>
 
