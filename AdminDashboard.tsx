@@ -72,6 +72,7 @@ const AdminDashboard: React.FC = () => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [searchUsername, setSearchUsername] = useState("");
 
   // Handle admin login
   const handleLogin = (newToken: string, username: string) => {
@@ -525,22 +526,44 @@ const AdminDashboard: React.FC = () => {
               {/* User's Accounts Section */}
               <section>
                 <div style={{ marginBottom: "1.5rem" }}>
-                  <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", margin: 0, fontWeight: 600 }}>
+                  <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", margin: 0, marginBottom: "1rem", fontWeight: 600 }}>
                     User's Accounts
                   </h2>
+                  
+                  {/* Search Input */}
+                  <input
+                    type="text"
+                    placeholder="🔍 Search by username..."
+                    value={searchUsername}
+                    onChange={(e) => setSearchUsername(e.target.value)}
+                    style={{
+                      width: isMobile ? "100%" : "300px",
+                      padding: "0.75rem 1rem",
+                      fontSize: "0.95rem",
+                      border: "1px solid #ddd",
+                      borderRadius: "6px",
+                      boxSizing: "border-box",
+                      fontFamily: "Poppins, Arial, sans-serif",
+                    }}
+                  />
                 </div>
 
                 <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden", overflowX: "auto" }}>
+                  {/* Filter users based on search */}
+                  {(() => {
+                    const filteredUsers = users.filter(user =>
+                      user.username.toLowerCase().includes(searchUsername.toLowerCase())
+                    );
                   {/* Mobile card view / Desktop table view */}
                   {isMobile ? (
                     // Mobile card view
                     <div style={{ padding: "1rem" }}>
-                      {users.length === 0 ? (
+                      {filteredUsers.length === 0 ? (
                         <div style={{ padding: "1.5rem", textAlign: "center", color: "#999", fontSize: "0.9rem" }}>
-                          No users registered yet
+                          {searchUsername ? `No users found matching "${searchUsername}"` : "No users registered yet"}
                         </div>
                       ) : (
-                        users.map((user) => {
+                        filteredUsers.map((user) => {
                           // Calculate bill status
                           const getBillStatus = () => {
                             if (user.cubicMeters === 0 || !user.lastReadingTimestamp) {
@@ -665,7 +688,7 @@ const AdminDashboard: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {users.map((user) => {
+                          {filteredUsers.map((user) => {
                             // Calculate bill status
                             const getBillStatus = () => {
                               if (user.cubicMeters === 0 || !user.lastReadingTimestamp) {
@@ -797,11 +820,19 @@ const AdminDashboard: React.FC = () => {
                   )}
                 </div>
 
-                {users.length === 0 && (
-                  <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
-                    No users registered yet
-                  </div>
-                )}
+                    {filteredUsers.length === 0 && searchUsername && (
+                      <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
+                        No users found matching "{searchUsername}"
+                      </div>
+                    )}
+
+                    {users.length === 0 && (
+                      <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
+                        No users registered yet
+                      </div>
+                    )}
+                  </>
+                  )})()}
               </section>
             </div>
           </main>
