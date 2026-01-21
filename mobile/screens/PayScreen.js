@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
@@ -9,45 +9,57 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const billingMonth = payInfo?.billingMonth || new Date().getMonth() + 1;
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
   const [loading, setLoading] = useState(false);
-  const [gcashNumber, setGcashNumber] = useState(null);
-  const [gcashName, setGcashName] = useState('Admin Account');
-  const [gcashLoading, setGcashLoading] = useState(true);
+  const [qrCode, setQrCode] = useState(null);
+  const [qrLoading, setQrLoading] = useState(true);
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
   // Month names for display
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  // Show billing period as range (e.g., Jan 2026 - Feb 2026)
   const startMonth = monthNames[billingMonth - 1];
   const nextMonth = billingMonth === 12 ? monthNames[0] : monthNames[billingMonth];
   const nextYear = billingMonth === 12 ? billingYear + 1 : billingYear;
   const billingPeriod = `${startMonth} ${billingYear} - ${nextMonth} ${nextYear}`;
 
-  // Fetch GCash number from server
-  React.useEffect(() => {
-    const fetchGcashNumber = async () => {
+  // Fetch PayMongo QR code
+  useEffect(() => {
+    const fetchQRCode = async () => {
       try {
-        const response = await fetch('https://patak-portal-production.up.railway.app/api/config/gcash');
+        const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            amount: Number(amount) * 100, // PayMongo uses centavos
+            description: `Water Bill - ${house} (${billingMonth}/${billingYear})`,
+            reference: referenceNumber,
+            billingMonth: billingMonth,
+            billingYear: billingYear,
+          }),
+        });
+
         const data = await response.json();
-        if (data.gcash.configured) {
-          setGcashNumber(data.gcash.displayNumber || data.gcash.number);
-          setGcashName(data.gcash.displayName || 'Admin Account');
+        if (data.qrCode) {
+          setQrCode(data.qrCode);
+        } else if (data.checkoutUrl) {
+          // Fallback to checkout URL if QR not available
+          setQrCode(data.checkoutUrl);
         }
       } catch (err) {
-        console.error('Failed to fetch GCash number:', err);
+        console.error('Failed to fetch QR code:', err);
       } finally {
-        setGcashLoading(false);
+        setQrLoading(false);
       }
     };
-    fetchGcashNumber();
-  }, []);
 
-  // Handle GCash manual payment - opens GCash app with pre-filled amount
-  const handleGCashPayment = async () => {
+    fetchQRCode();
+  }, [token, amount, billingMonth, billingYear, house, referenceNumber]);
+
+  const handlePaymentSubmit = async () => {
     try {
       setLoading(true);
-
-      // First, submit payment to backend
-      const response = await fetch('https://patak-portal-production.up.railway.app/api/gcash/submit-payment', {
+      const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/submit-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,147 +74,31 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       });
 
       const data = await response.json();
-
       if (response.ok) {
-        // Payment submitted successfully, now open GCash app with pre-filled details
-        const phoneNumber = gcashNumber ? gcashNumber.replace(/-/g, '') : '09569332130';
-        const amountStr = Number(amount).toFixed(2);
-        
-        // Try different GCash deep link formats
-        // Format 1: gcash://send/amount/phone
-        const deepLink1 = `gcash://send/${amountStr}/${phoneNumber}`;
-        // Format 2: gcash://send?phone=09569332130&amount=255.00
-        const deepLink2 = `gcash://send?phone=${phoneNumber}&amount=${amountStr}`;
-        // Format 3: Just open gcash app
-        const deepLink3 = `gcash://`;
-        
-        console.log('Attempting to open GCash with deep links:', deepLink1, deepLink2, deepLink3);
-        
-        let appOpened = false;
-        
-        // Try first format
-        const tryFormat1 = async () => {
-          try {
-            const supported = await Linking.canOpenURL(deepLink1);
-            console.log('GCash format 1 supported:', supported);
-            if (supported) {
-              await Linking.openURL(deepLink1);
-              appOpened = true;
-              return true;
-            }
-          } catch (err) {
-            console.error('Error with format 1:', err);
-          }
-          return false;
-        };
-        
-        const tryFormat2 = async () => {
-          try {
-            const supported = await Linking.canOpenURL(deepLink2);
-            console.log('GCash format 2 supported:', supported);
-            if (supported) {
-              await Linking.openURL(deepLink2);
-              appOpened = true;
-              return true;
-            }
-          } catch (err) {
-            console.error('Error with format 2:', err);
-          }
-          return false;
-        };
-        
-        const tryFormat3 = async () => {
-          try {
-            const supported = await Linking.canOpenURL(deepLink3);
-            console.log('GCash format 3 supported:', supported);
-            if (supported) {
-              await Linking.openURL(deepLink3);
-              appOpened = true;
-              return true;
-            }
-          } catch (err) {
-            console.error('Error with format 3:', err);
-          }
-          return false;
-        };
-        
-        // Try formats sequentially
-        const success1 = await tryFormat1();
-        if (!success1) {
-          const success2 = await tryFormat2();
-          if (!success2) {
-            await tryFormat3();
-          }
-        }
-        
+        Alert.alert(
+          '✓ Payment Submitted',
+          `Amount: ₱${Number(amount).toFixed(2)}\nReference: ${referenceNumber}\n\nScan the QR code above with any payment app (GCash, Maya, etc.)`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                onBack();
+                if (onPaymentSuccess) onPaymentSuccess();
+              },
+            },
+          ]
+        );
         setLoading(false);
-        
-        // Show appropriate alert based on whether app opened
-        if (appOpened) {
-          Alert.alert(
-            '✓ GCash App Opened',
-            `Amount: ₱${amountStr}\nRecipient: ${phoneNumber}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash.`,
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  onBack();
-                  if (onPaymentSuccess) onPaymentSuccess();
-                },
-              },
-            ]
-          );
-        } else {
-          // App not installed, offer web fallback
-          const gcashWebUrl = `https://www.gcash.com/`;
-          
-          Alert.alert(
-            '✓ Payment Submitted',
-            `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash web to send the payment.`,
-            [
-              {
-                text: 'Open GCash Web',
-                onPress: () => {
-                  Linking.openURL(gcashWebUrl).catch(err => {
-                    console.error('Error opening GCash web:', err);
-                  });
-                  setTimeout(() => {
-                    onBack();
-                    if (onPaymentSuccess) onPaymentSuccess();
-                  }, 1000);
-                },
-              },
-              {
-                text: 'Manual Entry',
-                onPress: () => {
-                  onBack();
-                  if (onPaymentSuccess) onPaymentSuccess();
-                },
-              },
-            ]
-          );
-        }
       } else {
         Alert.alert('Error', data.error || 'Failed to submit payment');
         setLoading(false);
       }
     } catch (err) {
-      console.error('Payment submission error:', err);
+      console.error('Payment error:', err);
       Alert.alert('Error', 'Failed to submit payment: ' + err.message);
       setLoading(false);
     }
   };
-
-  const handleCopyReference = () => {
-    // Note: React Native doesn't have direct clipboard in Expo, but this can be enhanced with expo-clipboard
-    Alert.alert('Reference Number', referenceNumber, [
-      {
-        text: 'Close',
-        onPress: () => {},
-      },
-    ]);
-  };
-
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }}>
@@ -212,28 +108,15 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           <Text style={styles.secondaryButtonText}>← Back</Text>
         </TouchableOpacity>
 
-        {/* GCash Logo & Branding Section */}
+        {/* Payment Method Title */}
         <View style={{ alignItems: 'center', marginBottom: SPACING.large, paddingVertical: SPACING.base }}>
           <Text style={{ fontSize: TYPO.bodySize + 2, fontWeight: '700', color: '#0066CC', marginBottom: SPACING.small }}>
-            💰 GCash Payment
+            💳 QR Code Payment
           </Text>
           <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center' }}>
-            Fast • Secure • Instant Confirmation
+            Fast • Secure • Instant
           </Text>
         </View>
-
-        {/* GCash Number Section */}
-        {!gcashLoading && gcashNumber && (
-          <View style={[styles.card, { backgroundColor: '#f0fff4', borderLeftWidth: 4, borderLeftColor: '#059669', marginBottom: SPACING.base }]}>
-            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginBottom: SPACING.small }}>SEND TO</Text>
-            <Text style={{ fontSize: 24, fontWeight: '900', color: '#059669', fontFamily: 'monospace', letterSpacing: 2 }}>
-              {gcashNumber}
-            </Text>
-            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginTop: SPACING.small, fontWeight: '600' }}>
-              {gcashName}
-            </Text>
-          </View>
-        )}
 
         {/* Bill Summary Card */}
         <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
@@ -257,37 +140,74 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
         </View>
 
-        {/* Transaction Breakdown */}
-        <View style={[styles.card, { marginBottom: SPACING.base }]}>
-          <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.base }}>
-            💰 Payment Breakdown
+        {/* QR Code Section */}
+        {qrLoading ? (
+          <View style={[styles.card, { alignItems: 'center', padding: SPACING.large, marginBottom: SPACING.base }]}>
+            <ActivityIndicator size="large" color={COLORS.glowBlue} />
+            <Text style={{ marginTop: SPACING.base, color: '#666' }}>Generating QR Code...</Text>
+          </View>
+        ) : qrCode ? (
+          <View style={[styles.card, { backgroundColor: '#f0fff4', borderLeftWidth: 4, borderLeftColor: '#059669', marginBottom: SPACING.base, alignItems: 'center', padding: SPACING.large }]}>
+            <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
+              📱 Scan to Pay
+            </Text>
+            <Image
+              source={{ uri: qrCode }}
+              style={{ width: 250, height: 250, marginBottom: SPACING.base, borderRadius: 8 }}
+            />
+            <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center', marginTop: SPACING.base }}>
+              Use any payment app: GCash, Maya, OnePay, etc.
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Payment Instructions */}
+        <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
+          <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
+            📋 How to Pay
           </Text>
+
           <View style={{ marginBottom: SPACING.small }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.small }}>
-              <Text style={{ color: '#666', fontSize: TYPO.smallSize }}>Water Bill Amount</Text>
-              <Text style={{ color: COLORS.text, fontWeight: '600', fontSize: TYPO.smallSize }}>₱{Number(amount).toFixed(2)}</Text>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
+                <Text style={{ color: 'white', fontWeight: '800' }}>1</Text>
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Open Your Payment App</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>GCash, Maya, OnePay, etc.</Text>
+              </View>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.small }}>
-              <Text style={{ color: '#666', fontSize: TYPO.smallSize }}>Processing Fee</Text>
-              <Text style={{ color: COLORS.text, fontWeight: '600', fontSize: TYPO.smallSize }}>₱0.00</Text>
+
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
+                <Text style={{ color: 'white', fontWeight: '800' }}>2</Text>
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Scan This QR Code</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Point your camera at the code</Text>
+              </View>
             </View>
-            <View style={{ borderTopWidth: 1, borderTopColor: '#ddd', paddingTopWidth: SPACING.small, marginTop: SPACING.small, paddingTop: SPACING.small }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ color: '#0066CC', fontWeight: '800', fontSize: TYPO.bodySize }}>Total to Pay</Text>
-                <Text style={{ color: '#0066CC', fontWeight: '800', fontSize: TYPO.bodySize }}>₱{Number(amount).toFixed(2)}</Text>
+
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
+                <Text style={{ color: 'white', fontWeight: '800' }}>3</Text>
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Complete Payment</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Confirm amount and send</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Primary Payment Button */}
-        <TouchableOpacity 
-          onPress={handleGCashPayment}
-          disabled={loading}
+        {/* Submit Button */}
+        <TouchableOpacity
+          onPress={handlePaymentSubmit}
+          disabled={loading || qrLoading}
           style={[
-            styles.primaryButton, 
-            { 
-              opacity: loading ? 0.6 : 1, 
+            styles.primaryButton,
+            {
+              opacity: loading || qrLoading ? 0.6 : 1,
               width: '100%',
               backgroundColor: '#0066CC',
               paddingVertical: SPACING.base + 4,
@@ -302,76 +222,18 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
             </View>
           ) : (
             <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
-              💰 Send ₱{Number(amount).toFixed(2)} via GCash
+              ✓ Confirm & Submit Payment
             </Text>
           )}
         </TouchableOpacity>
 
-        {/* Step-by-Step Instructions */}
-        <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
-          <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
-            📋 Payment Steps
-          </Text>
-          
-          <View style={{ marginBottom: SPACING.base }}>
-            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
-              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
-                <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>1</Text>
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Tap Payment Button</Text>
-                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Click "Send via GCash" button above</Text>
-              </View>
-            </View>
-
-            <View style={{ marginBottom: SPACING.small }}>
-              <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
-                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
-                  <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>2</Text>
-                </View>
-                <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Open GCash App</Text>
-                  <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>App opens automatically with amount</Text>
-                </View>
-              </View>
-
-              <View style={{ marginBottom: SPACING.small }}>
-                <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
-                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
-                    <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>3</Text>
-                  </View>
-                  <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Use Reference Number</Text>
-                    <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Include reference in GCash notes</Text>
-                  </View>
-                </View>
-
-                <View style={{ flexDirection: 'row' }}>
-                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
-                    <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>4</Text>
-                  </View>
-                  <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Admin Confirms</Text>
-                    <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Payment verified in your account</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Security & Trust Section */}
+        {/* Security Info */}
         <View style={[styles.card, { backgroundColor: '#f0fff4', marginBottom: SPACING.large }]}>
           <Text style={{ fontSize: TYPO.bodySize - 2, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
             🔒 Secure Payment
           </Text>
-          <View style={{ marginBottom: SPACING.small }}>
-            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginBottom: SPACING.small }}>
-              ✓ PCI-DSS Compliant • 256-bit Encryption • Verified Merchant
-            </Text>
-          </View>
           <Text style={{ fontSize: TYPO.smallSize - 2, color: '#666', lineHeight: 18 }}>
-            Your payment is protected by industry-standard security. Your GCash account will not be charged until payment is successfully processed.
+            Your payment is protected by PayMongo's secure payment gateway. Your account will not be charged until payment is successfully confirmed.
           </Text>
         </View>
       </View>
