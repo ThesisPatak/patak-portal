@@ -270,8 +270,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                 <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>1</Text>
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Tap Payment Button</Text>
-                <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Click "Send via GCash" button above</Text>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Tap Payment Button</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Click "Send via GCash" button above</Text>
               </View>
             </View>
 
@@ -281,8 +281,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                   <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>2</Text>
                 </View>
                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Open GCash App</Text>
-                  <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Send to admin's GCash account</Text>
+                  <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Open GCash App</Text>
+                  <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>App opens automatically with amount</Text>
                 </View>
               </View>
 
@@ -292,8 +292,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                     <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>3</Text>
                   </View>
                   <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Use Reference Number</Text>
-                    <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Include reference in GCash notes</Text>
+                    <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Use Reference Number</Text>
+                    <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Include reference in GCash notes</Text>
                   </View>
                 </View>
 
@@ -302,8 +302,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                     <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>4</Text>
                   </View>
                   <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Admin Confirms</Text>
-                    <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Payment verified in your account</Text>
+                    <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Admin Confirms</Text>
+                    <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Payment verified in your account</Text>
                   </View>
                 </View>
               </View>
