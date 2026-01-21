@@ -9,19 +9,18 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const billingMonth = payInfo?.billingMonth || new Date().getMonth() + 1;
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('paymongo'); // 'paymongo' or 'manual_gcash'
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
   // Month names for display
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const billingPeriod = `${monthNames[billingMonth - 1]} ${billingYear}`;
 
-  // Create PayMongo payment link with smart GCash deep link
-  const handlePayMongoPayment = async () => {
+  // Handle GCash manual payment
+  const handleGCashPayment = async () => {
     try {
       setLoading(true);
-      
-      const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-link', {
+
+      const response = await fetch('https://patak-portal-production.up.railway.app/api/gcash/submit-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,76 +30,34 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           amount: Number(amount),
           billingMonth: billingMonth,
           billingYear: billingYear,
-          description: `Water bill for ${house}`,
           referenceNumber: referenceNumber,
         }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        const checkoutUrl = data.checkoutUrl;
-        console.log('PayMongo checkout URL:', checkoutUrl);
-        
-        // Try to open GCash app with deep link first
-        const gcashDeepLink = `gcash://send?amount=${amount}`;
-        
-        try {
-          // Check if GCash app is installed
-          const canOpen = await Linking.canOpenURL(gcashDeepLink);
-          
-          if (canOpen) {
-            // GCash app is installed - open it directly
-            await Linking.openURL(gcashDeepLink);
-            
-            Alert.alert(
-              'GCash Payment',
-              `Opening GCash app with amount ₱${Number(amount).toFixed(2)}\n\nReference: ${referenceNumber}`,
-              [
-                {
-                  text: 'I sent the payment',
-                  onPress: () => {
-                    setLoading(false);
-                    onBack();
-                  },
-                },
-                {
-                  text: 'Cancel',
-                  onPress: () => setLoading(false),
-                },
-              ]
-            );
-          } else {
-            // GCash app not installed - fall back to PayMongo checkout with QR code
-            await Linking.openURL(checkoutUrl);
-            
-            Alert.alert(
-              'Payment Processing',
-              `Reference: ${referenceNumber}\n\nOpening PayMongo payment page. You can scan the QR code or choose your preferred payment method.`,
-              [
-                {
-                  text: 'Payment sent',
-                  onPress: () => {
-                    setLoading(false);
-                    onBack();
-                  },
-                },
-              ]
-            );
-          }
-        } catch (err) {
-          console.error('Deep link error:', err);
-          // Fallback to PayMongo checkout URL
-          await Linking.openURL(checkoutUrl);
-          setLoading(false);
-        }
+        Alert.alert(
+          '✓ Payment Submitted',
+          `Amount: ₱${Number(amount).toFixed(2)}\nReference: ${referenceNumber}\n\nYour payment is pending verification. The admin will confirm it shortly.`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setLoading(false);
+                onBack();
+                if (onPaymentSuccess) onPaymentSuccess();
+              },
+            },
+          ]
+        );
       } else {
-        const error = await response.json();
-        Alert.alert('Error', error.error || 'Failed to create payment link');
+        Alert.alert('Error', data.error || 'Failed to submit payment');
         setLoading(false);
       }
     } catch (err) {
-      console.error('Payment error:', err);
-      Alert.alert('Error', 'Failed to initiate payment: ' + err.message);
+      console.error('Payment submission error:', err);
+      Alert.alert('Error', 'Failed to submit payment: ' + err.message);
       setLoading(false);
     }
   };
@@ -227,7 +184,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
         {/* Primary Payment Button */}
         <TouchableOpacity 
-          onPress={paymentMethod === 'paymongo' ? handlePayMongoPayment : handleManualGCashPayment}
+          onPress={handleGCashPayment}
           disabled={loading}
           style={[
             styles.primaryButton, 
@@ -247,93 +204,10 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
             </View>
           ) : (
             <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
-              {paymentMethod === 'paymongo' 
-                ? `💳 Pay ₱${Number(amount).toFixed(2)} via PayMongo`
-                : `💙 Send ₱${Number(amount).toFixed(2)} via GCash`
-              }
+              💙 Send ₱{Number(amount).toFixed(2)} via GCash
             </Text>
           )}
         </TouchableOpacity>
-
-        {/* Payment Method Selection */}
-        <View style={[styles.card, { marginBottom: SPACING.base }]}>
-          <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.base }}>
-            📱 Choose Payment Method
-          </Text>
-
-          {/* PayMongo Option */}
-          <TouchableOpacity
-            onPress={() => setPaymentMethod('paymongo')}
-            style={{
-              padding: SPACING.base,
-              borderRadius: 12,
-              backgroundColor: paymentMethod === 'paymongo' ? '#e3f2fd' : '#f5f5f5',
-              borderWidth: 2,
-              borderColor: paymentMethod === 'paymongo' ? '#0066CC' : '#ddd',
-              marginBottom: SPACING.base,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: paymentMethod === 'paymongo' ? '#0066CC' : '#ddd',
-                marginRight: SPACING.base,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {paymentMethod === 'paymongo' && <Text style={{ color: 'white', fontWeight: '800' }}>✓</Text>}
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: '700', color: COLORS.text, fontSize: TYPO.bodySize }}>
-                PayMongo QR Code
-              </Text>
-              <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2, marginTop: 4 }}>
-                Instant settlement • Lower fees
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Manual GCash Option */}
-          <TouchableOpacity
-            onPress={() => setPaymentMethod('manual_gcash')}
-            style={{
-              padding: SPACING.base,
-              borderRadius: 12,
-              backgroundColor: paymentMethod === 'manual_gcash' ? '#f0fff4' : '#f5f5f5',
-              borderWidth: 2,
-              borderColor: paymentMethod === 'manual_gcash' ? '#059669' : '#ddd',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: paymentMethod === 'manual_gcash' ? '#059669' : '#ddd',
-                marginRight: SPACING.base,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {paymentMethod === 'manual_gcash' && <Text style={{ color: 'white', fontWeight: '800' }}>✓</Text>}
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: '700', color: COLORS.text, fontSize: TYPO.bodySize }}>
-                GCash Direct Transfer
-              </Text>
-              <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2, marginTop: 4 }}>
-                Zero fees • Direct to admin
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
 
         {/* Step-by-Step Instructions */}
         <View style={[styles.card, { backgroundColor: '#f5f5f5', marginBottom: SPACING.base }]}>
@@ -348,7 +222,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Tap Payment Button</Text>
-                <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Click "Pay via GCash" button above</Text>
+                <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Click "Send via GCash" button above</Text>
               </View>
             </View>
 
@@ -358,8 +232,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                   <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>2</Text>
                 </View>
                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Select GCash</Text>
-                  <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Choose GCash as payment method on PayMongo</Text>
+                  <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Open GCash App</Text>
+                  <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Send to admin's GCash account</Text>
                 </View>
               </View>
 
@@ -369,8 +243,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                     <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>3</Text>
                   </View>
                   <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Complete Payment</Text>
-                    <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Follow GCash authentication steps</Text>
+                    <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Use Reference Number</Text>
+                    <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Include reference in GCash notes</Text>
                   </View>
                 </View>
 
@@ -379,8 +253,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                     <Text style={{ color: 'white', fontWeight: '800', fontSize: TYPO.bodySize }}>4</Text>
                   </View>
                   <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Confirmation</Text>
-                    <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Payment confirmed instantly in your account</Text>
+                    <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.smallSize }}>Admin Confirms</Text>
+                    <Text style={{ color: '#666', fontSize: TYPO.smallSize - 2 }}>Payment verified in your account</Text>
                   </View>
                 </View>
               </View>
