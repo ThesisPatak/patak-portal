@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import AdminUsers from "./AdminUsers";
 import AdminLogin from "./AdminLogin";
 import AdminGCashPayments from "./AdminGCashPayments";
 
@@ -74,7 +73,7 @@ const AdminDashboard: React.FC = () => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'gcash'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'gcash'>('dashboard');
 
   // Handle admin login
   const handleLogin = (newToken: string, username: string) => {
@@ -526,21 +525,7 @@ const AdminDashboard: React.FC = () => {
                 >
                   💙 GCash Payments
                 </button>
-                <button
-                  onClick={() => setActiveTab('users')}
-                  style={{
-                    padding: "0.75rem 1.5rem",
-                    border: "none",
-                    background: activeTab === 'users' ? '#0057b8' : '#f5f5f5',
-                    color: activeTab === 'users' ? '#fff' : '#333',
-                    borderRadius: "8px 8px 0 0",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    fontSize: isMobile ? "0.9rem" : "1rem",
-                  }}
-                >
-                  👥 Users
-                </button>
+
               </div>
 
               {/* Dashboard Tab */}
@@ -860,17 +845,7 @@ const AdminDashboard: React.FC = () => {
                 <AdminGCashPayments token={token} />
               )}
 
-              {/* Users Tab */}
-              {activeTab === 'users' && (
-                <>
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", margin: 0, fontWeight: 600 }}>
-                    User Management
-                  </h2>
-                </div>
-                <AdminUsers />
-                </>
-              )}
+
             </div>
           </main>
 
