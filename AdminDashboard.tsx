@@ -221,8 +221,8 @@ const AdminDashboard: React.FC = () => {
     return Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
   };
 
-  // Generate billing history for a user - shows all 12 calendar months of 2026 (Jan-Dec)
-  // CACHE BUSTER v2 - 2026-01-21
+  // Generate billing history for a user - shows 12 calendar months (current year and next)
+  // Dynamically generates months based on current date
   const generateBillingHistory = (readings: any[], createdAt: string) => {
     const history = [];
     const now = new Date();
@@ -239,12 +239,18 @@ const AdminDashboard: React.FC = () => {
       latestMeterReading = sorted[0].cubicMeters || 0;
     }
 
-    // Generate 12 calendar months for 2026 (January to December), Jan at top
-    const year = 2026;
+    // Generate 12 calendar months starting from current month
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
 
     for (let month = 0; month < 12; month++) {
-      const periodStartDate = new Date(year, month, 1);
-      const periodEndDate = new Date(year, month + 1, 1);
+      // Calculate year and month for each billing period
+      const monthIndex = (currentMonth + month) % 12;
+      const yearOffset = Math.floor((currentMonth + month) / 12);
+      const year = currentYear + yearOffset;
+      
+      const periodStartDate = new Date(year, monthIndex, 1);
+      const periodEndDate = new Date(year, monthIndex + 1, 1);
 
       // Get readings for this month
       const periodReadings = (readings || [])
@@ -814,7 +820,7 @@ const AdminDashboard: React.FC = () => {
             }}
           >
             <div>
-              &copy; 2026 PATAK. Guard every drop.
+              &copy; {new Date().getFullYear()} PATAK. Guard every drop.
             </div>
           </footer>
         </div>
