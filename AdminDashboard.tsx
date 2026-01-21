@@ -818,7 +818,6 @@ const AdminDashboard: React.FC = () => {
                       </table>
                     </div>
                   )}
-                </div>
 
                     {filteredUsers.length === 0 && searchUsername && (
                       <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
@@ -832,7 +831,9 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     )}
                   </>
-                  )})()}
+                  );
+                  })()}
+                </div>
               </section>
             </div>
           </main>
