@@ -260,19 +260,8 @@ const AdminDashboard: React.FC = () => {
         });
 
       let consumption = 0;
-      if (periodReadings.length > 0) {
-        const firstReading = periodReadings[0];
-        const lastReading = periodReadings[periodReadings.length - 1];
-        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
-      } else if (now >= periodStartDate && now < periodEndDate) {
-        // Current month with no readings in this month yet - show latest meter reading
-        consumption = latestMeterReading;
-      }
-
-      const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-      const amountDue = calculateWaterBill(consumption);
-
-      // Determine bill status
+      
+      // Determine bill status first
       let billStatus = 'Pending';
       if (now > periodEndDate) {
         billStatus = 'Overdue';
@@ -281,6 +270,18 @@ const AdminDashboard: React.FC = () => {
       } else if (now < periodStartDate) {
         billStatus = 'Upcoming';
       }
+
+      // For current month, show latest meter reading. For past months, show difference between readings in that month
+      if (billStatus === 'Current') {
+        consumption = latestMeterReading;
+      } else if (periodReadings.length > 0) {
+        const firstReading = periodReadings[0];
+        const lastReading = periodReadings[periodReadings.length - 1];
+        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+      }
+
+      const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const amountDue = calculateWaterBill(consumption);
 
       // Total consumption only for past/current months, 0 for upcoming
       const totalConsumption = (billStatus === 'Upcoming') ? '0.000000' : latestMeterReading.toFixed(6);
