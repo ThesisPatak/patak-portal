@@ -1532,7 +1532,7 @@ app.post('/api/paymongo/create-link', authMiddleware, async (req, res) => {
   console.log(`[PAYMONGO-CREATE] Using Secret Key: ${PAYMONGO_API_KEY.substring(0, 15)}...${PAYMONGO_API_KEY.substring(PAYMONGO_API_KEY.length - 15)}`)
   
   try {
-    // Create checkout session with PayMongo
+    // Create checkout session with PayMongo QRPh
     const checkoutPayload = {
       data: {
         attributes: {
@@ -1548,7 +1548,7 @@ app.post('/api/paymongo/create-link', authMiddleware, async (req, res) => {
               quantity: 1
             }
           ],
-          payment_method_types: ['gcash', 'card'],
+          payment_method_types: ['qr_ph'],
           success_url: `https://patak-portal-production.up.railway.app/payment-success?id={CHECKOUT_SESSION_ID}`,
           cancel_url: `https://patak-portal-production.up.railway.app/payment-cancel`,
           metadata: {
