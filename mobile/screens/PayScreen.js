@@ -10,7 +10,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState(null);
-  const [qrLoading, setQrLoading] = useState(true);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
   // Month names for display
@@ -21,40 +22,42 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const billingPeriod = `${startMonth} ${billingYear} - ${nextMonth} ${nextYear}`;
 
   // Fetch PayMongo QR code
-  useEffect(() => {
-    const fetchQRCode = async () => {
-      try {
-        const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            amount: Number(amount) * 100, // PayMongo uses centavos
-            description: `Water Bill - ${house} (${billingMonth}/${billingYear})`,
-            reference: referenceNumber,
-            billingMonth: billingMonth,
-            billingYear: billingYear,
-          }),
-        });
+  const generateQRCode = async () => {
+    try {
+      setQrLoading(true);
+      const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: Number(amount) * 100, // PayMongo uses centavos
+          description: `Water Bill - ${house} (${billingMonth}/${billingYear})`,
+          reference: referenceNumber,
+          billingMonth: billingMonth,
+          billingYear: billingYear,
+        }),
+      });
 
-        const data = await response.json();
-        if (data.qrCode) {
-          setQrCode(data.qrCode);
-        } else if (data.checkoutUrl) {
-          // Fallback to checkout URL if QR not available
-          setQrCode(data.checkoutUrl);
-        }
-      } catch (err) {
-        console.error('Failed to fetch QR code:', err);
-      } finally {
-        setQrLoading(false);
+      const data = await response.json();
+      if (data.qrCode) {
+        setQrCode(data.qrCode);
+        setShowQR(true);
+      } else if (data.checkoutUrl) {
+        // Fallback to checkout URL if QR not available
+        setQrCode(data.checkoutUrl);
+        setShowQR(true);
+      } else {
+        Alert.alert('Error', 'Failed to generate QR code');
       }
-    };
-
-    fetchQRCode();
-  }, [token, amount, billingMonth, billingYear, house, referenceNumber]);
+    } catch (err) {
+      console.error('Failed to fetch QR code:', err);
+      Alert.alert('Error', 'Failed to generate QR code: ' + err.message);
+    } finally {
+      setQrLoading(false);
+    }
+  };
 
   const handlePaymentSubmit = async () => {
     try {
@@ -141,25 +144,29 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         </View>
 
         {/* QR Code Section */}
-        {qrLoading ? (
-          <View style={[styles.card, { alignItems: 'center', padding: SPACING.large, marginBottom: SPACING.base }]}>
-            <ActivityIndicator size="large" color={COLORS.glowBlue} />
-            <Text style={{ marginTop: SPACING.base, color: '#666' }}>Generating QR Code...</Text>
-          </View>
-        ) : qrCode ? (
-          <View style={[styles.card, { backgroundColor: '#f0fff4', borderLeftWidth: 4, borderLeftColor: '#059669', marginBottom: SPACING.base, alignItems: 'center', padding: SPACING.large }]}>
-            <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
-              📱 Scan to Pay
-            </Text>
-            <Image
-              source={{ uri: qrCode }}
-              style={{ width: 250, height: 250, marginBottom: SPACING.base, borderRadius: 8 }}
-            />
-            <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center', marginTop: SPACING.base }}>
-              Use any payment app: GCash, Maya, OnePay, etc.
-            </Text>
-          </View>
-        ) : null}
+        {showQR && (
+          <>
+            {qrLoading ? (
+              <View style={[styles.card, { alignItems: 'center', padding: SPACING.large, marginBottom: SPACING.base }]}>
+                <ActivityIndicator size="large" color={COLORS.glowBlue} />
+                <Text style={{ marginTop: SPACING.base, color: '#666' }}>Generating QR Code...</Text>
+              </View>
+            ) : qrCode ? (
+              <View style={[styles.card, { backgroundColor: '#f0fff4', borderLeftWidth: 4, borderLeftColor: '#059669', marginBottom: SPACING.base, alignItems: 'center', padding: SPACING.large }]}>
+                <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
+                  📱 Scan to Pay
+                </Text>
+                <Image
+                  source={{ uri: qrCode }}
+                  style={{ width: 250, height: 250, marginBottom: SPACING.base, borderRadius: 8 }}
+                />
+                <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center', marginTop: SPACING.base }}>
+                  Use any payment app: GCash, Maya, OnePay, etc.
+                </Text>
+              </View>
+            ) : null}
+          </>
+        )}
 
         {/* Payment Instructions */}
         <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
@@ -200,32 +207,63 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
         </View>
 
-        {/* Submit Button */}
-        <TouchableOpacity
-          onPress={handlePaymentSubmit}
-          disabled={loading || qrLoading}
-          style={[
-            styles.primaryButton,
-            {
-              opacity: loading || qrLoading ? 0.6 : 1,
-              width: '100%',
-              backgroundColor: '#0066CC',
-              paddingVertical: SPACING.base + 4,
-              marginBottom: SPACING.base,
-            }
-          ]}
-        >
-          {loading ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
-              <Text style={[styles.primaryButtonText]}>Processing...</Text>
-            </View>
-          ) : (
-            <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
-              ✓ Confirm & Submit Payment
-            </Text>
-          )}
-        </TouchableOpacity>
+        {/* Generate QR Button - Primary Action */}
+        {!showQR && (
+          <TouchableOpacity
+            onPress={generateQRCode}
+            disabled={qrLoading}
+            style={[
+              styles.primaryButton,
+              {
+                opacity: qrLoading ? 0.6 : 1,
+                width: '100%',
+                backgroundColor: '#059669',
+                paddingVertical: SPACING.base + 4,
+                marginBottom: SPACING.base,
+              }
+            ]}
+          >
+            {qrLoading ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
+                <Text style={[styles.primaryButtonText]}>Generating...</Text>
+              </View>
+            ) : (
+              <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
+                📱 Generate QR Code & Pay
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {/* Submit Payment Button - Only after QR generated */}
+        {showQR && (
+          <TouchableOpacity
+            onPress={handlePaymentSubmit}
+            disabled={loading}
+            style={[
+              styles.primaryButton,
+              {
+                opacity: loading ? 0.6 : 1,
+                width: '100%',
+                backgroundColor: '#0066CC',
+                paddingVertical: SPACING.base + 4,
+                marginBottom: SPACING.base,
+              }
+            ]}
+          >
+            {loading ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
+                <Text style={[styles.primaryButtonText]}>Processing...</Text>
+              </View>
+            ) : (
+              <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
+                ✓ Confirm & Submit Payment
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         {/* Security Info */}
         <View style={[styles.card, { backgroundColor: '#f0fff4', marginBottom: SPACING.large }]}>
