@@ -99,14 +99,29 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
               );
             }, 500);
           } else {
-            // GCash app not installed, show manual instructions
+            // GCash app not installed, try opening GCash web
             setLoading(false);
+            const gcashWebUrl = `https://www.gcash.com/`;
+            
             Alert.alert(
               '✓ Payment Submitted',
-              `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash manually to send the payment.`,
+              `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash web to send the payment.`,
               [
                 {
-                  text: 'OK',
+                  text: 'Open GCash Web',
+                  onPress: () => {
+                    Linking.openURL(gcashWebUrl).catch(err => {
+                      console.error('Error opening GCash web:', err);
+                      Alert.alert('Error', 'Could not open GCash. Please open it manually.');
+                    });
+                    setTimeout(() => {
+                      onBack();
+                      if (onPaymentSuccess) onPaymentSuccess();
+                    }, 1000);
+                  },
+                },
+                {
+                  text: 'Manual Entry',
                   onPress: () => {
                     onBack();
                     if (onPaymentSuccess) onPaymentSuccess();
