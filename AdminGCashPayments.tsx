@@ -50,7 +50,7 @@ const AdminGCashPayments: React.FC<AdminGCashPaymentsProps> = ({ token }: AdminG
     if (!reference) return;
 
     try {
-      const matching = payments.find(p => 
+      const matching = payments.find((p: PendingPayment) => 
         p.referenceNumber.toUpperCase().includes(reference.toUpperCase()) ||
         reference.toUpperCase().includes(p.referenceNumber.substring(0, 10))
       );
