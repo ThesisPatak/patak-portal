@@ -68,19 +68,25 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         const phoneNumber = gcashNumber ? gcashNumber.replace(/-/g, '') : '09569332130';
         const amountStr = Number(amount).toFixed(2);
         
-        // GCash deep link format: gcash://send/{amount}/{recipient}
-        // This opens GCash app directly to send money screen with amount pre-filled
-        const deepLink = `gcash://send/${amountStr}/${phoneNumber}`;
+        // Try multiple GCash deep link formats
+        // Format 1: gcash://send?phone=09569332130&amount=255.00
+        const deepLink = `gcash://send?phone=${phoneNumber}&amount=${amountStr}`;
+        
+        console.log('Attempting to open GCash with deep link:', deepLink);
         
         Linking.canOpenURL(deepLink).then(supported => {
+          console.log('GCash app supported:', supported);
           if (supported) {
             // GCash app is installed, open it with pre-filled amount and recipient
-            Linking.openURL(deepLink);
+            Linking.openURL(deepLink).catch(err => {
+              console.error('Error opening deep link:', err);
+              setLoading(false);
+            });
             setTimeout(() => {
               setLoading(false);
               Alert.alert(
                 '✓ GCash Opened',
-                `Amount: ₱${amountStr}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash. Your payment will be verified shortly.`,
+                `Amount: ₱${amountStr}\nRecipient: ${phoneNumber}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash.`,
                 [
                   {
                     text: 'OK',
@@ -91,13 +97,13 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                   },
                 ]
               );
-            }, 1000);
+            }, 500);
           } else {
             // GCash app not installed, show manual instructions
             setLoading(false);
             Alert.alert(
               '✓ Payment Submitted',
-              `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nOpen GCash manually and send the amount. Your payment will be verified shortly.`,
+              `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash manually to send the payment.`,
               [
                 {
                   text: 'OK',
@@ -115,7 +121,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           // Fallback: show manual instructions
           Alert.alert(
             '✓ Payment Submitted',
-            `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nOpen GCash manually and send the amount. Your payment will be verified shortly.`,
+            `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nOpen GCash manually and send the amount.`,
             [
               {
                 text: 'OK',
