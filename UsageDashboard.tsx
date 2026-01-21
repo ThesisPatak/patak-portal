@@ -39,7 +39,6 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Record<string, any[]>>({});
   const [invLoading, setInvLoading] = useState<Record<string, boolean>>({});
-  const [lastReadings, setLastReadings] = useState<Record<string, any>>({});
 
   type ApiResponse = { summary?: Record<string, HouseSummary> };
 
@@ -88,13 +87,11 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
         if (!closed) setLoading(false);
       });
 
-      // also listen for single-reading events so we can show LCD-like details immediately
+      // also listen for single-reading events so we can update summary
       es.addEventListener('reading', (e) => {
         try {
           const reading = JSON.parse((e as MessageEvent).data);
           const h = reading.house || 'unknown';
-          // update lastReadings for quick display
-          setLastReadings(prev => ({ ...prev, [h]: reading }));
           // update summary for the house as well
           setSummary(prev => ({
             ...prev,
@@ -272,11 +269,6 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
               <div key={h} style={{ padding: "1rem", background: "#fff", borderRadius: "10px", flex: "1 1 240px", minWidth: "240px", boxShadow: "0 2px 6px #0000000f" }}>
                 <h4 style={{ margin: "0 0 0.5rem 0" }}>💧 {HOUSE_LABELS[h] || h}</h4>
                 <p style={{ margin: 0, fontSize: "1.1rem" }}>{Number(summary[keyMap[h]]?.cubicMeters ?? 0).toFixed(3)} m³ <span style={{fontSize: "0.8rem", color: "#999"}}>total</span></p>
-                <small style={{ color: "#666" }}> Last reading: {
-                  summary[keyMap[h]]?.last && summary[keyMap[h]].last.timestamp
-                    ? new Date(summary[keyMap[h]].last.timestamp).toLocaleTimeString()
-                    : (loading ? "loading..." : "no data")
-                }</small>
                 {(deviceReadings[h] && Object.keys(deviceReadings[h]).length > 0) && (
                   <div style={{ marginTop: 8 }}>
                     <b>Per-device readings:</b>

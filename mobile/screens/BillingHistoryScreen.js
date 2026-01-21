@@ -213,10 +213,6 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
     ? new Date(userInfo.userCreatedAt).toLocaleDateString() 
     : (userInfo?.createdAt ? new Date(userInfo.createdAt).toLocaleDateString() : 'Unknown');
   const deviceCount = userInfo?.deviceCount || 0;
-  const lastReadingObj = userInfo?.lastReading;
-  const lastReading = lastReadingObj && lastReadingObj.cubicMeters !== undefined
-    ? `${lastReadingObj.cubicMeters?.toFixed(2) || 0} m³ (${new Date(lastReadingObj.timestamp).toLocaleString()})`
-    : 'No data yet';
 
   return (
     <ScrollView
@@ -260,11 +256,6 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
             <Text style={{ color: COLORS.glowBlue, fontSize: 14, fontWeight: '600' }}>
               {totalConsumption.toFixed(6)} m³
             </Text>
-          </View>
-
-          <View>
-            <Text style={{ color: '#aaa', fontSize: 12, marginBottom: 2 }}>Last Reading</Text>
-            <Text style={{ color: COLORS.text, fontSize: 14, fontWeight: '600' }}>{lastReading}</Text>
           </View>
         </View>
       </View>
