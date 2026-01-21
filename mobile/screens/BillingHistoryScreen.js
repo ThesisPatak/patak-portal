@@ -134,7 +134,11 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
       const firstDeviceKey = Object.keys(dashboard?.summary || {})[0];
       const userData = dashboard?.summary?.[firstDeviceKey] || {};
       const dashboardRoot = dashboard || {}; // Keep root data for deviceCount
-      setUserInfo({ ...userData, deviceCount: dashboardRoot.deviceCount || 0 });
+      setUserInfo({ 
+        ...userData, 
+        deviceCount: dashboardRoot.deviceCount || 0,
+        userCreatedAt: dashboardRoot.userCreatedAt // Add root userCreatedAt
+      });
 
       // Get user's readings
       const data = await Api.getUsage(token);
@@ -188,11 +192,13 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
 
   const totalConsumption = userInfo?.totalConsumption || userInfo?.cubicMeters || 0;
   // Use root userCreatedAt from dashboard if available, fallback to device createdAt
-  const createdDate = userInfo?.userCreatedAt || userInfo?.createdAt ? new Date(userInfo?.userCreatedAt || userInfo?.createdAt).toLocaleDateString() : 'Unknown';
+  const createdDate = userInfo?.userCreatedAt 
+    ? new Date(userInfo.userCreatedAt).toLocaleDateString() 
+    : (userInfo?.createdAt ? new Date(userInfo.createdAt).toLocaleDateString() : 'Unknown');
   const deviceCount = userInfo?.deviceCount || 0;
   const lastReadingObj = userInfo?.lastReading;
-  const lastReading = lastReadingObj 
-    ? `${lastReadingObj.cubicMeters?.toFixed(2) || 0} m³ (${new Date(lastReadingObj.timestamp || new Date()).toLocaleString()})`
+  const lastReading = lastReadingObj && lastReadingObj.cubicMeters !== undefined
+    ? `${lastReadingObj.cubicMeters?.toFixed(2) || 0} m³ (${new Date(lastReadingObj.timestamp).toLocaleString()})`
     : 'No data yet';
 
   return (
