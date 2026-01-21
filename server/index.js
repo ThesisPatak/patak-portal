@@ -663,8 +663,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       ? Math.max(0, (previousPeriodReadings[0].cubicMeters || 0) - (previousPeriodReadings[previousPeriodReadings.length - 1].cubicMeters || 0))
       : 0
     
-    // Total Consumption = latest cumulative reading (all time since device installed)
-    const totalConsumptionValue = currentConsumptionValue
+    // Total Consumption = sum of current and previous consumption
+    const totalConsumptionValue = currentConsumption + previousConsumption
     
     // Since ESP32 sends cumulative totals, use latest reading value as monthly consumption
     const monthlyConsumption = currentConsumptionValue
@@ -1801,8 +1801,8 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       ? Math.max(0, (previousPeriodReadings[0].cubicMeters || 0) - (previousPeriodReadings[previousPeriodReadings.length - 1].cubicMeters || 0))
       : 0
     
-    // Total Consumption = latest cumulative reading (all time since device installed)
-    const totalConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
+    // Total Consumption = sum of current and previous consumption
+    const totalConsumption = currentConsumption + previousConsumption
     
     const monthlyBill = calculateWaterBill(currentConsumption)
 
