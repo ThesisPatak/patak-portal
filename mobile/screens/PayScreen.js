@@ -78,63 +78,87 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         
         console.log('Attempting to open GCash with deep links:', deepLink1, deepLink2, deepLink3);
         
+        let appOpened = false;
+        
         // Try first format
-        Linking.canOpenURL(deepLink1).then(supported1 => {
-          console.log('GCash format 1 supported:', supported1);
-          if (supported1) {
-            Linking.openURL(deepLink1).catch(err => {
-              console.error('Error opening format 1:', err);
-              tryFormat2();
-            });
-            return;
+        const tryFormat1 = async () => {
+          try {
+            const supported = await Linking.canOpenURL(deepLink1);
+            console.log('GCash format 1 supported:', supported);
+            if (supported) {
+              await Linking.openURL(deepLink1);
+              appOpened = true;
+              return true;
+            }
+          } catch (err) {
+            console.error('Error with format 1:', err);
           }
-          tryFormat2();
-        }).catch(err => {
-          console.error('Error checking format 1:', err);
-          tryFormat2();
-        });
-        
-        const tryFormat2 = () => {
-          Linking.canOpenURL(deepLink2).then(supported2 => {
-            console.log('GCash format 2 supported:', supported2);
-            if (supported2) {
-              Linking.openURL(deepLink2).catch(err => {
-                console.error('Error opening format 2:', err);
-                tryFormat3();
-              });
-              return;
-            }
-            tryFormat3();
-          }).catch(err => {
-            console.error('Error checking format 2:', err);
-            tryFormat3();
-          });
+          return false;
         };
         
-        const tryFormat3 = () => {
-          Linking.canOpenURL(deepLink3).then(supported3 => {
-            console.log('GCash format 3 supported:', supported3);
-            if (supported3) {
-              Linking.openURL(deepLink3).catch(err => {
-                console.error('Error opening format 3:', err);
-                showNoAppAlert();
-              });
-              return;
+        const tryFormat2 = async () => {
+          try {
+            const supported = await Linking.canOpenURL(deepLink2);
+            console.log('GCash format 2 supported:', supported);
+            if (supported) {
+              await Linking.openURL(deepLink2);
+              appOpened = true;
+              return true;
             }
-            showNoAppAlert();
-          }).catch(err => {
-            console.error('Error checking format 3:', err);
-            showNoAppAlert();
-          });
+          } catch (err) {
+            console.error('Error with format 2:', err);
+          }
+          return false;
         };
         
-        const showNoAppAlert = () => {
-          setLoading(false);
+        const tryFormat3 = async () => {
+          try {
+            const supported = await Linking.canOpenURL(deepLink3);
+            console.log('GCash format 3 supported:', supported);
+            if (supported) {
+              await Linking.openURL(deepLink3);
+              appOpened = true;
+              return true;
+            }
+          } catch (err) {
+            console.error('Error with format 3:', err);
+          }
+          return false;
+        };
+        
+        // Try formats sequentially
+        const success1 = await tryFormat1();
+        if (!success1) {
+          const success2 = await tryFormat2();
+          if (!success2) {
+            await tryFormat3();
+          }
+        }
+        
+        setLoading(false);
+        
+        // Show appropriate alert based on whether app opened
+        if (appOpened) {
+          Alert.alert(
+            '✓ GCash App Opened',
+            `Amount: ₱${amountStr}\nRecipient: ${phoneNumber}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash.`,
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  onBack();
+                  if (onPaymentSuccess) onPaymentSuccess();
+                },
+              },
+            ]
+          );
+        } else {
+          // App not installed, offer web fallback
           const gcashWebUrl = `https://www.gcash.com/`;
           
           Alert.alert(
             '✓ Payment Submitted',
-            `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash manually to send the payment.`,
+            `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash web to send the payment.`,
             [
               {
                 text: 'Open GCash Web',
@@ -157,24 +181,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
               },
             ]
           );
-        };
-        
-        setTimeout(() => {
-          setLoading(false);
-          Alert.alert(
-            '✓ GCash Opened',
-            `Amount: ₱${amountStr}\nRecipient: ${phoneNumber}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash.`,
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  onBack();
-                  if (onPaymentSuccess) onPaymentSuccess();
-                },
-              },
-            ]
-          );
-        }, 500);
+        }
       } else {
         Alert.alert('Error', data.error || 'Failed to submit payment');
         setLoading(false);
