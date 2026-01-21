@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import AdminLogin from "./AdminLogin";
-import AdminGCashPayments from "./AdminGCashPayments";
 
 interface UserData {
   id: string;
@@ -839,12 +838,6 @@ const AdminDashboard: React.FC = () => {
               </section>
               </>
               )}
-
-              {/* GCash Payments Tab */}
-              {activeTab === 'gcash' && (
-                <AdminGCashPayments token={token} />
-              )}
-
 
             </div>
           </main>

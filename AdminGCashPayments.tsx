@@ -20,7 +20,6 @@ const AdminGCashPayments: React.FC<AdminGCashPaymentsProps> = ({ token }: AdminG
   const [payments, setPayments] = useState<PendingPayment[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
   const API_URL = 'https://patak-portal-production.up.railway.app';
 
