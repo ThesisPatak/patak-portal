@@ -351,6 +351,20 @@ function authMiddleware(req, res, next) {
   }
 }
 
+// Public: Get GCash configuration
+app.get('/api/config/gcash', (req, res) => {
+  const gcashNumber = process.env.GCASH_NUMBER || null
+  const isConfigured = !!gcashNumber
+  
+  res.json({
+    gcash: {
+      number: gcashNumber,
+      configured: isConfigured,
+      displayNumber: gcashNumber ? gcashNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3') : null
+    }
+  })
+})
+
 app.post('/auth/register', async (req, res) => {
   const { email, username, password } = req.body || {}
   const timestamp = new Date().toISOString()

@@ -9,11 +9,31 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const billingMonth = payInfo?.billingMonth || new Date().getMonth() + 1;
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
   const [loading, setLoading] = useState(false);
+  const [gcashNumber, setGcashNumber] = useState(null);
+  const [gcashLoading, setGcashLoading] = useState(true);
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
   // Month names for display
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const billingPeriod = `${monthNames[billingMonth - 1]} ${billingYear}`;
+
+  // Fetch GCash number from server
+  React.useEffect(() => {
+    const fetchGcashNumber = async () => {
+      try {
+        const response = await fetch('https://patak-portal-production.up.railway.app/api/config/gcash');
+        const data = await response.json();
+        if (data.gcash.configured) {
+          setGcashNumber(data.gcash.displayNumber || data.gcash.number);
+        }
+      } catch (err) {
+        console.error('Failed to fetch GCash number:', err);
+      } finally {
+        setGcashLoading(false);
+      }
+    };
+    fetchGcashNumber();
+  }, []);
 
   // Handle GCash manual payment
   const handleGCashPayment = async () => {
@@ -136,6 +156,19 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
             Fast • Secure • Instant Confirmation
           </Text>
         </View>
+
+        {/* GCash Number Section */}
+        {!gcashLoading && gcashNumber && (
+          <View style={[styles.card, { backgroundColor: '#f0fff4', borderLeftWidth: 4, borderLeftColor: '#059669', marginBottom: SPACING.base }]}>
+            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginBottom: SPACING.small }}>SEND TO</Text>
+            <Text style={{ fontSize: 24, fontWeight: '900', color: '#059669', fontFamily: 'monospace', letterSpacing: 2 }}>
+              {gcashNumber}
+            </Text>
+            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginTop: SPACING.small }}>
+              Admin GCash Account
+            </Text>
+          </View>
+        )}
 
         {/* Bill Summary Card */}
         <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
