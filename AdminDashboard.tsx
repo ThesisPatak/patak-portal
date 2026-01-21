@@ -548,16 +548,19 @@ const AdminDashboard: React.FC = () => {
                   />
                 </div>
 
-                <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden", overflowX: "auto" }}>
-                  {/* Filter users based on search */}
-                  {(() => {
-                    const filteredUsers = users.filter(user =>
-                      user.username.toLowerCase().includes(searchUsername.toLowerCase())
-                    );
-                  {/* Mobile card view / Desktop table view */}
-                  {isMobile ? (
-                    // Mobile card view
-                    <div style={{ padding: "1rem" }}>
+                {/* Calculate filtered users */}
+                {(() => {
+                  const filteredUsers = users.filter(user =>
+                    user.username.toLowerCase().includes(searchUsername.toLowerCase())
+                  );
+
+                  return (
+                    <>
+                      <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden", overflowX: "auto" }}>
+                        {/* Mobile card view / Desktop table view */}
+                        {isMobile ? (
+                          // Mobile card view
+                          <div style={{ padding: "1rem" }}>
                       {filteredUsers.length === 0 ? (
                         <div style={{ padding: "1.5rem", textAlign: "center", color: "#999", fontSize: "0.9rem" }}>
                           {searchUsername ? `No users found matching "${searchUsername}"` : "No users registered yet"}
@@ -819,21 +822,21 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   )}
 
-                    {filteredUsers.length === 0 && searchUsername && (
-                      <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
-                        No users found matching "{searchUsername}"
-                      </div>
-                    )}
+                      {filteredUsers.length === 0 && searchUsername && (
+                        <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
+                          No users found matching "{searchUsername}"
+                        </div>
+                      )}
 
-                    {users.length === 0 && (
-                      <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
-                        No users registered yet
+                      {users.length === 0 && (
+                        <div style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
+                          No users registered yet
+                        </div>
+                      )}
                       </div>
-                    )}
-                  </>
+                    </>
                   );
-                  })()}
-                </div>
+                })()}
               </section>
             </div>
           </main>
