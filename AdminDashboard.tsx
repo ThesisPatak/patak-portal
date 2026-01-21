@@ -228,6 +228,18 @@ const AdminDashboard: React.FC = () => {
     const history = [];
     const now = new Date();
 
+    // Get the latest meter reading (cumulative total)
+    const allReadings = readings || [];
+    let latestMeterReading = 0;
+    if (allReadings.length > 0) {
+      const sorted = allReadings.sort((a: any, b: any) => {
+        const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+        const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+        return dateB.getTime() - dateA.getTime();
+      });
+      latestMeterReading = sorted[0].cubicMeters || 0;
+    }
+
     // Generate 12 calendar months for 2026 (January to December), Jan at top
     const year = 2026;
 
@@ -254,14 +266,8 @@ const AdminDashboard: React.FC = () => {
         consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
       } else if (now >= periodStartDate && now < periodEndDate) {
         // Current month with no readings in this month yet - show latest meter reading
-        const allReadings = readings || [];
         if (allReadings.length > 0) {
-          const sorted = allReadings.sort((a: any, b: any) => {
-            const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
-            const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
-            return dateB.getTime() - dateA.getTime();
-          });
-          consumption = sorted[0].cubicMeters || 0;
+          consumption = latestMeterReading;
         }
       }
 
@@ -282,6 +288,7 @@ const AdminDashboard: React.FC = () => {
         month: monthStr,
         monthDate: periodStartDate,
         consumption: consumption.toFixed(6),
+        totalConsumption: latestMeterReading.toFixed(6),
         amountDue: amountDue.toFixed(2),
         billStatus,
         dueDate: periodEndDate.toISOString().split('T')[0],
@@ -1073,16 +1080,13 @@ const AdminDashboard: React.FC = () => {
                       </thead>
                       <tbody>
                         {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx, arr) => {
-                          const userActualTotal = users.find(u => u.id === selectedUserId)?.cubicMeters || 0;
-                          const totalConsumption = arr.slice(0, idx + 1).reduce((sum, b) => sum + parseFloat(b.consumption), 0);
                           const now = new Date();
                           const isCurrentPeriod = bill.billStatus === 'Pending';
-                          const displayTotal = totalConsumption;
                           return (
                           <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isCurrentPeriod ? "#f0f8ff" : "transparent" }}>
                             <td style={{ padding: "0.75rem", color: "#333", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.month}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{bill.consumption}</td>
-                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{displayTotal.toFixed(6)}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{bill.totalConsumption}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>

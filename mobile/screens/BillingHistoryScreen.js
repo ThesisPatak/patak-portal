@@ -34,6 +34,18 @@ function computeResidentialBill(usage) {
 function generateBillingHistory(readings, createdAt) {
   const history = [];
   const now = new Date();
+
+  // Get the latest meter reading (cumulative total)
+  const allReadings = readings || [];
+  let latestMeterReading = 0;
+  if (allReadings.length > 0) {
+    const sorted = allReadings.sort((a, b) => {
+      const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+      const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+      return dateB.getTime() - dateA.getTime();
+    });
+    latestMeterReading = sorted[0].cubicMeters || 0;
+  }
   
   // Generate 12 calendar months for 2026 (January to December), display from January at top
   const year = 2026;
@@ -85,6 +97,7 @@ function generateBillingHistory(readings, createdAt) {
       month: monthStr,
       monthDate: periodStartDate,
       consumption: consumption.toFixed(6),
+      totalConsumption: latestMeterReading.toFixed(6),
       amountDue: amountDue.toFixed(2),
       billStatus,
       statusColor,
@@ -241,7 +254,6 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
             keyExtractor={(item, idx) => `${item.month}-${idx}`}
             renderItem={({ item, index }) => {
               const isLastRow = index === billingHistory.length - 1;
-              const displayTotal = isLastRow ? totalConsumption : billingHistory.slice(0, index + 1).reduce((sum, b) => sum + parseFloat(b.consumption), 0);
 
               return (
                 <View
@@ -270,7 +282,7 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
                   <View style={{ marginBottom: 6 }}>
                     <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>Total Consumption</Text>
                     <Text style={{ color: COLORS.glowBlue, fontSize: 13, fontWeight: '600' }}>
-                      {displayTotal.toFixed(6)} m³
+                      {item.totalConsumption} m³
                     </Text>
                   </View>
 

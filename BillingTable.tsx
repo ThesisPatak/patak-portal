@@ -4,6 +4,7 @@ interface BillingPeriod {
   month: string;
   monthDate: Date;
   consumption: string;
+  totalConsumption: string;
   amountDue: string;
   billStatus: string;
   statusColor: string;
@@ -47,6 +48,18 @@ const BillingTable: React.FC = () => {
   function generateBillingHistory(readings: any[], createdAt: string): BillingPeriod[] {
     const history: BillingPeriod[] = [];
     const now = new Date();
+
+    // Get the latest meter reading (cumulative total)
+    const allReadings = readings || [];
+    let latestMeterReading = 0;
+    if (allReadings.length > 0) {
+      const sorted = allReadings.sort((a: any, b: any) => {
+        const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+        const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+        return dateB.getTime() - dateA.getTime();
+      });
+      latestMeterReading = sorted[0].cubicMeters || 0;
+    }
 
     // Generate 12 calendar months for 2026 (January to December)
     const year = 2026;
@@ -100,6 +113,7 @@ const BillingTable: React.FC = () => {
         month: monthStr,
         monthDate: periodStartDate,
         consumption: consumption.toFixed(6),
+        totalConsumption: latestMeterReading.toFixed(6),
         amountDue: amountDue.toFixed(2),
         billStatus,
         statusColor,
@@ -189,6 +203,7 @@ const BillingTable: React.FC = () => {
             <tr>
               <th style={{ textAlign: 'left', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Billing Period</th>
               <th style={{ textAlign: 'right', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Consumption (m³)</th>
+              <th style={{ textAlign: 'right', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Total Consumption (m³)</th>
               <th style={{ textAlign: 'right', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
               <th style={{ textAlign: 'center', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
               <th style={{ textAlign: 'center', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Status</th>
@@ -199,6 +214,7 @@ const BillingTable: React.FC = () => {
               <tr key={idx} style={{ background: '#ffffff', boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: '500' }}>{period.month}</td>
                 <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'monospace' }}>{period.consumption}</td>
+                <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'monospace' }}>{period.totalConsumption}</td>
                 <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: '600' }}>₱{period.amountDue}</td>
                 <td style={{ padding: '10px 12px', textAlign: 'center', color: '#555' }}>{period.dueDate}</td>
                 <td style={{ padding: '10px 12px', textAlign: 'center', color: period.statusColor, fontWeight: '600' }}>
