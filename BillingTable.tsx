@@ -44,7 +44,7 @@ const BillingTable: React.FC = () => {
     return Number(total.toFixed(2));
   }
 
-  // Match mobile app logic - generates billing history for 12 months of 2026 (Jan-Dec, Jan at top)
+  // Generates billing history based on first reading date + 1 month cycles
   function generateBillingHistory(readings: any[], createdAt: string): BillingPeriod[] {
     const history: BillingPeriod[] = [];
     const now = new Date();
@@ -52,23 +52,40 @@ const BillingTable: React.FC = () => {
     // Get the latest meter reading (cumulative total)
     const allReadings = readings || [];
     let latestMeterReading = 0;
+    let firstReadingDate: Date | null = null;
+    
     if (allReadings.length > 0) {
+      // Sort by date ascending to get first reading
       const sorted = allReadings.sort((a: any, b: any) => {
+        const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+        const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+        return dateA.getTime() - dateB.getTime();
+      });
+      firstReadingDate = sorted[0].receivedAt ? new Date(sorted[0].receivedAt) : new Date(sorted[0].timestamp);
+      
+      // Get latest reading
+      const sortedDesc = allReadings.sort((a: any, b: any) => {
         const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
         const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
         return dateB.getTime() - dateA.getTime();
       });
-      latestMeterReading = sorted[0].cubicMeters || 0;
+      latestMeterReading = sortedDesc[0].cubicMeters || 0;
     }
 
-    // Generate 12 calendar months for 2026 (January to December)
-    const year = 2026;
+    // If no readings, use createdAt as reference
+    if (!firstReadingDate) {
+      firstReadingDate = new Date(createdAt);
+    }
 
-    for (let month = 0; month < 12; month++) {
-      const periodStartDate = new Date(year, month, 1);
-      const periodEndDate = new Date(year, month + 1, 1);
+    // Generate 12 billing periods starting from first reading date
+    for (let i = 0; i < 12; i++) {
+      const periodStartDate = new Date(firstReadingDate);
+      periodStartDate.setMonth(periodStartDate.getMonth() + i);
+      
+      const periodEndDate = new Date(firstReadingDate);
+      periodEndDate.setMonth(periodEndDate.getMonth() + i + 1);
 
-      // Get readings for this month
+      // Get readings for this period
       const periodReadings = (readings || [])
         .filter((r) => {
           const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
@@ -101,7 +118,7 @@ const BillingTable: React.FC = () => {
         statusIcon = '📅';
       }
 
-      // For current month, show latest meter reading. For past months, show difference between readings in that month
+      // For current period, show latest meter reading. For past periods, show difference between readings
       if (billStatus === 'Current') {
         consumption = latestMeterReading;
       } else if (periodReadings.length > 0) {
@@ -113,7 +130,7 @@ const BillingTable: React.FC = () => {
       const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
       const amountDue = computeResidentialBill(consumption);
 
-      // Total consumption only for past/current months, 0 for upcoming
+      // Total consumption only for past/current periods, 0 for upcoming
       const totalConsumption = (billStatus === 'Upcoming') ? '0.000000' : latestMeterReading.toFixed(6);
 
       history.push({
