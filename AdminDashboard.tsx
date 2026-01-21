@@ -222,82 +222,60 @@ const AdminDashboard: React.FC = () => {
     return Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
   };
 
-  // Generate billing history for a user (last 12 months)
+  // Generate billing history for a user - shows all 12 calendar months of 2026 (Jan-Dec)
   const generateBillingHistory = (readings: any[], createdAt: string) => {
     const history = [];
     const now = new Date();
-    
-    // Check if we have actual data
-    const hasData = readings && readings.length > 0;
-    
-    if (hasData) {
-      // Option #2: Rolling billing cycles from first reading date
-      const firstReadingDate = new Date(readings[0].timestamp);
-      const billingStartDay = firstReadingDate.getDate();
-      const billingStartMonth = firstReadingDate.getMonth();
-      const billingStartYear = firstReadingDate.getFullYear();
-      
-      // Generate 12 rolling periods from first reading (forward chronologically)
-      for (let i = 0; i < 12; i++) {
-        let periodStartDate = new Date(billingStartYear, billingStartMonth - 11 + i, billingStartDay);
-        let periodEndDate = new Date(billingStartYear, billingStartMonth - 11 + i + 1, billingStartDay);
-        
-        // Handle year rollover
-        if (periodEndDate < periodStartDate) {
-          periodEndDate = new Date(periodEndDate.getFullYear() + 1, periodEndDate.getMonth(), periodEndDate.getDate());
-        }
-        
-        const periodReadings = readings.filter((r: any) => {
-          const readingDate = new Date(r.timestamp);
+
+    // Generate 12 calendar months for 2026 (January to December), Jan at top
+    const year = 2026;
+
+    for (let month = 0; month < 12; month++) {
+      const periodStartDate = new Date(year, month, 1);
+      const periodEndDate = new Date(year, month + 1, 1);
+
+      // Get readings for this month
+      const periodReadings = (readings || [])
+        .filter((r: any) => {
+          const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
           return readingDate >= periodStartDate && readingDate < periodEndDate;
-        }).sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-        
-        let consumption = 0;
-        if (periodReadings.length > 0) {
-          const firstReading = periodReadings[0];
-          const lastReading = periodReadings[periodReadings.length - 1];
-          consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
-        }
-        
-        const monthStr = `${periodStartDate.toLocaleString('default', { month: 'short' })} ${periodStartDate.getDate()} - ${periodEndDate.toLocaleString('default', { month: 'short' })} ${periodEndDate.getDate()}`;
-        const amountDue = consumption * 15;
-        
-        // Determine bill status
-        let billStatus = 'Pending';
-        if (now > periodEndDate) {
-          billStatus = 'Overdue';
-        } else if (now < periodStartDate) {
-          billStatus = 'Upcoming';
-        }
-        
-        history.push({
-          month: monthStr,
-          monthDate: periodStartDate,
-          consumption: consumption.toFixed(6),
-          amountDue: amountDue.toFixed(2),
-          billStatus,
-          dueDate: periodEndDate.toISOString().split('T')[0],
+        })
+        .sort((a: any, b: any) => {
+          const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+          const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+          return dateA.getTime() - dateB.getTime();
         });
+
+      let consumption = 0;
+      if (periodReadings.length > 0) {
+        const firstReading = periodReadings[0];
+        const lastReading = periodReadings[periodReadings.length - 1];
+        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
       }
-    } else {
-      // Option #1: Default calendar months (no data) - forward chronologically
-      for (let i = 0; i < 12; i++) {
-        const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
-        
-        const monthStr = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-        
-        history.push({
-          month: monthStr,
-          monthDate,
-          consumption: '0.000000',
-          amountDue: '0.00',
-          billStatus: 'Not yet active',
-          dueDate: nextMonthDate.toISOString().split('T')[0],
-        });
+
+      const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const amountDue = calculateWaterBill(consumption);
+
+      // Determine bill status
+      let billStatus = 'Pending';
+      if (now > periodEndDate) {
+        billStatus = 'Overdue';
+      } else if (now >= periodStartDate && now < periodEndDate) {
+        billStatus = 'Current';
+      } else if (now < periodStartDate) {
+        billStatus = 'Upcoming';
       }
+
+      history.push({
+        month: monthStr,
+        monthDate: periodStartDate,
+        consumption: consumption.toFixed(6),
+        amountDue: amountDue.toFixed(2),
+        billStatus,
+        dueDate: periodEndDate.toISOString().split('T')[0],
+      });
     }
-    
+
     return history;
   };
 
@@ -1057,7 +1035,9 @@ const AdminDashboard: React.FC = () => {
                     <div>
                       <span style={{ color: "#666", fontWeight: 600 }}>Last Reading:</span>
                       <div style={{ color: "#333", marginTop: "0.25rem" }}>
-                        {users.find(u => u.id === selectedUserId)?.lastReading ? new Date(users.find(u => u.id === selectedUserId)!.lastReading!).toLocaleString() : "No data"}
+                        {users.find(u => u.id === selectedUserId)?.lastReading
+                          ? `${(users.find(u => u.id === selectedUserId)?.lastReading?.cubicMeters || 0).toFixed(2)} m³ (${new Date(users.find(u => u.id === selectedUserId)!.lastReading!.timestamp || new Date()).toLocaleString()})`
+                          : "No data"}
                       </div>
                     </div>
                   </div>
