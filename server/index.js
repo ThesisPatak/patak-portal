@@ -354,13 +354,16 @@ function authMiddleware(req, res, next) {
 // Public: Get GCash configuration
 app.get('/api/config/gcash', (req, res) => {
   const gcashNumber = process.env.GCASH_NUMBER || null
+  const gcashName = process.env.GCASH_NAME || null
   const isConfigured = !!gcashNumber
   
   res.json({
     gcash: {
       number: gcashNumber,
+      name: gcashName,
       configured: isConfigured,
-      displayNumber: gcashNumber ? gcashNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3') : null
+      displayNumber: gcashNumber ? gcashNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3') : null,
+      displayName: gcashName || 'Admin Account'
     }
   })
 })

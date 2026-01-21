@@ -10,6 +10,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
   const [loading, setLoading] = useState(false);
   const [gcashNumber, setGcashNumber] = useState(null);
+  const [gcashName, setGcashName] = useState('Admin Account');
   const [gcashLoading, setGcashLoading] = useState(true);
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
@@ -25,6 +26,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         const data = await response.json();
         if (data.gcash.configured) {
           setGcashNumber(data.gcash.displayNumber || data.gcash.number);
+          setGcashName(data.gcash.displayName || 'Admin Account');
         }
       } catch (err) {
         console.error('Failed to fetch GCash number:', err);
@@ -164,8 +166,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
             <Text style={{ fontSize: 24, fontWeight: '900', color: '#059669', fontFamily: 'monospace', letterSpacing: 2 }}>
               {gcashNumber}
             </Text>
-            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginTop: SPACING.small }}>
-              Admin GCash Account
+            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginTop: SPACING.small, fontWeight: '600' }}>
+              {gcashName}
             </Text>
           </View>
         )}
