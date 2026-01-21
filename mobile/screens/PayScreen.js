@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
@@ -12,6 +14,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const [qrCode, setQrCode] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
   // Month names for display
@@ -56,6 +59,43 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       Alert.alert('Error', 'Failed to generate QR code: ' + err.message);
     } finally {
       setQrLoading(false);
+    }
+  };
+
+  // Download QR Code to Gallery
+  const downloadQRCode = async () => {
+    try {
+      setDownloadLoading(true);
+      
+      // Request permissions
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'We need permission to save files to your gallery.');
+        setDownloadLoading(false);
+        return;
+      }
+
+      // Create filename
+      const filename = `PATAK-Water-Bill-${referenceNumber}-${Date.now()}.jpg`;
+      const filepath = FileSystem.documentDirectory + filename;
+
+      // Download the QR code image
+      const downloadResult = await FileSystem.downloadAsync(qrCode, filepath);
+
+      if (downloadResult.status === 200) {
+        // Save to gallery
+        const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
+        await MediaLibrary.createAlbumAsync('PATAK Portal', asset, false);
+
+        Alert.alert('✅ Success', `QR Code saved to Gallery!\n\nFile: ${filename}`);
+      } else {
+        Alert.alert('Error', 'Failed to download QR code');
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      Alert.alert('Error', 'Failed to save QR code: ' + err.message);
+    } finally {
+      setDownloadLoading(false);
     }
   };
 
@@ -238,31 +278,63 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
         {/* Submit Payment Button - Only after QR generated */}
         {showQR && (
-          <TouchableOpacity
-            onPress={handlePaymentSubmit}
-            disabled={loading}
-            style={[
-              styles.primaryButton,
-              {
-                opacity: loading ? 0.6 : 1,
-                width: '100%',
-                backgroundColor: '#0066CC',
-                paddingVertical: SPACING.base + 4,
-                marginBottom: SPACING.base,
-              }
-            ]}
-          >
-            {loading ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
-                <Text style={[styles.primaryButtonText]}>Processing...</Text>
-              </View>
-            ) : (
-              <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
-                ✓ Confirm & Submit Payment
-              </Text>
-            )}
-          </TouchableOpacity>
+          <>
+            {/* Download QR Button */}
+            <TouchableOpacity
+              onPress={downloadQRCode}
+              disabled={downloadLoading}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity: downloadLoading ? 0.6 : 1,
+                  width: '100%',
+                  backgroundColor: '#f0f0f0',
+                  borderWidth: 2,
+                  borderColor: '#059669',
+                  paddingVertical: SPACING.base + 2,
+                  marginBottom: SPACING.small,
+                }
+              ]}
+            >
+              {downloadLoading ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <ActivityIndicator size="small" color="#059669" style={{ marginRight: SPACING.small }} />
+                  <Text style={[styles.secondaryButtonText, { color: '#059669', fontWeight: '700' }]}>Saving...</Text>
+                </View>
+              ) : (
+                <Text style={[styles.secondaryButtonText, { color: '#059669', fontWeight: '700', fontSize: TYPO.bodySize }]}>
+                  📥 Download QR Code
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Confirm Payment Button */}
+            <TouchableOpacity
+              onPress={handlePaymentSubmit}
+              disabled={loading}
+              style={[
+                styles.primaryButton,
+                {
+                  opacity: loading ? 0.6 : 1,
+                  width: '100%',
+                  backgroundColor: '#0066CC',
+                  paddingVertical: SPACING.base + 4,
+                  marginBottom: SPACING.base,
+                }
+              ]}
+            >
+              {loading ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
+                  <Text style={[styles.primaryButtonText]}>Processing...</Text>
+                </View>
+              ) : (
+                <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
+                  ✓ Confirm & Submit Payment
+                </Text>
+              )}
+            </TouchableOpacity>
+          </>
         )}
 
         {/* Security Info */}
