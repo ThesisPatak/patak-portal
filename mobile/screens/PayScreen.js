@@ -15,7 +15,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const billingPeriod = `${monthNames[billingMonth - 1]} ${billingYear}`;
 
-  // Create PayMongo payment link
+  // Create PayMongo payment link with smart GCash deep link
   const handlePayMongoPayment = async () => {
     try {
       setLoading(true);
@@ -37,33 +37,69 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
       if (response.ok) {
         const data = await response.json();
-        console.log('PayMongo checkout URL:', data.checkoutUrl);
+        const checkoutUrl = data.checkoutUrl;
+        console.log('PayMongo checkout URL:', checkoutUrl);
         
-        // Open PayMongo checkout
-        await Linking.openURL(data.checkoutUrl);
+        // Try to open GCash app with deep link first
+        const gcashDeepLink = `gcash://send?amount=${amount}`;
         
-        Alert.alert(
-          'Payment Processing',
-          `Reference: ${referenceNumber}\n\nYou will be redirected to PayMongo to complete your payment. Your payment will be confirmed automatically once processed.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setLoading(false);
-                // Payment will be confirmed via webhook
-                onBack();
-              },
-            },
-          ]
-        );
+        try {
+          // Check if GCash app is installed
+          const canOpen = await Linking.canOpenURL(gcashDeepLink);
+          
+          if (canOpen) {
+            // GCash app is installed - open it directly
+            await Linking.openURL(gcashDeepLink);
+            
+            Alert.alert(
+              'GCash Payment',
+              `Opening GCash app with amount ₱${Number(amount).toFixed(2)}\n\nReference: ${referenceNumber}`,
+              [
+                {
+                  text: 'I sent the payment',
+                  onPress: () => {
+                    setLoading(false);
+                    onBack();
+                  },
+                },
+                {
+                  text: 'Cancel',
+                  onPress: () => setLoading(false),
+                },
+              ]
+            );
+          } else {
+            // GCash app not installed - fall back to PayMongo checkout with QR code
+            await Linking.openURL(checkoutUrl);
+            
+            Alert.alert(
+              'Payment Processing',
+              `Reference: ${referenceNumber}\n\nOpening PayMongo payment page. You can scan the QR code or choose your preferred payment method.`,
+              [
+                {
+                  text: 'Payment sent',
+                  onPress: () => {
+                    setLoading(false);
+                    onBack();
+                  },
+                },
+              ]
+            );
+          }
+        } catch (err) {
+          console.error('Deep link error:', err);
+          // Fallback to PayMongo checkout URL
+          await Linking.openURL(checkoutUrl);
+          setLoading(false);
+        }
       } else {
         const error = await response.json();
         Alert.alert('Error', error.error || 'Failed to create payment link');
         setLoading(false);
       }
     } catch (err) {
-      console.error('PayMongo error:', err);
-      Alert.alert('Error', 'Failed to initiate PayMongo payment: ' + err.message);
+      console.error('Payment error:', err);
+      Alert.alert('Error', 'Failed to initiate payment: ' + err.message);
       setLoading(false);
     }
   };
