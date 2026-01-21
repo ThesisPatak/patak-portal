@@ -1646,6 +1646,238 @@ app.post('/api/paymongo/webhook', (req, res) => {
   res.json({ ok: true, message: 'Webhook processed' })
 })
 
+// GCash: Submit payment for manual verification (stores pending payment)
+app.post('/api/gcash/submit-payment', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { amount, billingMonth, billingYear, referenceNumber } = req.body
+  const userId = req.user.userId
+  const username = req.user.username
+
+  console.log(`\n[${timestamp}] [GCASH-SUBMIT] Payment submission received`)
+  console.log(`[GCASH-SUBMIT] User: ${username}, Amount: ₱${amount}, Billing: ${billingMonth}/${billingYear}`)
+
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid amount' })
+  }
+
+  if (!billingMonth || !billingYear) {
+    return res.status(400).json({ error: 'Billing month and year required' })
+  }
+
+  try {
+    // Create pending payment record
+    const pendingPayment = {
+      id: `gcash-${Date.now()}`,
+      userId,
+      username,
+      amount: parseFloat(amount),
+      billingMonth: parseInt(billingMonth),
+      billingYear: parseInt(billingYear),
+      referenceNumber: referenceNumber || `REF-${Date.now()}`,
+      submittedAt: timestamp,
+      status: 'pending_verification',
+      paymentMethod: 'gcash'
+    }
+
+    // Read or create pending payments file
+    const PENDING_GCASH_FILE = path.join(DATA_DIR, 'pending_gcash_payments.json')
+    let pendingPayments = []
+    try {
+      if (fs.existsSync(PENDING_GCASH_FILE)) {
+        pendingPayments = JSON.parse(fs.readFileSync(PENDING_GCASH_FILE, 'utf8'))
+        if (!Array.isArray(pendingPayments)) pendingPayments = []
+      }
+    } catch (e) {
+      console.error('[GCASH-SUBMIT] Error reading pending payments:', e)
+      pendingPayments = []
+    }
+
+    pendingPayments.push(pendingPayment)
+    fs.writeFileSync(PENDING_GCASH_FILE, JSON.stringify(pendingPayments, null, 2))
+
+    console.log(`[GCASH-SUBMIT] ✓ Pending payment created: ${pendingPayment.id}`)
+    console.log(`[GCASH-SUBMIT] Awaiting admin verification`)
+
+    res.status(201).json({
+      ok: true,
+      message: 'Payment submitted. Waiting for admin verification.',
+      paymentId: pendingPayment.id,
+      referenceNumber: pendingPayment.referenceNumber
+    })
+  } catch (err) {
+    console.error(`[GCASH-SUBMIT] ✗ Error:`, err.message)
+    res.status(500).json({ error: 'Failed to submit payment: ' + err.message })
+  }
+})
+
+// Admin: Get all pending GCash payments
+app.get('/api/admin/gcash/pending', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [GCASH-PENDING] Admin requesting pending payments`)
+
+  if (!req.user.isAdmin) {
+    console.log(`[GCASH-PENDING] ✗ REJECTED - Not admin`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  try {
+    const PENDING_GCASH_FILE = path.join(DATA_DIR, 'pending_gcash_payments.json')
+    let pendingPayments = []
+    try {
+      if (fs.existsSync(PENDING_GCASH_FILE)) {
+        pendingPayments = JSON.parse(fs.readFileSync(PENDING_GCASH_FILE, 'utf8'))
+        if (!Array.isArray(pendingPayments)) pendingPayments = []
+      }
+    } catch (e) {
+      console.error('[GCASH-PENDING] Error reading pending payments:', e)
+      pendingPayments = []
+    }
+
+    // Filter only pending payments
+    const pending = pendingPayments.filter(p => p.status === 'pending_verification')
+
+    console.log(`[GCASH-PENDING] ✓ Found ${pending.length} pending payments`)
+    res.json({ pending })
+  } catch (err) {
+    console.error(`[GCASH-PENDING] ✗ Error:`, err.message)
+    res.status(500).json({ error: 'Failed to fetch pending payments' })
+  }
+})
+
+// Admin: Verify and confirm GCash payment
+app.post('/api/admin/gcash/verify/:paymentId', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { paymentId } = req.params
+  console.log(`\n[${timestamp}] [GCASH-VERIFY] Admin verifying payment: ${paymentId}`)
+
+  if (!req.user.isAdmin) {
+    console.log(`[GCASH-VERIFY] ✗ REJECTED - Not admin`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  try {
+    const PENDING_GCASH_FILE = path.join(DATA_DIR, 'pending_gcash_payments.json')
+    let pendingPayments = []
+    try {
+      if (fs.existsSync(PENDING_GCASH_FILE)) {
+        pendingPayments = JSON.parse(fs.readFileSync(PENDING_GCASH_FILE, 'utf8'))
+        if (!Array.isArray(pendingPayments)) pendingPayments = []
+      }
+    } catch (e) {
+      console.error('[GCASH-VERIFY] Error reading pending payments:', e)
+      pendingPayments = []
+    }
+
+    // Find pending payment
+    const paymentIndex = pendingPayments.findIndex(p => p.id === paymentId)
+    if (paymentIndex === -1) {
+      console.log(`[GCASH-VERIFY] ✗ Payment not found: ${paymentId}`)
+      return res.status(404).json({ error: 'Payment not found' })
+    }
+
+    const payment = pendingPayments[paymentIndex]
+    if (payment.status !== 'pending_verification') {
+      console.log(`[GCASH-VERIFY] ✗ Payment already processed: ${payment.status}`)
+      return res.status(400).json({ error: 'Payment already processed' })
+    }
+
+    // Update pending payment status
+    payment.status = 'verified'
+    payment.verifiedAt = timestamp
+    payment.verifiedBy = req.user.username
+    pendingPayments[paymentIndex] = payment
+
+    // Save updated pending payments
+    fs.writeFileSync(PENDING_GCASH_FILE, JSON.stringify(pendingPayments, null, 2))
+
+    // Also record in main payments file
+    const payments = readJSON(PAYMENTS_FILE)
+    const confirmedPayment = {
+      id: `payment-${Date.now()}`,
+      userId: payment.userId,
+      username: payment.username,
+      amount: payment.amount,
+      billingMonth: payment.billingMonth,
+      billingYear: payment.billingYear,
+      paymentDate: timestamp,
+      paymentMethod: 'gcash',
+      status: 'confirmed',
+      referenceNumber: payment.referenceNumber,
+      gcashPaymentId: payment.id,
+      verifiedBy: req.user.username
+    }
+
+    payments.push(confirmedPayment)
+    writeJSON(PAYMENTS_FILE, payments)
+
+    console.log(`[GCASH-VERIFY] ✓ Payment verified and confirmed: ${paymentId}`)
+    console.log(`[GCASH-VERIFY] Recorded in payments file: ${confirmedPayment.id}`)
+
+    res.json({
+      ok: true,
+      message: 'Payment verified and confirmed',
+      payment: confirmedPayment
+    })
+  } catch (err) {
+    console.error(`[GCASH-VERIFY] ✗ Error:`, err.message)
+    res.status(500).json({ error: 'Failed to verify payment: ' + err.message })
+  }
+})
+
+// Admin: Reject GCash payment
+app.post('/api/admin/gcash/reject/:paymentId', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { paymentId } = req.params
+  const { reason } = req.body || {}
+  console.log(`\n[${timestamp}] [GCASH-REJECT] Admin rejecting payment: ${paymentId}`)
+
+  if (!req.user.isAdmin) {
+    console.log(`[GCASH-REJECT] ✗ REJECTED - Not admin`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  try {
+    const PENDING_GCASH_FILE = path.join(DATA_DIR, 'pending_gcash_payments.json')
+    let pendingPayments = []
+    try {
+      if (fs.existsSync(PENDING_GCASH_FILE)) {
+        pendingPayments = JSON.parse(fs.readFileSync(PENDING_GCASH_FILE, 'utf8'))
+        if (!Array.isArray(pendingPayments)) pendingPayments = []
+      }
+    } catch (e) {
+      console.error('[GCASH-REJECT] Error reading pending payments:', e)
+      pendingPayments = []
+    }
+
+    // Find pending payment
+    const paymentIndex = pendingPayments.findIndex(p => p.id === paymentId)
+    if (paymentIndex === -1) {
+      console.log(`[GCASH-REJECT] ✗ Payment not found: ${paymentId}`)
+      return res.status(404).json({ error: 'Payment not found' })
+    }
+
+    const payment = pendingPayments[paymentIndex]
+    payment.status = 'rejected'
+    payment.rejectedAt = timestamp
+    payment.rejectedBy = req.user.username
+    payment.rejectionReason = reason || 'No reason provided'
+    pendingPayments[paymentIndex] = payment
+
+    // Save updated pending payments
+    fs.writeFileSync(PENDING_GCASH_FILE, JSON.stringify(pendingPayments, null, 2))
+
+    console.log(`[GCASH-REJECT] ✓ Payment rejected: ${paymentId}`)
+    res.json({
+      ok: true,
+      message: 'Payment rejected',
+      reason: payment.rejectionReason
+    })
+  } catch (err) {
+    console.error(`[GCASH-REJECT] ✗ Error:`, err.message)
+    res.status(500).json({ error: 'Failed to reject payment: ' + err.message })
+  }
+})
+
 // User/Admin: Get payments for a user
 app.get('/api/payments/:username', authMiddleware, (req, res) => {
   const { username } = req.params

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import AdminUsers from "./AdminUsers";
 import AdminLogin from "./AdminLogin";
+import AdminGCashPayments from "./AdminGCashPayments";
 
 interface UserData {
   id: string;
@@ -73,6 +74,7 @@ const AdminDashboard: React.FC = () => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'gcash'>('dashboard');
 
   // Handle admin login
   const handleLogin = (newToken: string, username: string) => {
@@ -492,6 +494,58 @@ const AdminDashboard: React.FC = () => {
             }}
           >
             <div style={{ width: "100%", maxWidth: isMobile ? "100%" : "1400px" }}>
+              {/* Tab Navigation */}
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "2rem", borderBottom: "2px solid #ddd", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    border: "none",
+                    background: activeTab === 'dashboard' ? '#0057b8' : '#f5f5f5',
+                    color: activeTab === 'dashboard' ? '#fff' : '#333',
+                    borderRadius: "8px 8px 0 0",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: isMobile ? "0.9rem" : "1rem",
+                  }}
+                >
+                  📊 Dashboard
+                </button>
+                <button
+                  onClick={() => setActiveTab('gcash')}
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    border: "none",
+                    background: activeTab === 'gcash' ? '#0057b8' : '#f5f5f5',
+                    color: activeTab === 'gcash' ? '#fff' : '#333',
+                    borderRadius: "8px 8px 0 0",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: isMobile ? "0.9rem" : "1rem",
+                  }}
+                >
+                  💙 GCash Payments
+                </button>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    border: "none",
+                    background: activeTab === 'users' ? '#0057b8' : '#f5f5f5',
+                    color: activeTab === 'users' ? '#fff' : '#333',
+                    borderRadius: "8px 8px 0 0",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: isMobile ? "0.9rem" : "1rem",
+                  }}
+                >
+                  👥 Users
+                </button>
+              </div>
+
+              {/* Dashboard Tab */}
+              {activeTab === 'dashboard' && (
+              <>
               {/* Real-Time Water Usage Section */}
               <section style={{ marginBottom: "3rem" }}>
                 <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
@@ -798,6 +852,25 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 )}
               </section>
+              </>
+              )}
+
+              {/* GCash Payments Tab */}
+              {activeTab === 'gcash' && (
+                <AdminGCashPayments token={token} />
+              )}
+
+              {/* Users Tab */}
+              {activeTab === 'users' && (
+                <>
+                <div style={{ marginBottom: "1.5rem" }}>
+                  <h2 style={{ color: "#0057b8", fontSize: isMobile ? "1.2rem" : "1.5rem", margin: 0, fontWeight: 600 }}>
+                    User Management
+                  </h2>
+                </div>
+                <AdminUsers />
+                </>
+              )}
             </div>
           </main>
 
