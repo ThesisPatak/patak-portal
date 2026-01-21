@@ -284,11 +284,14 @@ const AdminDashboard: React.FC = () => {
         billStatus = 'Upcoming';
       }
 
+      // Total consumption only for past/current months, 0 for upcoming
+      const totalConsumption = (billStatus === 'Upcoming') ? '0.000000' : latestMeterReading.toFixed(6);
+
       history.push({
         month: monthStr,
         monthDate: periodStartDate,
         consumption: consumption.toFixed(6),
-        totalConsumption: latestMeterReading.toFixed(6),
+        totalConsumption: totalConsumption,
         amountDue: amountDue.toFixed(2),
         billStatus,
         dueDate: periodEndDate.toISOString().split('T')[0],
