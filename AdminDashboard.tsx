@@ -1082,7 +1082,7 @@ const AdminDashboard: React.FC = () => {
                       <tbody>
                         {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx, arr) => {
                           const now = new Date();
-                          const isCurrentPeriod = bill.billStatus === 'Pending';
+                          const isCurrentPeriod = bill.billStatus === 'Current' || bill.billStatus === 'Pending';
                           return (
                           <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isCurrentPeriod ? "#f0f8ff" : "transparent" }}>
                             <td style={{ padding: "0.75rem", color: "#333", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.month}</td>
@@ -1093,10 +1093,10 @@ const AdminDashboard: React.FC = () => {
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>
                               <span style={{
                                 fontWeight: 600,
-                                color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Pending' ? '#ff9800' : '#2196F3',
+                                color: bill.billStatus === 'Overdue' ? '#ff6b6b' : bill.billStatus === 'Current' ? '#4CAF50' : bill.billStatus === 'Pending' ? '#ff9800' : '#2196F3',
                                 fontSize: isMobile ? "0.75rem" : "0.85rem"
                               }}>
-                                {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Pending' ? '⏳ Pending' : bill.billStatus === 'Upcoming' ? '📅 Upcoming' : '—'}
+                                {bill.billStatus === 'Overdue' ? '🔴 Overdue' : bill.billStatus === 'Current' ? '📊 Current' : bill.billStatus === 'Pending' ? '⏳ Pending' : bill.billStatus === 'Upcoming' ? '📅 Upcoming' : '—'}
                               </span>
                             </td>
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>
