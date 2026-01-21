@@ -117,7 +117,6 @@ const AdminGCashPayments: React.FC<AdminGCashPaymentsProps> = ({ token }: AdminG
     
     // Auto-refresh every 10 seconds
     const interval = setInterval(loadPayments, 10000);
-    setRefreshInterval(interval);
 
     return () => {
       if (interval) clearInterval(interval);
