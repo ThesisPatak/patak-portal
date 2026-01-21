@@ -2044,6 +2044,106 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.path, method: req.method })
 })
 
+// ==================== PAYMONGO WEBHOOK ====================
+// Webhook endpoint to receive payment notifications from PayMongo
+// PayMongo sends this when a payment is completed
+app.post('/api/paymongo/webhook', (req, res) => {
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [PAYMONGO-WEBHOOK] Received webhook`)
+  
+  try {
+    const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY
+    if (!PAYMONGO_SECRET_KEY) {
+      console.warn('[PAYMONGO-WEBHOOK] ⚠️ PAYMONGO_SECRET_KEY not configured')
+      return res.status(500).json({ error: 'Server not configured for PayMongo' })
+    }
+
+    // Get raw body for signature verification
+    const payload = req.body
+    const paymongoSignature = req.headers['x-paymongo-signature']
+
+    if (!paymongoSignature) {
+      console.warn('[PAYMONGO-WEBHOOK] ❌ Missing x-paymongo-signature header')
+      return res.status(400).json({ error: 'Missing signature' })
+    }
+
+    // Verify PayMongo signature (HMAC-SHA256)
+    const crypto = await import('crypto')
+    const bodyString = JSON.stringify(payload)
+    const expectedSignature = crypto.createHmac('sha256', PAYMONGO_SECRET_KEY)
+      .update(bodyString)
+      .digest('hex')
+
+    if (paymongoSignature !== expectedSignature) {
+      console.warn('[PAYMONGO-WEBHOOK] ❌ Invalid signature - potential security issue')
+      return res.status(401).json({ error: 'Invalid signature' })
+    }
+
+    console.log('[PAYMONGO-WEBHOOK] ✓ Signature verified')
+
+    // Process the webhook
+    const data = payload.data
+    if (!data) {
+      console.warn('[PAYMONGO-WEBHOOK] ⚠️ No data in webhook payload')
+      return res.status(400).json({ error: 'Invalid webhook format' })
+    }
+
+    // Handle different webhook types
+    const webhookType = data.type
+    console.log(`[PAYMONGO-WEBHOOK] Type: ${webhookType}`)
+
+    if (webhookType === 'payment.paid' || webhookType === 'payment.success') {
+      const attributes = data.attributes
+      const paymentAmount = attributes.amount / 100 // PayMongo sends in centavos
+      const paymentReference = attributes.description || attributes.reference_number
+      const paymentStatus = attributes.status
+
+      console.log(`[PAYMONGO-WEBHOOK] Payment received: ${paymentAmount} - Ref: ${paymentReference} - Status: ${paymentStatus}`)
+
+      // Find payment in database using reference
+      const payments = readJSON(PAYMENTS_FILE)
+      const paymentIndex = payments.findIndex(p => 
+        p.referenceNumber === paymentReference || p.paymongoId === data.id
+      )
+
+      if (paymentIndex === -1) {
+        console.warn(`[PAYMONGO-WEBHOOK] ⚠️ Payment reference not found: ${paymentReference}`)
+        return res.status(200).json({ ok: true, message: 'Webhook received but payment not found in system' })
+      }
+
+      const payment = payments[paymentIndex]
+      console.log(`[PAYMONGO-WEBHOOK] Found payment for user: ${payment.userId}`)
+
+      // Update payment status
+      payment.status = 'verified'
+      payment.verifiedAt = timestamp
+      payment.paymongoId = data.id
+      payment.paymongoStatus = paymentStatus
+
+      writeJSON(PAYMENTS_FILE, payments)
+      console.log(`[PAYMONGO-WEBHOOK] ✓ Payment marked as verified`)
+
+      // TODO: Optional - Update user's bill balance if needed
+      // const users = readJSON(USERS_FILE)
+      // const userIndex = users.findIndex(u => u.id === payment.userId)
+      // if (userIndex !== -1) {
+      //   users[userIndex].monthlyBill = (users[userIndex].monthlyBill || 0) - paymentAmount
+      //   writeJSON(USERS_FILE, users)
+      // }
+
+      return res.status(200).json({ ok: true, message: 'Payment verified and processed' })
+    }
+
+    // Handle other webhook types
+    console.log(`[PAYMONGO-WEBHOOK] Ignoring webhook type: ${webhookType}`)
+    return res.status(200).json({ ok: true, message: 'Webhook received' })
+
+  } catch (err) {
+    console.error('[PAYMONGO-WEBHOOK] Error processing webhook:', err.message)
+    return res.status(500).json({ error: 'Failed to process webhook' })
+  }
+})
+
 const PORT = process.env.PORT || 8080
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n========================================`)
