@@ -252,6 +252,17 @@ const AdminDashboard: React.FC = () => {
         const firstReading = periodReadings[0];
         const lastReading = periodReadings[periodReadings.length - 1];
         consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+      } else if (now >= periodStartDate && now < periodEndDate) {
+        // Current month with no readings in this month yet - show latest meter reading
+        const allReadings = readings || [];
+        if (allReadings.length > 0) {
+          const sorted = allReadings.sort((a: any, b: any) => {
+            const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+            const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+            return dateB.getTime() - dateA.getTime();
+          });
+          consumption = sorted[0].cubicMeters || 0;
+        }
       }
 
       const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
