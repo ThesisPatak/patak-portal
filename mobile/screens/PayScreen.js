@@ -16,7 +16,11 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
   // Month names for display
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const billingPeriod = `${monthNames[billingMonth - 1]} ${billingYear}`;
+  // Show billing period as range (e.g., Jan 2026 - Feb 2026)
+  const startMonth = monthNames[billingMonth - 1];
+  const nextMonth = billingMonth === 12 ? monthNames[0] : monthNames[billingMonth];
+  const nextYear = billingMonth === 12 ? billingYear + 1 : billingYear;
+  const billingPeriod = `${startMonth} ${billingYear} - ${nextMonth} ${nextYear}`;
 
   // Fetch GCash number from server
   React.useEffect(() => {
@@ -186,8 +190,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
 
           <View style={{ marginBottom: SPACING.base }}>
-            <Text style={{ fontSize: TYPO.smallSize, color: '#666', marginBottom: SPACING.small }}>BILLING PERIOD</Text>
-            <Text style={{ fontWeight: '600', color: COLORS.text, fontSize: TYPO.bodySize }}>
+            <Text style={{ fontSize: TYPO.smallSize, color: '#555', fontWeight: '600', marginBottom: SPACING.small }}>BILLING PERIOD</Text>
+            <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.bodySize + 1 }}>
               {billingPeriod}
             </Text>
           </View>
@@ -249,8 +253,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         </TouchableOpacity>
 
         {/* Step-by-Step Instructions */}
-        <View style={[styles.card, { backgroundColor: '#f5f5f5', marginBottom: SPACING.base }]}>
-          <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.base }}>
+        <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
+          <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
             📋 Payment Steps
           </Text>
           
