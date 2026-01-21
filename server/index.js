@@ -1508,7 +1508,102 @@ app.post('/api/gcash/webhook', (req, res) => {
   res.json({ ok: true, message: 'Webhook received' })
 })
 
-// PayMongo endpoints removed - using GCash manual payment system
+// ==================== PAYMONGO PAYMENT ENDPOINTS ====================
+
+// PayMongo: Create QR checkout link
+app.post('/api/paymongo/create-checkout', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { amount, description, billingMonth, billingYear, reference } = req.body
+  const userId = req.user.userId
+
+  console.log(`\n[${timestamp}] [PAYMONGO-CREATE] Creating checkout`)
+  console.log(`[PAYMONGO-CREATE] User: ${req.user.username}, Amount: ₱${amount / 100}`)
+
+  const PAYMONGO_PUBLIC_KEY = process.env.PAYMONGO_PUBLIC_KEY
+  if (!PAYMONGO_PUBLIC_KEY) {
+    console.error('[PAYMONGO-CREATE] ❌ PAYMONGO_PUBLIC_KEY not configured')
+    return res.status(500).json({ error: 'PayMongo not configured' })
+  }
+
+  try {
+    // For mobile app, generate a QR code URL for the user to scan
+    // Using PayMongo's test QR code endpoint (replace with actual API if needed)
+    const qrCode = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==`
+    
+    res.json({
+      qrCode: qrCode,
+      checkoutUrl: `https://checkout.paymongo.com/${reference}`,
+      reference: reference,
+      amount: amount,
+      description: description
+    })
+  } catch (err) {
+    console.error('[PAYMONGO-CREATE] ❌', err.message)
+    res.status(500).json({ error: 'Failed to create checkout' })
+  }
+})
+
+// PayMongo: Submit payment reference
+app.post('/api/paymongo/submit-payment', authMiddleware, (req, res) => {
+  const timestamp = new Date().toISOString()
+  const { amount, billingMonth, billingYear, referenceNumber } = req.body
+  const userId = req.user.userId
+  const username = req.user.username
+
+  console.log(`\n[${timestamp}] [PAYMONGO-SUBMIT] Payment submission received`)
+  console.log(`[PAYMONGO-SUBMIT] User: ${username}, Amount: ₱${amount}, Ref: ${referenceNumber}`)
+
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid amount' })
+  }
+
+  if (!billingMonth || !billingYear) {
+    return res.status(400).json({ error: 'Billing month and year required' })
+  }
+
+  try {
+    // Create pending payment record (webhook will verify actual payment)
+    const pendingPayment = {
+      id: `paymongo-${Date.now()}`,
+      userId,
+      username,
+      amount: parseFloat(amount),
+      billingMonth: parseInt(billingMonth),
+      billingYear: parseInt(billingYear),
+      referenceNumber: referenceNumber || `REF-${Date.now()}`,
+      submittedAt: timestamp,
+      status: 'pending_verification',
+      paymentMethod: 'paymongo'
+    }
+
+    // Read or create pending payments file
+    const PENDING_PAYMENTS_FILE = path.join(DATA_DIR, 'pending_paymongo_payments.json')
+    let pendingPayments = []
+    try {
+      if (fs.existsSync(PENDING_PAYMENTS_FILE)) {
+        pendingPayments = JSON.parse(fs.readFileSync(PENDING_PAYMENTS_FILE, 'utf8'))
+        if (!Array.isArray(pendingPayments)) pendingPayments = []
+      }
+    } catch (e) {
+      console.warn(`[PAYMONGO-SUBMIT] Warning: Could not load pending payments file:`, e.message)
+      pendingPayments = []
+    }
+
+    // Add new pending payment
+    pendingPayments.push(pendingPayment)
+    fs.writeFileSync(PENDING_PAYMENTS_FILE, JSON.stringify(pendingPayments, null, 2))
+
+    res.json({
+      ok: true,
+      message: 'Payment submitted. Awaiting PayMongo confirmation...',
+      referenceNumber: referenceNumber,
+      paymentId: pendingPayment.id
+    })
+  } catch (err) {
+    console.error('[PAYMONGO-SUBMIT] ❌', err.message)
+    res.status(500).json({ error: 'Failed to submit payment' })
+  }
+})
 
 // GCash: Submit payment for manual verification (stores pending payment)
 app.post('/api/gcash/submit-payment', authMiddleware, (req, res) => {
