@@ -43,114 +43,69 @@ const BillingTable: React.FC = () => {
     return Number(total.toFixed(2));
   }
 
-  // Match mobile app logic - generates billing history for 12 months
+  // Match mobile app logic - generates billing history for 12 months of 2026 (Jan-Dec, Jan at top)
   function generateBillingHistory(readings: any[], createdAt: string): BillingPeriod[] {
     const history: BillingPeriod[] = [];
     const now = new Date();
 
-    const hasData = readings && readings.length > 0;
+    // Generate 12 calendar months for 2026 (January to December)
+    const year = 2026;
 
-    if (hasData) {
-      const startDate = createdAt ? new Date(createdAt) : new Date();
-      const billingStartDay = startDate.getDate();
-      const billingStartMonth = startDate.getMonth();
-      const billingStartYear = startDate.getFullYear();
+    for (let month = 0; month < 12; month++) {
+      const periodStartDate = new Date(year, month, 1);
+      const periodEndDate = new Date(year, month + 1, 1);
 
-      // Find current billing period (which month cycle are we in?)
-      let currentMonthOffset = 0;
-
-      for (let i = -24; i <= 24; i++) {
-        let periodStartDate = new Date(billingStartYear, billingStartMonth + i, billingStartDay);
-        let periodEndDate = new Date(billingStartYear, billingStartMonth + i + 1, billingStartDay);
-
-        if (now >= periodStartDate && now < periodEndDate) {
-          currentMonthOffset = i;
-          break;
-        }
-      }
-
-      // Generate 12 periods: current period + next 11 months
-      for (let i = 0; i < 12; i++) {
-        let periodStartDate = new Date(billingStartYear, billingStartMonth + currentMonthOffset + i, billingStartDay);
-        let periodEndDate = new Date(billingStartYear, billingStartMonth + currentMonthOffset + i + 1, billingStartDay);
-
-        const periodReadings = readings
-          .filter((r) => {
-            const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
-            return readingDate >= periodStartDate && readingDate < periodEndDate;
-          })
-          .sort((a, b) => {
-            const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
-            const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
-            return dateA.getTime() - dateB.getTime();
-          });
-
-        let consumption = 0;
-        if (periodReadings.length > 0) {
-          const firstReading = periodReadings[0];
-          const lastReading = periodReadings[periodReadings.length - 1];
-          consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
-        }
-
-        const monthStr = `${periodStartDate.toLocaleString('default', { month: 'short' })} ${periodStartDate.getDate()} - ${periodEndDate.toLocaleString('default', { month: 'short' })} ${periodEndDate.getDate()}`;
-        const amountDue = computeResidentialBill(consumption);
-
-        // Determine bill status
-        let billStatus = 'Pending';
-        let statusColor = '#ff9800';
-        let statusIcon = '⏳';
-
-        if (now > periodEndDate) {
-          billStatus = 'Overdue';
-          statusColor = '#ff6b6b';
-          statusIcon = '🔴';
-        } else if (now >= periodStartDate && now < periodEndDate) {
-          billStatus = 'Pending';
-          statusColor = '#ff9800';
-          statusIcon = '⏳';
-        } else if (now < periodStartDate) {
-          billStatus = 'Upcoming';
-          statusColor = '#2196F3';
-          statusIcon = '📅';
-        }
-
-        history.push({
-          month: monthStr,
-          monthDate: periodStartDate,
-          consumption: consumption.toFixed(6),
-          amountDue: amountDue.toFixed(2),
-          billStatus,
-          statusColor,
-          statusIcon,
-          dueDate: periodEndDate.toISOString().split('T')[0],
+      // Get readings for this month
+      const periodReadings = (readings || [])
+        .filter((r) => {
+          const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
+          return readingDate >= periodStartDate && readingDate < periodEndDate;
+        })
+        .sort((a, b) => {
+          const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+          const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+          return dateA.getTime() - dateB.getTime();
         });
+
+      let consumption = 0;
+      if (periodReadings.length > 0) {
+        const firstReading = periodReadings[0];
+        const lastReading = periodReadings[periodReadings.length - 1];
+        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
       }
-    } else {
-      // Default calendar months (no data)
-      for (let i = 0; i < 12; i++) {
-        const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
 
-        const monthStr = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const amountDue = computeResidentialBill(consumption);
 
-        let billStatus = 'Not yet active';
-        if (i === 0) {
-          billStatus = 'Current';
-        } else if (i > 0) {
-          billStatus = 'Upcoming';
-        }
+      // Determine bill status
+      let billStatus = 'Pending';
+      let statusColor = '#ff9800';
+      let statusIcon = '⏳';
 
-        history.push({
-          month: monthStr,
-          monthDate,
-          consumption: '0.000000',
-          amountDue: '0.00',
-          billStatus,
-          statusColor: '#999',
-          statusIcon: '⏸️',
-          dueDate: nextMonthDate.toISOString().split('T')[0],
-        });
+      if (now > periodEndDate) {
+        billStatus = 'Overdue';
+        statusColor = '#ff6b6b';
+        statusIcon = '🔴';
+      } else if (now >= periodStartDate && now < periodEndDate) {
+        billStatus = 'Current';
+        statusColor = '#4CAF50';
+        statusIcon = '📊';
+      } else if (now < periodStartDate) {
+        billStatus = 'Upcoming';
+        statusColor = '#2196F3';
+        statusIcon = '📅';
       }
+
+      history.push({
+        month: monthStr,
+        monthDate: periodStartDate,
+        consumption: consumption.toFixed(6),
+        amountDue: amountDue.toFixed(2),
+        billStatus,
+        statusColor,
+        statusIcon,
+        dueDate: periodEndDate.toISOString().split('T')[0],
+      });
     }
 
     return history;
