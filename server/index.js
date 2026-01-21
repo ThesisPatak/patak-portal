@@ -655,10 +655,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       return date >= previousPeriodStart && date < currentPeriodStart
     })
     
-    // Current Consumption = readings in current period (latest in period - oldest in period)
-    const currentConsumption = currentPeriodReadings.length > 0
-      ? Math.max(0, (currentPeriodReadings[0].cubicMeters || 0) - (currentPeriodReadings[currentPeriodReadings.length - 1].cubicMeters || 0))
-      : 0
+    // Current Consumption = latest meter reading from ESP32 (cumulative total)
+    const currentConsumption = currentConsumptionValue
     
     // Previous Consumption = readings in previous period (latest in period - oldest in period)
     const previousConsumption = previousPeriodReadings.length > 0
@@ -1795,10 +1793,8 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       return date >= previousPeriodStart && date < currentPeriodStart
     })
     
-    // Current Consumption = usage in current billing period
-    const currentConsumption = currentPeriodReadings.length > 0
-      ? Math.max(0, (currentPeriodReadings[0].cubicMeters || 0) - (currentPeriodReadings[currentPeriodReadings.length - 1].cubicMeters || 0))
-      : 0
+    // Current Consumption = latest meter reading from ESP32 (cumulative total)
+    const currentConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
     
     // Previous Consumption = usage in previous billing period
     const previousConsumption = previousPeriodReadings.length > 0
