@@ -523,7 +523,7 @@ const AdminDashboard: React.FC = () => {
                     fontSize: isMobile ? "0.9rem" : "1rem",
                   }}
                 >
-                  💙 GCash Payments
+                  � GCash Payments
                 </button>
 
               </div>

@@ -160,7 +160,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         {/* GCash Logo & Branding Section */}
         <View style={{ alignItems: 'center', marginBottom: SPACING.large, paddingVertical: SPACING.base }}>
           <Text style={{ fontSize: TYPO.bodySize + 2, fontWeight: '700', color: '#0066CC', marginBottom: SPACING.small }}>
-            💙 GCash Payment
+            � GCash Payment
           </Text>
           <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center' }}>
             Fast • Secure • Instant Confirmation
@@ -247,7 +247,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
             </View>
           ) : (
             <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
-              💙 Send ₱{Number(amount).toFixed(2)} via GCash
+              � Send ₱{Number(amount).toFixed(2)} via GCash
             </Text>
           )}
         </TouchableOpacity>

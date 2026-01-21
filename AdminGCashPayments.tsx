@@ -130,7 +130,7 @@ const AdminGCashPayments: React.FC<AdminGCashPaymentsProps> = ({ token }: AdminG
   return (
     <div style={{ marginTop: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: '0.5rem', flexWrap: 'wrap' }}>
-        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>💙 GCash Pending Payments</h3>
+        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>� GCash Pending Payments</h3>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
             onClick={verifyByReference}
