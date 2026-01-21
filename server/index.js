@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import cors from 'cors'
 import compression from 'compression'
+import crypto from 'crypto'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -2068,7 +2069,6 @@ app.post('/api/paymongo/webhook', (req, res) => {
     }
 
     // Verify PayMongo signature (HMAC-SHA256)
-    const crypto = await import('crypto')
     const bodyString = JSON.stringify(payload)
     const expectedSignature = crypto.createHmac('sha256', PAYMONGO_SECRET_KEY)
       .update(bodyString)
