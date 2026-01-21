@@ -44,6 +44,28 @@ const AdminGCashPayments: React.FC<AdminGCashPaymentsProps> = ({ token }: AdminG
     }
   };
 
+  // Verify payment by reference number
+  const verifyByReference = async () => {
+    const reference = window.prompt('Enter reference number from GCash transaction:', '');
+    if (!reference) return;
+
+    try {
+      const matching = payments.find(p => 
+        p.referenceNumber.toUpperCase().includes(reference.toUpperCase()) ||
+        reference.toUpperCase().includes(p.referenceNumber.substring(0, 10))
+      );
+
+      if (!matching) {
+        alert('No pending payment found with that reference number');
+        return;
+      }
+
+      await verifyPayment(matching.id);
+    } catch (err: any) {
+      setMessage('✗ Error: ' + (err.message || err));
+    }
+  };
+
   // Verify payment
   const verifyPayment = async (paymentId: string) => {
     if (!window.confirm('Confirm this GCash payment has been received?')) return;
@@ -107,23 +129,40 @@ const AdminGCashPayments: React.FC<AdminGCashPaymentsProps> = ({ token }: AdminG
 
   return (
     <div style={{ marginTop: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: '0.5rem', flexWrap: 'wrap' }}>
         <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>💙 GCash Pending Payments</h3>
-        <button
-          onClick={loadPayments}
-          disabled={loading}
-          style={{
-            padding: '0.5rem 0.75rem',
-            backgroundColor: '#0066CC',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            opacity: loading ? 0.6 : 1,
-          }}
-        >
-          {loading ? 'Loading...' : '🔄 Refresh'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={verifyByReference}
+            style={{
+              padding: '0.5rem 0.75rem',
+              backgroundColor: '#059669',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+            }}
+          >
+            🔍 Verify by Reference
+          </button>
+          <button
+            onClick={loadPayments}
+            disabled={loading}
+            style={{
+              padding: '0.5rem 0.75rem',
+              backgroundColor: '#0066CC',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              opacity: loading ? 0.6 : 1,
+            }}
+          >
+            {loading ? 'Loading...' : '🔄 Refresh'}
+          </button>
+        </div>
       </div>
 
       {message && (
