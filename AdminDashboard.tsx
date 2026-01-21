@@ -223,6 +223,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Generate billing history for a user - shows all 12 calendar months of 2026 (Jan-Dec)
+  // CACHE BUSTER v2 - 2026-01-21
   const generateBillingHistory = (readings: any[], createdAt: string) => {
     const history = [];
     const now = new Date();
