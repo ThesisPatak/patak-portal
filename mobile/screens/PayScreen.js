@@ -68,75 +68,102 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         const phoneNumber = gcashNumber ? gcashNumber.replace(/-/g, '') : '09569332130';
         const amountStr = Number(amount).toFixed(2);
         
-        // Try multiple GCash deep link formats
-        // Format 1: gcash://send?phone=09569332130&amount=255.00
-        const deepLink = `gcash://send?phone=${phoneNumber}&amount=${amountStr}`;
+        // Try different GCash deep link formats
+        // Format 1: gcash://send/amount/phone
+        const deepLink1 = `gcash://send/${amountStr}/${phoneNumber}`;
+        // Format 2: gcash://send?phone=09569332130&amount=255.00
+        const deepLink2 = `gcash://send?phone=${phoneNumber}&amount=${amountStr}`;
+        // Format 3: Just open gcash app
+        const deepLink3 = `gcash://`;
         
-        console.log('Attempting to open GCash with deep link:', deepLink);
+        console.log('Attempting to open GCash with deep links:', deepLink1, deepLink2, deepLink3);
         
-        Linking.canOpenURL(deepLink).then(supported => {
-          console.log('GCash app supported:', supported);
-          if (supported) {
-            // GCash app is installed, open it with pre-filled amount and recipient
-            Linking.openURL(deepLink).catch(err => {
-              console.error('Error opening deep link:', err);
-              setLoading(false);
+        // Try first format
+        Linking.canOpenURL(deepLink1).then(supported1 => {
+          console.log('GCash format 1 supported:', supported1);
+          if (supported1) {
+            Linking.openURL(deepLink1).catch(err => {
+              console.error('Error opening format 1:', err);
+              tryFormat2();
             });
-            setTimeout(() => {
-              setLoading(false);
-              Alert.alert(
-                '✓ GCash Opened',
-                `Amount: ₱${amountStr}\nRecipient: ${phoneNumber}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash.`,
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => {
-                      onBack();
-                      if (onPaymentSuccess) onPaymentSuccess();
-                    },
-                  },
-                ]
-              );
-            }, 500);
-          } else {
-            // GCash app not installed, try opening GCash web
-            setLoading(false);
-            const gcashWebUrl = `https://www.gcash.com/`;
-            
-            Alert.alert(
-              '✓ Payment Submitted',
-              `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash web to send the payment.`,
-              [
-                {
-                  text: 'Open GCash Web',
-                  onPress: () => {
-                    Linking.openURL(gcashWebUrl).catch(err => {
-                      console.error('Error opening GCash web:', err);
-                      Alert.alert('Error', 'Could not open GCash. Please open it manually.');
-                    });
-                    setTimeout(() => {
-                      onBack();
-                      if (onPaymentSuccess) onPaymentSuccess();
-                    }, 1000);
-                  },
-                },
-                {
-                  text: 'Manual Entry',
-                  onPress: () => {
-                    onBack();
-                    if (onPaymentSuccess) onPaymentSuccess();
-                  },
-                },
-              ]
-            );
+            return;
           }
+          tryFormat2();
         }).catch(err => {
-          console.error('Error checking GCash deep link:', err);
+          console.error('Error checking format 1:', err);
+          tryFormat2();
+        });
+        
+        const tryFormat2 = () => {
+          Linking.canOpenURL(deepLink2).then(supported2 => {
+            console.log('GCash format 2 supported:', supported2);
+            if (supported2) {
+              Linking.openURL(deepLink2).catch(err => {
+                console.error('Error opening format 2:', err);
+                tryFormat3();
+              });
+              return;
+            }
+            tryFormat3();
+          }).catch(err => {
+            console.error('Error checking format 2:', err);
+            tryFormat3();
+          });
+        };
+        
+        const tryFormat3 = () => {
+          Linking.canOpenURL(deepLink3).then(supported3 => {
+            console.log('GCash format 3 supported:', supported3);
+            if (supported3) {
+              Linking.openURL(deepLink3).catch(err => {
+                console.error('Error opening format 3:', err);
+                showNoAppAlert();
+              });
+              return;
+            }
+            showNoAppAlert();
+          }).catch(err => {
+            console.error('Error checking format 3:', err);
+            showNoAppAlert();
+          });
+        };
+        
+        const showNoAppAlert = () => {
           setLoading(false);
-          // Fallback: show manual instructions
+          const gcashWebUrl = `https://www.gcash.com/`;
+          
           Alert.alert(
             '✓ Payment Submitted',
-            `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nOpen GCash manually and send the amount.`,
+            `Amount: ₱${amountStr}\nSend to: ${phoneNumber}\nReference: ${referenceNumber}\n\nGCash app not found. Open GCash manually to send the payment.`,
+            [
+              {
+                text: 'Open GCash Web',
+                onPress: () => {
+                  Linking.openURL(gcashWebUrl).catch(err => {
+                    console.error('Error opening GCash web:', err);
+                  });
+                  setTimeout(() => {
+                    onBack();
+                    if (onPaymentSuccess) onPaymentSuccess();
+                  }, 1000);
+                },
+              },
+              {
+                text: 'Manual Entry',
+                onPress: () => {
+                  onBack();
+                  if (onPaymentSuccess) onPaymentSuccess();
+                },
+              },
+            ]
+          );
+        };
+        
+        setTimeout(() => {
+          setLoading(false);
+          Alert.alert(
+            '✓ GCash Opened',
+            `Amount: ₱${amountStr}\nRecipient: ${phoneNumber}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash.`,
             [
               {
                 text: 'OK',
@@ -147,7 +174,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
               },
             ]
           );
-        });
+        }, 500);
       } else {
         Alert.alert('Error', data.error || 'Failed to submit payment');
         setLoading(false);
