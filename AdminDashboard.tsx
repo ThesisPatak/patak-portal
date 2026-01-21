@@ -266,9 +266,7 @@ const AdminDashboard: React.FC = () => {
         consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
       } else if (now >= periodStartDate && now < periodEndDate) {
         // Current month with no readings in this month yet - show latest meter reading
-        if (allReadings.length > 0) {
-          consumption = latestMeterReading;
-        }
+        consumption = latestMeterReading;
       }
 
       const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });

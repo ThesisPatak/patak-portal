@@ -85,6 +85,9 @@ const BillingTable: React.FC = () => {
         const firstReading = periodReadings[0];
         const lastReading = periodReadings[periodReadings.length - 1];
         consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+      } else if (now >= periodStartDate && now < periodEndDate) {
+        // Current month with no readings in this month yet - show latest meter reading
+        consumption = latestMeterReading;
       }
 
       const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
