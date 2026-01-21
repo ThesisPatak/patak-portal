@@ -37,11 +37,12 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
     fetchGcashNumber();
   }, []);
 
-  // Handle GCash manual payment
+  // Handle GCash manual payment - opens GCash app with pre-filled amount
   const handleGCashPayment = async () => {
     try {
       setLoading(true);
 
+      // First, submit payment to backend
       const response = await fetch('https://patak-portal-production.up.railway.app/api/gcash/submit-payment', {
         method: 'POST',
         headers: {
@@ -59,20 +60,52 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert(
-          '✓ Payment Submitted',
-          `Amount: ₱${Number(amount).toFixed(2)}\nReference: ${referenceNumber}\n\nYour payment is pending verification. The admin will confirm it shortly.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setLoading(false);
-                onBack();
-                if (onPaymentSuccess) onPaymentSuccess();
-              },
-            },
-          ]
-        );
+        // Payment submitted successfully, now open GCash app with pre-filled details
+        const gcashNumber = gcashNumber ? gcashNumber.replace(/-/g, '') : '09569332130';
+        const amountStr = Number(amount).toFixed(2);
+        
+        // Try GCash deep link with amount pre-filled
+        const deepLink = `gcash://send?amount=${amountStr}&phone=${gcashNumber}&reference=${referenceNumber}`;
+        
+        Linking.canOpenURL(deepLink).then(supported => {
+          if (supported) {
+            // GCash app is installed, open it with pre-filled amount
+            Linking.openURL(deepLink);
+            Alert.alert(
+              '✓ Payment Ready',
+              `GCash app opened with:\nAmount: ₱${amountStr}\nReference: ${referenceNumber}\n\nConfirm the transfer in GCash. Your payment will be verified shortly.`,
+              [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    setLoading(false);
+                    onBack();
+                    if (onPaymentSuccess) onPaymentSuccess();
+                  },
+                },
+              ]
+            );
+          } else {
+            // GCash app not installed, show manual instructions
+            Alert.alert(
+              '✓ Payment Submitted',
+              `Amount: ₱${amountStr}\nSend to: ${gcashNumber}\nReference: ${referenceNumber}\n\nOpen GCash manually and send the amount. Your payment will be verified shortly.`,
+              [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    setLoading(false);
+                    onBack();
+                    if (onPaymentSuccess) onPaymentSuccess();
+                  },
+                },
+              ]
+            );
+          }
+        }).catch(err => {
+          console.error('Error checking GCash deep link:', err);
+          setLoading(false);
+        });
       } else {
         Alert.alert('Error', data.error || 'Failed to submit payment');
         setLoading(false);
@@ -94,52 +127,6 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
     ]);
   };
 
-  // Handle manual GCash payment
-  const handleManualGCashPayment = async () => {
-    try {
-      setLoading(true);
-
-      const response = await fetch('https://patak-portal-production.up.railway.app/api/gcash/submit-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amount: Number(amount),
-          billingMonth: billingMonth,
-          billingYear: billingYear,
-          referenceNumber: referenceNumber,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        Alert.alert(
-          '✓ Payment Submitted',
-          `Amount: ₱${Number(amount).toFixed(2)}\nReference: ${referenceNumber}\n\nYour payment is pending verification. The admin will confirm it shortly.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setLoading(false);
-                onBack();
-                if (onPaymentSuccess) onPaymentSuccess();
-              },
-            },
-          ]
-        );
-      } else {
-        Alert.alert('Error', data.error || 'Failed to submit payment');
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error('Payment submission error:', err);
-      Alert.alert('Error', 'Failed to submit payment: ' + err.message);
-      setLoading(false);
-    }
-  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }}>
