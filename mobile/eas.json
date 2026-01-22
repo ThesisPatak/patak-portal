@@ -7,13 +7,15 @@
     "production": {
       "android": {
         "buildType": "apk",
-        "credentialsSource": "remote"
+        "credentialsSource": "remote",
+        "gradleCommand": ":app:assembleRelease"
       }
     },
     "preview": {
       "android": {
         "buildType": "apk",
-        "credentialsSource": "remote"
+        "credentialsSource": "remote",
+        "gradleCommand": ":app:assembleRelease"
       }
     }
   },
