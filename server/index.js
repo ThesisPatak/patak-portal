@@ -1528,27 +1528,15 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   }
 
   try {
-    // Create a PayMongo checkout session with the amount
+    // Create a PayMongo payment intent with the amount
     // Amount is in centavos (₱1 = 100 centavos)
-    const checkoutPayload = {
+    const paymentIntentPayload = {
       data: {
         attributes: {
           amount: parseInt(amount), // amount in centavos
           currency: 'PHP',
           description: description || 'Water Bill Payment',
-          line_items: [
-            {
-              name: 'Water Bill',
-              quantity: 1,
-              amount: parseInt(amount),
-              currency: 'PHP',
-              description: description
-            }
-          ],
-          payment_method_types: ['gcash', 'paymaya', 'dob_ph', 'dob_ubp'], // Enable multiple payment methods
-          success_url: 'https://patak-portal-production.up.railway.app/payment-success',
-          cancel_url: 'https://patak-portal-production.up.railway.app/payment-cancel',
-          reference_number: reference,
+          statement_descriptor: 'PATAK Water Bill',
           metadata: {
             userId: userId,
             billingMonth: billingMonth,
@@ -1559,45 +1547,61 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
       }
     }
 
-    // Create checkout via PayMongo API
-    const checkoutResponse = await fetch('https://api.paymongo.com/v1/checkouts', {
+    console.log('[PAYMONGO-CREATE] Sending payment intent payload:', JSON.stringify(paymentIntentPayload, null, 2))
+
+    // Create payment intent via PayMongo API
+    const intentResponse = await fetch('https://api.paymongo.com/v1/payment_intents', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(PAYMONGO_SECRET_KEY + ':').toString('base64')}`
+        'Authorization': `Basic ${Buffer.from(PAYMONGO_SECRET_KEY).toString('base64')}`
       },
-      body: JSON.stringify(checkoutPayload)
+      body: JSON.stringify(paymentIntentPayload)
     })
 
-    const checkoutData = await checkoutResponse.json()
+    const intentData = await intentResponse.json()
 
-    if (!checkoutResponse.ok) {
-      console.error('[PAYMONGO-CREATE] ❌ PayMongo API error:', checkoutData)
-      return res.status(400).json({ error: 'Failed to create checkout session', details: checkoutData })
+    if (!intentResponse.ok) {
+      console.error('[PAYMONGO-CREATE] ❌ PayMongo API error:', intentData)
+      // Fallback: Generate simple QR code with reference number
+      console.log('[PAYMONGO-CREATE] ⚠️ Falling back to reference-based QR code')
+      
+      const referenceQRData = `PATAK-${reference}-${amount}`
+      const fallbackQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(referenceQRData)}`
+      
+      return res.json({
+        qrCode: fallbackQrUrl,
+        reference: reference,
+        amount: amount,
+        amountDisplay: `₱${(amount / 100).toFixed(2)}`,
+        description: description,
+        fallback: true,
+        message: 'QR code generated. Please contact support if payment fails.'
+      })
     }
 
-    const checkoutId = checkoutData.data.id
-    const checkoutUrl = checkoutData.data.attributes.checkout_url
+    const intentId = intentData.data.id
+    const clientKey = intentData.data.attributes.client_key
     
-    // Get QR code from PayMongo's checkout URL
-    // PayMongo generates QR automatically, we encode the URL as QR
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(checkoutUrl)}`
+    // For QR code, we'll create a reference that user can use
+    const qrData = `https://patak-portal-production.up.railway.app/pay/${reference}`
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`
 
-    console.log(`[PAYMONGO-CREATE] ✓ Checkout created: ${checkoutId}`)
-    console.log(`[PAYMONGO-CREATE] Checkout URL: ${checkoutUrl}`)
+    console.log(`[PAYMONGO-CREATE] ✓ Payment intent created: ${intentId}`)
 
     res.json({
       qrCode: qrCodeUrl,
-      checkoutUrl: checkoutUrl,
-      checkoutId: checkoutId,
+      paymentIntentId: intentId,
       reference: reference,
       amount: amount,
       amountDisplay: `₱${(amount / 100).toFixed(2)}`,
-      description: description
+      description: description,
+      clientKey: clientKey
     })
   } catch (err) {
     console.error('[PAYMONGO-CREATE] ❌ Error:', err.message)
-    res.status(500).json({ error: 'Failed to create checkout', message: err.message })
+    console.error('[PAYMONGO-CREATE] Stack:', err.stack)
+    res.status(500).json({ error: 'Failed to create payment', message: err.message })
   }
 })
 
