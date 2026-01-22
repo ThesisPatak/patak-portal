@@ -1528,74 +1528,74 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   }
 
   try {
-    // Create a PayMongo payment intent with the amount
-    // Amount is in centavos (₱1 = 100 centavos)
-    const paymentIntentPayload = {
+    // Use PayMongo's QR Code API directly for actual QRPh codes
+    const qrPayload = {
       data: {
         attributes: {
           amount: parseInt(amount), // amount in centavos
           currency: 'PHP',
           description: description || 'Water Bill Payment',
-          statement_descriptor: 'PATAK Water',
-          payment_method_allowed: ['gcash', 'paymaya'], // Specify allowed methods
-          // Flat metadata (not nested)
-          'metadata[userId]': userId.toString(),
-          'metadata[billingMonth]': billingMonth.toString(),
-          'metadata[billingYear]': billingYear.toString(),
-          'metadata[reference]': reference
+          reference_number: reference,
+          type: 'individual'
         }
       }
     }
 
-    console.log('[PAYMONGO-CREATE] Sending payment intent payload to PayMongo...')
+    console.log(`[PAYMONGO-CREATE] Creating PayMongo QR code for ₱${amount / 100}...`)
 
-    // Create payment intent via PayMongo API
-    const intentResponse = await fetch('https://api.paymongo.com/v1/payment_intents', {
+    // Create QR code via PayMongo QR API
+    const qrResponse = await fetch('https://api.paymongo.com/v1/qr_codes', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${Buffer.from(PAYMONGO_SECRET_KEY).toString('base64')}`
       },
-      body: JSON.stringify(paymentIntentPayload)
+      body: JSON.stringify(qrPayload)
     })
 
-    const intentData = await intentResponse.json()
+    const qrResponseData = await qrResponse.json()
 
-    if (!intentResponse.ok) {
-      console.error('[PAYMONGO-CREATE] ❌ PayMongo API error:', JSON.stringify(intentData, null, 2))
-      return res.status(400).json({ error: 'Failed to create payment intent', details: intentData })
+    // If QR API works, use the actual QR image
+    if (qrResponse.ok && qrResponseData.data && qrResponseData.data.attributes) {
+      const qrId = qrResponseData.data.id
+      const qrImage = qrResponseData.data.attributes.source?.url || qrResponseData.data.attributes.image_url
+      
+      console.log(`[PAYMONGO-CREATE] ✓ PayMongo QR code created: ${qrId}`)
+      
+      if (qrImage) {
+        return res.json({
+          qrCode: qrImage,
+          qrId: qrId,
+          reference: reference,
+          amount: amount,
+          amountDisplay: `₱${(amount / 100).toFixed(2)}`,
+          description: description,
+          isPayMongoQR: true
+        })
+      }
     }
 
-    const intentId = intentData.data.id
-    const clientKey = intentData.data.attributes.client_key
-    const nextAction = intentData.data.attributes.next_action
+    // Fallback: If QR API fails, create reference-based payment
+    console.log(`[PAYMONGO-CREATE] ⚠️ QR API unavailable, using reference-based approach`)
+    console.log(`[PAYMONGO-CREATE] Response:`, JSON.stringify(qrResponseData, null, 2))
     
-    console.log(`[PAYMONGO-CREATE] ✓ Payment intent created: ${intentId}`)
-    
-    // Check if there's a redirect URL for QR
-    let qrCodeUrl = null
-    if (nextAction && nextAction.type === 'redirect' && nextAction.redirect && nextAction.redirect.url) {
-      qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(nextAction.redirect.url)}`
-      console.log(`[PAYMONGO-CREATE] ✓ Redirect URL available for QR`)
-    } else {
-      // Fallback: Create QR from reference
-      const fallbackUrl = `https://patak-portal-production.up.railway.app/pay/${reference}`
-      qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(fallbackUrl)}`
-      console.log(`[PAYMONGO-CREATE] Using fallback QR reference`)
-    }
+    const paymentReference = `PAT${Date.now().toString().slice(-8)}`
+    const referenceData = `PATAK:${paymentReference}:${(amount / 100).toFixed(2)}`
+    const fallbackQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(referenceData)}`
 
     res.json({
-      qrCode: qrCodeUrl,
-      paymentIntentId: intentId,
+      qrCode: fallbackQrUrl,
+      paymentReference: paymentReference,
       reference: reference,
       amount: amount,
       amountDisplay: `₱${(amount / 100).toFixed(2)}`,
       description: description,
-      clientKey: clientKey
+      instructions: `Use Reference: ${paymentReference}`,
+      isFallback: true
     })
+    
   } catch (err) {
     console.error('[PAYMONGO-CREATE] ❌ Error:', err.message)
-    console.error('[PAYMONGO-CREATE] Stack:', err.stack)
     res.status(500).json({ error: 'Failed to create payment', message: err.message })
   }
 })
