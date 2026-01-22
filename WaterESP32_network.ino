@@ -416,10 +416,7 @@ void setup() {
   lcd->clear();
 
   // Print static labels once (no clearing later)
-  lcd->setCursor(0,0); lcd->print("Flow:");
-  lcd->setCursor(13,0); lcd->print("L/m");
-
-  lcd->setCursor(0,1); lcd->print("Pulses:");
+  lcd->setCursor(5,0); lcd->print("PATAK");  // Centered
 
   lcd->setCursor(0,2); lcd->print("Total L:");
 
@@ -600,18 +597,6 @@ void loop() {
     Serial.println();
 
     // --- LCD updates WITHOUT clearing whole screen ---
-    // Row 0: Flow value at col 6, reserve width 7 (e.g. "123.456")
-    char flowBuf[12];
-    dtostrf(flowLPerMin, 7, 3, flowBuf); // width 7, 3 decimals (pads left)
-    lcdPrintPadded(6, 0, flowBuf, 7);
-
-    // Row 0 has "L/m" at col13 already
-
-    // Row 1: Pulses at col 8, reserve width 7
-    char pulsesBuf[12];
-    snprintf(pulsesBuf, sizeof(pulsesBuf), "%7lu", (unsigned long)pulses);
-    lcdPrintPadded(8, 1, pulsesBuf, 7);
-
     // Row 2: Total L at col 8, reserve width 7 (3 decimals)
     char totalBuf[12];
     dtostrf(totalLiters, 7, 3, totalBuf);

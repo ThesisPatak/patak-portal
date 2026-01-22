@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PATAK Portal - QR Payment Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .flow-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .phone-mockup {
+            background: white;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #000;
+            border-radius: 0 0 25px 25px;
+            z-index: 10;
+        }
+
+        .phone-screen {
+            background: #f5f5f5;
+            border-radius: 30px;
+            overflow: hidden;
+            aspect-ratio: 9/16;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 60px 20px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .step-label {
+            text-align: center;
+            font-size: 0.9em;
+            color: #999;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .screen-content h2 {
+            color: #0066CC;
+            font-size: 1.6em;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .screen-content .subtitle {
+            color: #999;
+            font-size: 0.9em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .bill-card {
+            background: #f0f8ff;
+            border-left: 4px solid #0066CC;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .bill-card-label {
+            color: #666;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .bill-card-value {
+            color: #0066CC;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .bill-card.amount {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            margin-top: 12px;
+        }
+
+        .bill-card.amount .bill-card-value {
+            font-size: 2.2em;
+            color: #0066CC;
+        }
+
+        .qr-section {
+            background: #f0fff4;
+            border-left: 4px solid #059669;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-section h3 {
+            color: #059669;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .qr-code-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd),
+                        linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-color: white;
+            border: 2px solid #059669;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qr-code::before {
+            content: '📱 QR CODE';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #059669;
+            font-size: 0.8em;
+            font-weight: 700;
+            text-align: center;
+            width: 100%;
+        }
+
+        .qr-section p {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 8px;
+        }
+
+        .button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .button-primary {
+            background: #059669;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #047857;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .button-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .button-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .instructions {
+            background: #f8fbff;
+            border-left: 4px solid #0066CC;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .instructions h3 {
+            color: #0057b8;
+            font-size: 1em;
+            margin-bottom: 12px;
+        }
+
+        .instruction-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: #0066CC;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 0.9em;
+        }
+
+        .step-text {
+            flex: 1;
+        }
+
+        .step-text .step-title {
+            font-weight: 700;
+            color: #0057b8;
+            font-size: 0.95em;
+        }
+
+        .step-text .step-desc {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 2px;
+        }
+
+        .info-message {
+            background: #dbeafe;
+            border-left: 4px solid #0066CC;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: #0057b8;
+            margin: 15px 0;
+        }
+
+        .security-info {
+            background: #f0fff4;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            color: #059669;
+            margin-top: 15px;
+        }
+
+        .security-info strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .flow-container {
+                grid-template-columns: 1fr;
+            }
+            .flow-arrow {
+                transform: rotate(90deg);
+                height: auto;
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .demo-note {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 40px;
+            text-align: center;
+            font-size: 1em;
+        }
+
+        .demo-note strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .features {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .features h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border-left: 4px solid #0066CC;
+        }
+
+        .feature-card h3 {
+            color: #0066CC;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .check {
+            color: #059669;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 PATAK Portal - QR Payment Flow</h1>
+            <p>Real PayMongo Integration with Amount Display</p>
+        </div>
+
+        <div class="flow-container">
+            <!-- Screen 1: Bill Summary -->
+            <div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="screen-content">
+                            <div class="step-label">STEP 1: View Bill</div>
+                            <h2>💳 QR Code Payment</h2>
+                            <p class="subtitle">Fast • Secure • Instant</p>
+
+                            <div class="bill-card">
+                                <div class="bill-card-label">ACCOUNT</div>
+                                <div class="bill-card-value">House 1</div>
+                            </div>
+
+                            <div class="bill-card">
+                                <div class="bill-card-label">BILLING PERIOD</div>
+                                <div class="bill-card-value" style="font-size: 1em;">Jan 2026 - Feb 2026</div>
+                            </div>
+
+                            <div class="bill-card amount">
+                                <div class="bill-card-label">AMOUNT DUE</div>
+                                <div class="bill-card-value">₱750.00</div>
+                            </div>
+
+                            <div class="instructions" style="margin-top: 20px; margin-bottom: 10px;">
+                                <h3>📋 How to Pay</h3>
+                                <div class="instruction-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-text">
+                                        <div class="step-title">Open Payment App</div>
+                                        <div class="step-desc">GCash, Maya, OnePay, etc.</div>
+                                    </div>
+                                </div>
+                                <div class="instruction-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-text">
+                                        <div class="step-title">Scan QR Code</div>
+                                        <div class="step-desc">Point camera at code</div>
+                                    </div>
+                                </div>
+                                <div class="instruction-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-text">
+                                        <div class="step-title">Complete Payment</div>
+                                        <div class="step-desc">Confirm and send</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="button button-primary">📱 Generate QR Code & Pay</button>
+                            <button class="button button-secondary">← Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-arrow">
+                ↓
+            </div>
+
+            <!-- Screen 2: QR Code Display -->
+            <div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="screen-content">
+                            <div class="step-label">STEP 2: Scan QR</div>
+                            <h2>💳 QR Code Payment</h2>
+                            <p class="subtitle">Fast • Secure • Instant</p>
+
+                            <div class="bill-card">
+                                <div class="bill-card-label">ACCOUNT</div>
+                                <div class="bill-card-value">House 1</div>
+                            </div>
+
+                            <div class="bill-card amount">
+                                <div class="bill-card-label">AMOUNT DUE</div>
+                                <div class="bill-card-value">₱750.00</div>
+                            </div>
+
+                            <div class="qr-section">
+                                <h3>📱 Scan to Pay</h3>
+                                <div class="qr-code-box">
+                                    <div class="qr-code"></div>
+                                </div>
+                                <p>Use any payment app: GCash, Maya, OnePay, etc.</p>
+                            </div>
+
+                            <div class="info-message">
+                                ℹ️ <strong>Payment Processing</strong><br>
+                                After you scan and complete payment in your payment app, your account will be automatically updated within 1-2 minutes.
+                            </div>
+
+                            <div class="security-info">
+                                <strong>🔒 Secure Payment</strong>
+                                Your payment is protected by PayMongo's secure payment gateway. Your account will not be charged until payment is successfully confirmed.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-arrow">
+                ↓
+            </div>
+
+            <!-- Screen 3: Payment Confirmed -->
+            <div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="screen-content">
+                            <div class="step-label">STEP 3: Complete</div>
+                            <h2 style="color: #059669;">✓ Payment Received</h2>
+                            <p class="subtitle">Thank you!</p>
+
+                            <div class="bill-card" style="background: #f0fff4; border-left-color: #059669; margin-top: 20px;">
+                                <div class="bill-card-label">STATUS</div>
+                                <div class="bill-card-value" style="color: #059669;">PAID</div>
+                            </div>
+
+                            <div class="bill-card">
+                                <div class="bill-card-label">AMOUNT PAID</div>
+                                <div class="bill-card-value">₱750.00</div>
+                            </div>
+
+                            <div class="bill-card">
+                                <div class="bill-card-label">TRANSACTION ID</div>
+                                <div class="bill-card-value" style="font-size: 0.85em;">PM-2026-001234567</div>
+                            </div>
+
+                            <div class="bill-card">
+                                <div class="bill-card-label">PAYMENT DATE</div>
+                                <div class="bill-card-value" style="font-size: 0.95em;">Jan 22, 2026</div>
+                            </div>
+
+                            <div class="info-message" style="background: #f0fff4; border-left-color: #059669; color: #059669; margin-top: 20px;">
+                                ✓ <strong>Payment Confirmed</strong><br>
+                                Your bill has been paid successfully. Thank you!
+                            </div>
+
+                            <button class="button button-primary" style="background: #059669; margin-top: 20px;">← Back to Dashboard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-note">
+            <strong>✅ Ready for Professor Demo!</strong>
+            Real PayMongo Integration • Amount Display on QR • Automatic Payment Verification • Free Development Keys
+        </div>
+
+        <div class="features">
+            <h2>✨ Key Features Implemented</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Real PayMongo API</h3>
+                    <p><span class="check">✓</span>Creates actual checkout sessions with embedded amount information</p>
+                </div>
+                <div class="feature-card">
+                    <h3>QR with Amount</h3>
+                    <p><span class="check">✓</span>QR code encodes PayMongo checkout URL containing ₱ amount</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Multiple Payment Methods</h3>
+                    <p><span class="check">✓</span>GCash, Maya, OnePay, UBP - all supported via PayMongo</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Auto Verification</h3>
+                    <p><span class="check">✓</span>Webhook automatically confirms payment (no manual button needed)</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Test-Ready</h3>
+                    <p><span class="check">✓</span>Free PayMongo test keys available - no real charges during demo</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Production Ready</h3>
+                    <p><span class="check">✓</span>Simple key swap to go live when deployed to production</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

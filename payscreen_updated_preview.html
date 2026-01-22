@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayScreen - Updated Payment Flow Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #fff;
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .back-button {
+            display: inline-block;
+            background: #f5f5f5;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            transition: background 0.2s;
+        }
+        
+        .back-button:hover {
+            background: #e0e0e0;
+        }
+        
+        .scroll-view {
+            padding: 16px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+        
+        .title-section {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .title-section h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0066CC;
+            margin-bottom: 8px;
+        }
+        
+        .title-section p {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .card {
+            background: #f8fbff;
+            border-left: 4px solid #0066CC;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+        
+        .card.success {
+            background: #f0fff4;
+            border-left-color: #059669;
+        }
+        
+        .card-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .card-value {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0057b8;
+            margin-bottom: 16px;
+        }
+        
+        .amount-due {
+            border-top: 1px solid #ddd;
+            padding-top: 16px;
+        }
+        
+        .amount-due .card-label {
+            margin-bottom: 8px;
+        }
+        
+        .amount-due .amount-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: #0066CC;
+        }
+        
+        .qr-section {
+            background: #f0fff4;
+            border-left: 4px solid #059669;
+            padding: 24px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .qr-section.active {
+            display: block;
+        }
+        
+        .qr-section h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 16px;
+        }
+        
+        .qr-code {
+            width: 250px;
+            height: 250px;
+            background: #fff;
+            border: 2px solid #059669;
+            border-radius: 8px;
+            margin: 0 auto 16px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            line-height: 1.5;
+        }
+        
+        .qr-section p {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        .instructions-card {
+            background: #f8fbff;
+            border-left: 4px solid #0066CC;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+        
+        .instructions-card h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0057b8;
+            margin-bottom: 16px;
+        }
+        
+        .instruction-step {
+            display: flex;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #0066CC;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0057b8;
+            margin-bottom: 2px;
+        }
+        
+        .step-content p {
+            font-size: 12px;
+            color: #555;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .button-primary-green {
+            background: #059669;
+            color: white;
+        }
+        
+        .button-primary-green:hover {
+            background: #047857;
+        }
+        
+        .button-primary-blue {
+            background: #0066CC;
+            color: white;
+        }
+        
+        .button-primary-blue:hover {
+            background: #0052a3;
+        }
+        
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .security-card {
+            background: #f0fff4;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .security-card h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 8px;
+        }
+        
+        .security-card p {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .step-indicator {
+            display: inline-block;
+            background: #e0e0e0;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .step-indicator.step-1 {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .step-indicator.step-2 {
+            background: #059669;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button">← Back</button>
+        </div>
+        
+        <div class="scroll-view">
+            <!-- Step Indicator -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div id="stepIndicator" class="step-indicator step-1">STEP 1: Generate QR Code</div>
+            </div>
+            
+            <!-- Title Section -->
+            <div class="title-section">
+                <h1>💳 QR Code Payment</h1>
+                <p>Fast • Secure • Instant</p>
+            </div>
+            
+            <!-- Bill Summary Card -->
+            <div class="card">
+                <div style="margin-bottom: 16px;">
+                    <div class="card-label">Account</div>
+                    <div class="card-value">John Doe - Household 5</div>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <div class="card-label">Billing Period</div>
+                    <div class="card-value" style="font-size: 18px;">Jan 2026 - Feb 2026</div>
+                </div>
+                
+                <div class="amount-due">
+                    <div class="card-label">Amount Due</div>
+                    <div class="amount-value">₱1,255.50</div>
+                </div>
+            </div>
+            
+            <!-- QR Code Section (Hidden until button clicked) -->
+            <div id="qrSection" class="qr-section">
+                <h3>📱 Scan to Pay</h3>
+                <div class="qr-code">
+                    [QR CODE IMAGE<br>Will display here after<br>clicking "Generate QR Code & Pay"]
+                </div>
+                <p>Use any payment app: GCash, Maya, OnePay, etc.</p>
+            </div>
+            
+            <!-- Instructions Card -->
+            <div class="instructions-card">
+                <h3>📋 How to Pay</h3>
+                
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Open Your Payment App</h4>
+                        <p>GCash, Maya, OnePay, etc.</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Scan This QR Code</h4>
+                        <p>Point your camera at the code</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Complete Payment</h4>
+                        <p>Confirm amount and send</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Generate QR Button (Step 1) -->
+            <button id="generateBtn" class="button button-primary-green" onclick="generateQR()">
+                📱 Generate QR Code & Pay
+            </button>
+            
+            <!-- Submit Payment Button (Step 2 - Hidden until QR generated) -->
+            <button id="submitBtn" class="button button-primary-blue" onclick="submitPayment()" style="display: none;">
+                ✓ Confirm & Submit Payment
+            </button>
+            
+            <!-- Security Info -->
+            <div class="security-card">
+                <h3>🔒 Secure Payment</h3>
+                <p>Your payment is protected by PayMongo's secure payment gateway. Your account will not be charged until payment is successfully confirmed.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function generateQR() {
+            // Hide generate button
+            document.getElementById('generateBtn').style.display = 'none';
+            
+            // Show QR section
+            document.getElementById('qrSection').classList.add('active');
+            
+            // Show submit button
+            document.getElementById('submitBtn').style.display = 'block';
+            
+            // Update step indicator
+            document.getElementById('stepIndicator').textContent = 'STEP 2: Scan & Submit Payment';
+            document.getElementById('stepIndicator').classList.remove('step-1');
+            document.getElementById('stepIndicator').classList.add('step-2');
+            
+            // Scroll to QR code
+            document.getElementById('qrSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function submitPayment() {
+            alert('✓ Payment Submitted\n\nAmount: ₱1,255.50\nReference: REF-xxxxx\n\nScan the QR code above with any payment app (GCash, Maya, etc.)');
+        }
+    </script>
+</body>
+</html>
