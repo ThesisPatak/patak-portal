@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
@@ -8,7 +8,6 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const house = payInfo?.house ?? username ?? 'Account';
   const billingMonth = payInfo?.billingMonth || new Date().getMonth() + 1;
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
-  const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -59,49 +58,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
     }
   };
 
-  const handlePaymentSubmit = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/submit-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amount: Number(amount),
-          billingMonth: billingMonth,
-          billingYear: billingYear,
-          referenceNumber: referenceNumber,
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        Alert.alert(
-          '✓ Payment Submitted',
-          `Amount: ₱${Number(amount).toFixed(2)}\nReference: ${referenceNumber}\n\nScan the QR code above with any payment app (GCash, Maya, etc.)`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                onBack();
-                if (onPaymentSuccess) onPaymentSuccess();
-              },
-            },
-          ]
-        );
-        setLoading(false);
-      } else {
-        Alert.alert('Error', data.error || 'Failed to submit payment');
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error('Payment error:', err);
-      Alert.alert('Error', 'Failed to submit payment: ' + err.message);
-      setLoading(false);
-    }
-  };
+  // Payment verification happens automatically via webhook after user scans QR and completes payment
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }}>
@@ -236,36 +193,16 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </TouchableOpacity>
         )}
 
-        {/* Submit Payment Button - Only after QR generated */}
+        {/* Info: After QR is scanned, payment will be verified automatically */}
         {showQR && (
-          <>
-            {/* Confirm Payment Button */}
-            <TouchableOpacity
-              onPress={handlePaymentSubmit}
-              disabled={loading}
-              style={[
-                styles.primaryButton,
-                {
-                  opacity: loading ? 0.6 : 1,
-                  width: '100%',
-                  backgroundColor: '#0066CC',
-                  paddingVertical: SPACING.base + 4,
-                  marginBottom: SPACING.base,
-                }
-              ]}
-            >
-              {loading ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                  <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
-                  <Text style={[styles.primaryButtonText]}>Processing...</Text>
-                </View>
-              ) : (
-                <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
-                  ✓ Confirm & Submit Payment
-                </Text>
-              )}
-            </TouchableOpacity>
-          </>
+          <View style={[styles.card, { backgroundColor: '#dbeafe', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
+            <Text style={{ fontSize: TYPO.smallSize, color: '#0057b8', fontWeight: '700', marginBottom: SPACING.small }}>
+              ℹ️ Payment Processing
+            </Text>
+            <Text style={{ fontSize: TYPO.smallSize - 1, color: '#0057b8', lineHeight: 18 }}>
+              After you scan and complete payment in your payment app, your account will be automatically updated within 1-2 minutes.
+            </Text>
+          </View>
         )}
 
         {/* Security Info */}

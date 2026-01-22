@@ -1511,7 +1511,7 @@ app.post('/api/gcash/webhook', (req, res) => {
 // ==================== PAYMONGO PAYMENT ENDPOINTS ====================
 
 // PayMongo: Create QR checkout link
-app.post('/api/paymongo/create-checkout', authMiddleware, (req, res) => {
+app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
   const { amount, description, billingMonth, billingYear, reference } = req.body
   const userId = req.user.userId
@@ -1520,26 +1520,84 @@ app.post('/api/paymongo/create-checkout', authMiddleware, (req, res) => {
   console.log(`[PAYMONGO-CREATE] User: ${req.user.username}, Amount: ₱${amount / 100}`)
 
   const PAYMONGO_PUBLIC_KEY = process.env.PAYMONGO_PUBLIC_KEY
-  if (!PAYMONGO_PUBLIC_KEY) {
-    console.error('[PAYMONGO-CREATE] ❌ PAYMONGO_PUBLIC_KEY not configured')
+  const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY
+  
+  if (!PAYMONGO_PUBLIC_KEY || !PAYMONGO_SECRET_KEY) {
+    console.error('[PAYMONGO-CREATE] ❌ PayMongo keys not configured')
     return res.status(500).json({ error: 'PayMongo not configured' })
   }
 
   try {
-    // For mobile app, generate a QR code URL for the user to scan
-    // Using PayMongo's test QR code endpoint (replace with actual API if needed)
-    const qrCode = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==`
+    // Create a PayMongo checkout session with the amount
+    // Amount is in centavos (₱1 = 100 centavos)
+    const checkoutPayload = {
+      data: {
+        attributes: {
+          amount: parseInt(amount), // amount in centavos
+          currency: 'PHP',
+          description: description || 'Water Bill Payment',
+          line_items: [
+            {
+              name: 'Water Bill',
+              quantity: 1,
+              amount: parseInt(amount),
+              currency: 'PHP',
+              description: description
+            }
+          ],
+          payment_method_types: ['gcash', 'paymaya', 'dob_ph', 'dob_ubp'], // Enable multiple payment methods
+          success_url: 'https://patak-portal-production.up.railway.app/payment-success',
+          cancel_url: 'https://patak-portal-production.up.railway.app/payment-cancel',
+          reference_number: reference,
+          metadata: {
+            userId: userId,
+            billingMonth: billingMonth,
+            billingYear: billingYear,
+            reference: reference
+          }
+        }
+      }
+    }
+
+    // Create checkout via PayMongo API
+    const checkoutResponse = await fetch('https://api.paymongo.com/v1/checkouts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Buffer.from(PAYMONGO_SECRET_KEY + ':').toString('base64')}`
+      },
+      body: JSON.stringify(checkoutPayload)
+    })
+
+    const checkoutData = await checkoutResponse.json()
+
+    if (!checkoutResponse.ok) {
+      console.error('[PAYMONGO-CREATE] ❌ PayMongo API error:', checkoutData)
+      return res.status(400).json({ error: 'Failed to create checkout session', details: checkoutData })
+    }
+
+    const checkoutId = checkoutData.data.id
+    const checkoutUrl = checkoutData.data.attributes.checkout_url
     
+    // Get QR code from PayMongo's checkout URL
+    // PayMongo generates QR automatically, we encode the URL as QR
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(checkoutUrl)}`
+
+    console.log(`[PAYMONGO-CREATE] ✓ Checkout created: ${checkoutId}`)
+    console.log(`[PAYMONGO-CREATE] Checkout URL: ${checkoutUrl}`)
+
     res.json({
-      qrCode: qrCode,
-      checkoutUrl: `https://checkout.paymongo.com/${reference}`,
+      qrCode: qrCodeUrl,
+      checkoutUrl: checkoutUrl,
+      checkoutId: checkoutId,
       reference: reference,
       amount: amount,
+      amountDisplay: `₱${(amount / 100).toFixed(2)}`,
       description: description
     })
   } catch (err) {
-    console.error('[PAYMONGO-CREATE] ❌', err.message)
-    res.status(500).json({ error: 'Failed to create checkout' })
+    console.error('[PAYMONGO-CREATE] ❌ Error:', err.message)
+    res.status(500).json({ error: 'Failed to create checkout', message: err.message })
   }
 })
 
