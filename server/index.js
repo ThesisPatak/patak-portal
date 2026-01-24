@@ -1548,12 +1548,15 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(PAYMONGO_SECRET_KEY).toString('base64')}`
+        'Authorization': `Basic ${Buffer.from(`${PAYMONGO_SECRET_KEY}:`).toString('base64')}`
       },
       body: JSON.stringify(qrPayload)
     })
 
     const qrResponseData = await qrResponse.json()
+    
+    console.log(`[PAYMONGO-CREATE] QR API Response Status: ${qrResponse.status}`)
+    console.log(`[PAYMONGO-CREATE] QR API Response:`, JSON.stringify(qrResponseData, null, 2))
 
     // If QR API works, use the actual QR image
     if (qrResponse.ok && qrResponseData.data && qrResponseData.data.attributes) {
