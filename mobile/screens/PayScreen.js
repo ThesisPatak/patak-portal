@@ -39,7 +39,16 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error:', response.status, errorData);
+        Alert.alert('Error', `Server error: ${errorData.error || 'Unknown error'}`);
+        return;
+      }
+
       const data = await response.json();
+      console.log('QR Code Response:', data);
+      
       if (data.qrCode) {
         setQrCode(data.qrCode);
         setShowQR(true);
@@ -48,7 +57,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         setQrCode(data.checkoutUrl);
         setShowQR(true);
       } else {
-        Alert.alert('Error', 'Failed to generate QR code');
+        console.error('No QR code or checkout URL in response:', data);
+        Alert.alert('Error', 'Failed to generate QR code - no payment URL returned');
       }
     } catch (err) {
       console.error('Failed to fetch QR code:', err);
