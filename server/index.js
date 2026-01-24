@@ -1528,73 +1528,79 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   }
 
   try {
-    // Use PayMongo's QR Code API directly for actual QRPh codes
-    const qrPayload = {
+    // Use PayMongo's Checkout Sessions API (works with test keys)
+    const checkoutPayload = {
       data: {
         attributes: {
           amount: parseInt(amount), // amount in centavos
           currency: 'PHP',
           description: description || 'Water Bill Payment',
-          reference_number: reference,
-          type: 'individual'
+          line_items: [
+            {
+              name: description || 'Water Bill Payment',
+              quantity: 1,
+              amount: parseInt(amount)
+            }
+          ],
+          reference_number: reference || `PATAK-${Date.now()}`,
+          success_url: `https://patak-portal-production.up.railway.app/payment/success?reference=${reference}`,
+          cancel_url: `https://patak-portal-production.up.railway.app/payment/cancel`,
+          payment_method_types: ['gcash', 'card', 'doku'],
+          send_email_receipt: false,
+          show_description: true,
+          show_line_items: true
         }
       }
     }
 
-    console.log(`[PAYMONGO-CREATE] Creating PayMongo QR code for ₱${amount / 100}...`)
+    console.log(`[PAYMONGO-CREATE] Creating PayMongo Checkout Session for ₱${amount / 100}...`)
 
-    // Create QR code via PayMongo QR API
-    const qrResponse = await fetch('https://api.paymongo.com/v1/qr_codes', {
+    // Create checkout session via PayMongo Checkout API
+    const checkoutResponse = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${Buffer.from(`${PAYMONGO_SECRET_KEY}:`).toString('base64')}`
       },
-      body: JSON.stringify(qrPayload)
+      body: JSON.stringify(checkoutPayload)
     })
 
-    const qrResponseData = await qrResponse.json()
+    const checkoutData = await checkoutResponse.json()
     
-    console.log(`[PAYMONGO-CREATE] QR API Response Status: ${qrResponse.status}`)
-    console.log(`[PAYMONGO-CREATE] QR API Response:`, JSON.stringify(qrResponseData, null, 2))
+    console.log(`[PAYMONGO-CREATE] Checkout API Response Status: ${checkoutResponse.status}`)
+    console.log(`[PAYMONGO-CREATE] Checkout API Response:`, JSON.stringify(checkoutData, null, 2))
 
-    // If QR API works, use the actual QR image
-    if (qrResponse.ok && qrResponseData.data && qrResponseData.data.attributes) {
-      const qrId = qrResponseData.data.id
-      const qrImage = qrResponseData.data.attributes.source?.url || qrResponseData.data.attributes.image_url
+    // If Checkout API works, use the checkout URL
+    if (checkoutResponse.ok && checkoutData.data && checkoutData.data.attributes) {
+      const checkoutId = checkoutData.data.id
+      const checkoutUrl = checkoutData.data.attributes.checkout_url
+      const referenceNum = checkoutData.data.attributes.reference_number
       
-      console.log(`[PAYMONGO-CREATE] ✓ PayMongo QR code created: ${qrId}`)
+      console.log(`[PAYMONGO-CREATE] ✓ PayMongo Checkout Session created: ${checkoutId}`)
+      console.log(`[PAYMONGO-CREATE] Checkout URL: ${checkoutUrl}`)
       
-      if (qrImage) {
+      if (checkoutUrl) {
+        // Generate QR code from the checkout URL
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(checkoutUrl)}`
+        
         return res.json({
-          qrCode: qrImage,
-          qrId: qrId,
-          reference: reference,
+          qrCode: qrCodeUrl,
+          checkoutUrl: checkoutUrl,
+          checkoutId: checkoutId,
+          reference: referenceNum,
           amount: amount,
           amountDisplay: `₱${(amount / 100).toFixed(2)}`,
           description: description,
-          isPayMongoQR: true
+          paymentMethod: 'paymongo_checkout'
         })
       }
     }
 
-    // Fallback: If QR API fails, create reference-based payment
-    console.log(`[PAYMONGO-CREATE] ⚠️ QR API unavailable, using reference-based approach`)
-    console.log(`[PAYMONGO-CREATE] Response:`, JSON.stringify(qrResponseData, null, 2))
-    
-    const paymentReference = `PAT${Date.now().toString().slice(-8)}`
-    const referenceData = `PATAK:${paymentReference}:${(amount / 100).toFixed(2)}`
-    const fallbackQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(referenceData)}`
-
-    res.json({
-      qrCode: fallbackQrUrl,
-      paymentReference: paymentReference,
-      reference: reference,
-      amount: amount,
-      amountDisplay: `₱${(amount / 100).toFixed(2)}`,
-      description: description,
-      instructions: `Use Reference: ${paymentReference}`,
-      isFallback: true
+    // If checkout fails, return error with details
+    console.log(`[PAYMONGO-CREATE] ❌ Checkout creation failed`)
+    return res.status(400).json({ 
+      error: 'Failed to create checkout session',
+      details: checkoutData.errors || 'Unknown error'
     })
     
   } catch (err) {
