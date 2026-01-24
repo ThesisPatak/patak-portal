@@ -1546,7 +1546,7 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
           reference_number: reference || `PATAK-${Date.now()}`,
           success_url: `https://patak-portal-production.up.railway.app/payment/success?reference=${reference}`,
           cancel_url: `https://patak-portal-production.up.railway.app/payment/cancel`,
-          payment_method_types: ['gcash', 'card', 'paymongo_wallet'],
+          payment_method_types: ['gcash', 'card'],
           send_email_receipt: false,
           show_description: true,
           show_line_items: true
