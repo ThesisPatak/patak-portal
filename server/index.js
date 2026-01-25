@@ -1531,9 +1531,10 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
   const { amount, description, billingMonth, billingYear, reference } = req.body
   const userId = req.user.userId
+  const username = req.user.username
 
   console.log(`\n[${timestamp}] [PAYMONGO-CREATE] Creating checkout`)
-  console.log(`[PAYMONGO-CREATE] User: ${req.user.username}, Amount: ₱${amount / 100}`)
+  console.log(`[PAYMONGO-CREATE] User: ${username}, Amount: ₱${amount / 100}, Billing: ${billingMonth}/${billingYear}`)
 
   const PAYMONGO_PUBLIC_KEY = process.env.PAYMONGO_PUBLIC_KEY
   const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY
@@ -1543,7 +1544,33 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'PayMongo not configured' })
   }
 
+  if (!billingMonth || !billingYear) {
+    console.error('[PAYMONGO-CREATE] ❌ Missing billingMonth or billingYear')
+    return res.status(400).json({ error: 'Billing month and year required' })
+  }
+
   try {
+    // Store pending payment FIRST with billing month/year so webhook can find it later
+    const referenceNum = reference || `PATAK-${Date.now()}`
+    const pendingPayment = {
+      id: `paymongo-${Date.now()}`,
+      userId,
+      username,
+      amount: parseFloat(amount / 100),
+      billingMonth: parseInt(billingMonth),
+      billingYear: parseInt(billingYear),
+      referenceNumber: referenceNum,
+      submittedAt: timestamp,
+      status: 'pending_verification',
+      paymentMethod: 'paymongo'
+    }
+
+    // Store in payments.json
+    const payments = readJSON(PAYMENTS_FILE)
+    payments.push(pendingPayment)
+    writeJSON(PAYMENTS_FILE, payments)
+    console.log(`[PAYMONGO-CREATE] ✓ Pending payment stored for ${username}: ${referenceNum}`)
+
     // Use PayMongo's Checkout Sessions API (works with test keys)
     const checkoutPayload = {
       data: {
@@ -1559,8 +1586,8 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
               currency: 'PHP'
             }
           ],
-          reference_number: reference || `PATAK-${Date.now()}`,
-          success_url: `https://patak-portal-production.up.railway.app/payment/success?reference=${reference}`,
+          reference_number: referenceNum,
+          success_url: `https://patak-portal-production.up.railway.app/payment/success?reference=${referenceNum}`,
           cancel_url: `https://patak-portal-production.up.railway.app/payment/cancel`,
           payment_method_types: ['gcash', 'card'],
           send_email_receipt: false,
@@ -1591,7 +1618,6 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
     if (checkoutResponse.ok && checkoutData.data && checkoutData.data.attributes) {
       const checkoutId = checkoutData.data.id
       const checkoutUrl = checkoutData.data.attributes.checkout_url
-      const referenceNum = checkoutData.data.attributes.reference_number
       
       console.log(`[PAYMONGO-CREATE] ✓ PayMongo Checkout Session created: ${checkoutId}`)
       console.log(`[PAYMONGO-CREATE] Checkout URL: ${checkoutUrl}`)
