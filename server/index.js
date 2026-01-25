@@ -661,36 +661,26 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       return res.status(400).json({ error: `Corrupted meter reading data for device ${device.deviceId}` })
     }
     
-    // Calculate consumption by billing period (billing starts from user's account createdAt day each month)
-    // Get the user's billing start day
-    const userCreatedDate = new Date(device.createdAt || Date.now())
-    const billingStartDay = userCreatedDate.getDate()
+    // Get payment history for this user to find period baselines
+    const userPayments = readJSON(PAYMENTS_FILE).filter(p => p.userId === userId)
     
-    // Get readings for current billing period (from day 19 of current month to now)
-    const now = new Date()
-    let currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), billingStartDay)
-    if (now < currentPeriodStart) {
-      // If today is before the billing day, go back to previous month's billing date
-      currentPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, billingStartDay)
+    // Find the previous payment's meter reading (this is the baseline for current consumption)
+    const previousPayment = userPayments
+      .filter(p => 
+        p.billingMonth === now.getMonth() + 1 && 
+        p.billingYear === now.getFullYear() &&
+        (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
+      )
+      .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))[0]
+    
+    // Current Consumption = Latest meter reading - Previous period baseline
+    // If no previous payment, use meter reading from account creation (first ever reading)
+    let periodStartMeterReading = 0
+    if (previousPayment && typeof previousPayment.meterReadingAtPayment === 'number') {
+      periodStartMeterReading = previousPayment.meterReadingAtPayment
     }
     
-    // Calculate previous period start
-    let previousPeriodStart = new Date(currentPeriodStart)
-    previousPeriodStart.setMonth(previousPeriodStart.getMonth() - 1)
-    
-    const currentPeriodReadings = sortedReadings.filter(r => {
-      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
-      const date = new Date(r.receivedAt || r.timestamp)
-      return date >= currentPeriodStart && date <= now
-    })
-    const previousPeriodReadings = sortedReadings.filter(r => {
-      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
-      const date = new Date(r.receivedAt || r.timestamp)
-      return date >= previousPeriodStart && date < currentPeriodStart
-    })
-    
-    // Current Consumption = latest meter reading from ESP32 (cumulative total)
-    const currentConsumption = currentConsumptionValue
+    const currentPeriodConsumption = Math.max(0, currentConsumptionValue - periodStartMeterReading)
     
     // Previous Consumption = readings in previous period (latest in period - oldest in period)
     const previousConsumption = previousPeriodReadings.length > 0
@@ -698,10 +688,10 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       : 0
     
     // Total Consumption = sum of current and previous consumption
-    const totalConsumptionValue = currentConsumption + previousConsumption
+    const totalConsumptionValue = currentPeriodConsumption + previousConsumption
     
-    // Since ESP32 sends cumulative totals, use latest reading value as monthly consumption
-    const monthlyConsumption = currentConsumptionValue
+    // Since ESP32 sends cumulative totals, use period consumption for billing (not cumulative total)
+    const monthlyConsumption = currentPeriodConsumption
     const monthlyBill = calculateWaterBill(monthlyConsumption)
     const estimatedMonthlyBill = calculateWaterBill(monthlyConsumption * (30 / (new Date().getDate())))
     
@@ -713,12 +703,12 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       status: isOnline ? 'online' : 'offline',
       lastSeen: device.lastSeen,
       isOnline: isOnline,
-      cubicMeters: currentConsumptionValue,
-      currentConsumption: currentConsumption,
-      previousConsumption: previousConsumption,
-      totalConsumption: totalConsumptionValue,
-      totalLiters: currentConsumptionValue * 1000,
-      monthlyConsumption: monthlyConsumption,
+      cubicMeters: currentConsumptionValue,  // Latest cumulative meter reading from ESP32
+      currentConsumption: currentPeriodConsumption,  // Usage THIS period ONLY
+      previousConsumption: previousConsumption,      // Usage from PREVIOUS period
+      totalConsumption: totalConsumptionValue,      // Sum of current + previous
+      totalLiters: currentPeriodConsumption * 1000,  // THIS period in liters
+      monthlyConsumption: monthlyConsumption,       // Consumption for billing
       monthlyBill: monthlyBill,
       estimatedMonthlyBill: Math.ceil(estimatedMonthlyBill),
       hasAlert: hasAlert,
@@ -728,7 +718,9 @@ app.get('/api/houses', authMiddleware, (req, res) => {
         cubicMeters: lastReading.cubicMeters,
         liters: (lastReading.cubicMeters || 0) * 1000
       } : null,
-      readingsCount: deviceReadings.length
+      readingsCount: deviceReadings.length,
+      // IMPORTANT: Also return meter baseline for client consumption calculations
+      periodStartMeterReading: periodStartMeterReading
     }
     
     totalBill += monthlyBill
@@ -1488,33 +1480,88 @@ app.post('/api/payments/record', authMiddleware, (req, res) => {
     return res.status(400).json({ error: 'Billing month and year required' })
   }
   
-  const payments = readJSON(PAYMENTS_FILE)
-  
-  // Create new payment record
-  const newPayment = {
-    id: `payment-${Date.now()}`,
-    userId,
-    username,
-    amount: parseFloat(amount),
-    paymentDate: timestamp,
-    billingMonth: parseInt(billingMonth),
-    billingYear: parseInt(billingYear),
-    paymentMethod: paymentMethod || 'manual',
-    status: 'confirmed'
+  try {
+    // Get current meter reading from latest ESP32 reading for this user's devices
+    const devices = readJSON(DEVICES_FILE)
+    const userDevices = devices.filter(d => d.ownerUserId === userId)
+    
+    const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+    let allReadings = []
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+    }
+    
+    // Get latest meter reading for user's devices
+    let currentMeterReading = 0
+    if (userDevices.length > 0) {
+      const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+      if (userReadings.length > 0) {
+        const latestReading = userReadings.sort((a, b) => 
+          new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp)
+        )[0]
+        currentMeterReading = latestReading.cubicMeters || 0
+      }
+    }
+    
+    // Get previous payment to find the meter reading at that time (becomes baseline for consumption)
+    const payments = readJSON(PAYMENTS_FILE)
+    const previousPayment = payments
+      .filter(p => p.username === username)
+      .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))[0]
+    
+    // Previous meter reading = meter reading when last payment was made
+    // For first payment, this would be 0 (or first reading after account creation)
+    let previousMeterReading = 0
+    if (previousPayment && previousPayment.meterReadingAtPayment) {
+      previousMeterReading = previousPayment.meterReadingAtPayment
+    } else if (userDevices.length > 0) {
+      // For first payment, get the reading from when account was created
+      const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+      if (userReadings.length > 0) {
+        const firstReading = userReadings.sort((a, b) => 
+          new Date(a.receivedAt || a.timestamp) - new Date(b.receivedAt || b.timestamp)
+        )[0]
+        previousMeterReading = firstReading.cubicMeters || 0
+      }
+    }
+    
+    // Calculate consumption for this billing period
+    const consumptionThisPeriod = Math.max(0, currentMeterReading - previousMeterReading)
+    
+    // Create new payment record with meter readings
+    const newPayment = {
+      id: `payment-${Date.now()}`,
+      userId,
+      username,
+      amount: parseFloat(amount),
+      paymentDate: timestamp,
+      billingMonth: parseInt(billingMonth),
+      billingYear: parseInt(billingYear),
+      paymentMethod: paymentMethod || 'manual',
+      status: 'confirmed',
+      // IMPORTANT: Store meter readings for consumption calculation
+      meterReadingAtPayment: currentMeterReading,    // Latest meter reading when payment made
+      previousMeterReading: previousMeterReading,    // Baseline from last payment
+      consumptionThisPeriod: consumptionThisPeriod   // Actual usage this period
+    }
+    
+    payments.push(newPayment)
+    writeJSON(PAYMENTS_FILE, payments)
+    
+    // Log payment with consumption details
+    if (paymentMethod === 'gcash') {
+      console.log(`[RECORD-PAYMENT] ✓ GCash payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear}`)
+      console.log(`[RECORD-PAYMENT] Meter: ${previousMeterReading} → ${currentMeterReading} (Consumption: ${consumptionThisPeriod.toFixed(3)} m³)`)
+    } else {
+      console.log(`[RECORD-PAYMENT] ✓ Payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear} via ${paymentMethod}`)
+      console.log(`[RECORD-PAYMENT] Meter: ${previousMeterReading} → ${currentMeterReading} (Consumption: ${consumptionThisPeriod.toFixed(3)} m³)`)
+    }
+    
+    res.json({ ok: true, message: 'Payment recorded successfully', payment: newPayment })
+  } catch (err) {
+    console.error(`[RECORD-PAYMENT] ✗ Error:`, err.message)
+    res.status(500).json({ error: 'Failed to record payment: ' + err.message })
   }
-  
-  payments.push(newPayment)
-  writeJSON(PAYMENTS_FILE, payments)
-  
-  // Log payment with method-specific details
-  if (paymentMethod === 'gcash') {
-    console.log(`[RECORD-PAYMENT] ✓ GCash payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear}`)
-    console.log(`[RECORD-PAYMENT] Transaction ID: ${newPayment.id}`)
-  } else {
-    console.log(`[RECORD-PAYMENT] ✓ Payment recorded for ${username}: ₱${amount} for ${billingMonth}/${billingYear} via ${paymentMethod}`)
-  }
-  
-  res.json({ ok: true, message: 'Payment recorded successfully', payment: newPayment })
 })
 
 // GCash: Webhook endpoint for payment confirmations (optional integration)

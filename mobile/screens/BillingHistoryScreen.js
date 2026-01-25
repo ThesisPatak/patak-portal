@@ -102,13 +102,26 @@ function generateBillingHistory(readings, createdAt, payments = []) {
       statusIcon = '📅';
     }
     
-    // For current period, show latest meter reading. For past periods, show difference between readings
-    if (billStatus === 'Current') {
-      consumption = latestMeterReading;
-    } else if (periodReadings.length > 0) {
+    // Calculate consumption as DIFFERENCE between period readings (not cumulative total)
+    // This properly resets with each billing period
+    if (periodReadings.length > 0) {
       const firstReading = periodReadings[0];
       const lastReading = periodReadings[periodReadings.length - 1];
+      // Consumption = Meter at period end - Meter at period start
       consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+    } else if (billStatus === 'Current') {
+      // No readings this period yet, use meter reading from last payment as baseline
+      const billingMonth = periodStartDate.getMonth() + 1;
+      const billingYear = periodStartDate.getFullYear();
+      const lastPayment = payments.find(p => 
+        p.billingMonth === billingMonth && 
+        p.billingYear === billingYear &&
+        p.meterReadingAtPayment !== undefined
+      );
+      if (lastPayment) {
+        // Consumption = Current meter - meter at last payment
+        consumption = Math.max(0, latestMeterReading - lastPayment.meterReadingAtPayment);
+      }
     }
     
     const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
