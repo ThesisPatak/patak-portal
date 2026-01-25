@@ -1591,20 +1591,14 @@ app.post('/api/payments/record', authMiddleware, (req, res) => {
       .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))[0]
     
     // Previous meter reading = meter reading when last payment was made
-    // For first payment, this would be 0 (or first reading after account creation)
+    // For first payment, baseline is 0 (account starts with 0 consumption)
     let previousMeterReading = 0
     if (previousPayment && previousPayment.meterReadingAtPayment) {
       previousMeterReading = previousPayment.meterReadingAtPayment
-    } else if (userDevices.length > 0) {
-      // For first payment, get the reading from when account was created
-      const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
-      if (userReadings.length > 0) {
-        const firstReading = userReadings.sort((a, b) => 
-          new Date(a.receivedAt || a.timestamp) - new Date(b.receivedAt || b.timestamp)
-        )[0]
-        previousMeterReading = firstReading.cubicMeters || 0
-      }
     }
+    // For first payment with no previous payment: baseline stays 0
+    // This way consumption = currentMeterReading - 0 = actual consumption ✓
+    // Next payment will use currentMeterReading as new baseline ✓
     
     // Calculate consumption for this billing period
     const consumptionThisPeriod = Math.max(0, currentMeterReading - previousMeterReading)
