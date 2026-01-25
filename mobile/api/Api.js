@@ -85,18 +85,32 @@ const Api = {
   // Returns: { device: { deviceId, owner, houseId }, deviceToken }
   registerDevice: async (authToken, deviceId, houseId = null, meta = {}) => {
     const baseUrl = await Api.getServerUrl();
-    const res = await fetch(`${baseUrl}/devices/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-      body: JSON.stringify({ deviceId, houseId, meta })
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      const err = new Error('Device registration failed: ' + text);
-      err.status = res.status;
-      throw err;
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+    
+    try {
+      const res = await fetch(`${baseUrl}/devices/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+        body: JSON.stringify({ deviceId, houseId, meta }),
+        signal: controller.signal
+      })
+      clearTimeout(timeoutId)
+      
+      if (!res.ok) {
+        const text = await res.text()
+        const err = new Error(`HTTP ${res.status}: ${text}`)
+        err.status = res.status
+        throw err
+      }
+      return res.json()
+    } catch (err) {
+      clearTimeout(timeoutId)
+      if (err.name === 'AbortError') {
+        throw new Error('Device registration timeout - check your internet connection')
+      }
+      throw err
     }
-    return res.json();
   },
 
   // Reset readings for a house (admin function)

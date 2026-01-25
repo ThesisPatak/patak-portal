@@ -319,25 +319,33 @@ function generateId(prefix = 'id') {
 // Minimum: 255.00 PHP for up to 10 m³
 // Excess rates: 11-20: 33.00, 21-30: 40.50, 31-40: 48.00, 41+: 55.50 PHP per m³
 function calculateWaterBill(cubicMeters) {
-  const MINIMUM_CHARGE = 255.00
+  // Validate input
+  if (!Number.isFinite(cubicMeters) || cubicMeters < 0) {
+    console.error(`[BILL] Invalid cubic meters value: ${cubicMeters}`)
+    return 255.00 // Return minimum as fallback
+  }
+  
+  const MINIMUM_CHARGE_CENTS = 25500 // 255.00 PHP in cents
   const FREE_USAGE = 10 // cubic meters included in minimum
   
   if (cubicMeters <= FREE_USAGE) {
-    return MINIMUM_CHARGE
+    return MINIMUM_CHARGE_CENTS / 100
   }
   
   const excess = cubicMeters - FREE_USAGE
-  let excessCharge = 0
+  let excessChargeCents = 0
   
-  // Apply tiered rates for usage above 10 m³
+  // Apply tiered rates for usage above 10 m³ (use cents to avoid float precision)
   const tier1 = Math.min(excess, 10)           // 11-20 m³: 33.00 per m³
   const tier2 = Math.min(Math.max(excess - 10, 0), 10)  // 21-30 m³: 40.50 per m³
   const tier3 = Math.min(Math.max(excess - 20, 0), 10)  // 31-40 m³: 48.00 per m³
   const tier4 = Math.max(excess - 30, 0)      // 41+ m³: 55.50 per m³
   
-  excessCharge = (tier1 * 33.00) + (tier2 * 40.50) + (tier3 * 48.00) + (tier4 * 55.50)
+  // All math in cents to avoid float precision errors
+  excessChargeCents = Math.round((tier1 * 3300) + (tier2 * 4050) + (tier3 * 4800) + (tier4 * 5550))
   
-  return Math.round((MINIMUM_CHARGE + excessCharge) * 100) / 100 // Round to 2 decimals
+  // Convert back to PHP (round to 2 decimal places)
+  return Math.round((MINIMUM_CHARGE_CENTS + excessChargeCents)) / 100
 }
 
 function authMiddleware(req, res, next) {
@@ -461,26 +469,30 @@ app.post('/auth/login', async (req, res) => {
   res.json({ token, user: { id: user.id, email: user.email, username: user.username, createdAt: user.createdAt } })
 })
 
-// Admin login endpoint (same as regular login, but with admin role checking)
+// Admin login endpoint (requires isAdmin flag)
 app.post('/auth/admin-login', async (req, res) => {
   const { username, password } = req.body || {}
   if (!username || !password) return res.status(400).json({ error: 'username and password required' })
   console.log(`[ADMIN-LOGIN] Attempting login for username: ${username}`)
   const users = readJSON(USERS_FILE)
   console.log(`[ADMIN-LOGIN] Total users in file: ${users.length}`)
-  console.log(`[ADMIN-LOGIN] Users list:`, users.map(u => ({id: u.id, username: u.username})))
+  console.log(`[ADMIN-LOGIN] Users list:`, users.map(u => ({id: u.id, username: u.username, isAdmin: u.isAdmin})))
   const user = users.find(u => u.username === username)
   if (!user) {
     console.log(`[ADMIN-LOGIN] User ${username} not found`)
     return res.status(401).json({ error: 'Invalid credentials' })
   }
-  console.log(`[ADMIN-LOGIN] User found. Comparing password...`)
+  console.log(`[ADMIN-LOGIN] User found. Checking admin status...`)
+  if (!user.isAdmin) {
+    console.log(`[ADMIN-LOGIN] ✗ User ${username} is not an admin (isAdmin=${user.isAdmin})`)
+    return res.status(403).json({ error: 'Admin access denied' })
+  }
+  console.log(`[ADMIN-LOGIN] User is admin. Comparing password...`)
   const ok = await bcrypt.compare(password, user.passwordHash)
   console.log(`[ADMIN-LOGIN] Password check result: ${ok}`)
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
-  // For now, any user can be admin. In production, add an isAdmin flag to users
   const token = jwt.sign({ userId: user.id, username: user.username, isAdmin: true }, JWT_SECRET, { expiresIn: '24h' })
-  console.log(`[ADMIN-LOGIN] Admin login successful for ${username}`)
+  console.log(`[ADMIN-LOGIN] ✓ Admin login successful for ${username}`)
   res.json({ token, user: { id: user.id, username: user.username, createdAt: user.createdAt } })
 })
 
@@ -642,6 +654,12 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     })
     
     const currentConsumptionValue = lastReading ? (lastReading.cubicMeters || 0) : 0
+    
+    // Validate meter reading - must be a finite positive number
+    if (!Number.isFinite(currentConsumptionValue) || currentConsumptionValue < 0) {
+      console.error(`[HOUSES] Invalid meter reading for device ${device.deviceId}: ${currentConsumptionValue}`)
+      return res.status(400).json({ error: `Corrupted meter reading data for device ${device.deviceId}` })
+    }
     
     // Calculate consumption by billing period (billing starts from user's account createdAt day each month)
     // Get the user's billing start day
@@ -997,10 +1015,11 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     console.log(`[DEVICE-REGISTER] Device already exists: ${!!exists}`)
     
     // Generate device token (JWT that ESP32 can use to authenticate)
+    // 10 year expiration allows stable operation during 1-month test and beyond
     const deviceToken = jwt.sign(
       { deviceId, type: 'device' },
       JWT_SECRET,
-      { expiresIn: '1y' }
+      { expiresIn: '10y' }
     )
     console.log(`[DEVICE-REGISTER] Generated device token`)
     
@@ -1055,10 +1074,11 @@ app.post('/devices/send-token', authMiddleware, async (req, res) => {
   }
   
   // Generate fresh device token
+  // 10 year expiration allows stable operation during 1-month test and beyond
   const deviceToken = jwt.sign(
     { deviceId, type: 'device' },
     JWT_SECRET,
-    { expiresIn: '1y' }
+    { expiresIn: '10y' }
   )
   
   try {
@@ -1105,10 +1125,11 @@ app.post('/devices/link', authMiddleware, async (req, res) => {
   }
   
   // Generate fresh device token
+  // 10 year expiration allows stable operation during 1-month test and beyond
   const deviceToken = jwt.sign(
     { deviceId, type: 'device' },
     JWT_SECRET,
-    { expiresIn: '1y' }
+    { expiresIn: '10y' }
   )
   
   // Store as pending token - ESP32 will claim it when it connects
