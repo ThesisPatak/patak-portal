@@ -2211,6 +2211,175 @@ app.post('/admin/reset-device-readings', authMiddleware, (req, res) => {
   res.json({ ok: true, message: `Readings cleared for device ${deviceId} and reset requested` })
 })
 
+// ==================== PAYMENT CALLBACK ROUTES ====================
+// PayMongo redirects to these URLs after payment
+app.get('/payment/success', (req, res) => {
+  const { reference } = req.query
+  const timestamp = new Date().toISOString()
+  
+  console.log(`\n[${timestamp}] [PAYMENT-SUCCESS] Payment success callback`)
+  console.log(`[PAYMENT-SUCCESS] Reference: ${reference}`)
+  
+  // Send HTML response to user
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Payment Successful</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          margin: 0;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+          text-align: center;
+          background: white;
+          padding: 40px;
+          border-radius: 10px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+          max-width: 500px;
+        }
+        .success-icon {
+          font-size: 60px;
+          margin-bottom: 20px;
+          animation: bounce 1s ease-in-out;
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+        h1 {
+          color: #059669;
+          margin: 0 0 10px 0;
+        }
+        p {
+          color: #666;
+          margin: 10px 0;
+        }
+        .reference {
+          background: #f3f3f3;
+          padding: 10px;
+          margin: 20px 0;
+          border-radius: 5px;
+          word-break: break-all;
+          font-size: 14px;
+          font-family: monospace;
+        }
+        .message {
+          color: #0057b8;
+          font-size: 16px;
+          margin: 20px 0;
+        }
+        .close-btn {
+          background: #0057b8;
+          color: white;
+          border: none;
+          padding: 10px 30px;
+          border-radius: 5px;
+          font-size: 16px;
+          cursor: pointer;
+          margin-top: 20px;
+        }
+        .close-btn:hover {
+          background: #003d7a;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="success-icon">✅</div>
+        <h1>Payment Successful!</h1>
+        <p>Thank you for your payment.</p>
+        <div class="message">Your bill has been marked as paid.</div>
+        <div class="reference">Reference: ${reference || 'N/A'}</div>
+        <p style="font-size: 14px; color: #999;">You can now close this window.</p>
+        <button class="close-btn" onclick="window.close()">Close</button>
+      </div>
+    </body>
+    </html>
+  `)
+})
+
+app.get('/payment/cancel', (req, res) => {
+  const timestamp = new Date().toISOString()
+  
+  console.log(`\n[${timestamp}] [PAYMENT-CANCEL] Payment cancelled`)
+  
+  // Send HTML response to user
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Payment Cancelled</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          margin: 0;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+          text-align: center;
+          background: white;
+          padding: 40px;
+          border-radius: 10px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+          max-width: 500px;
+        }
+        .cancel-icon {
+          font-size: 60px;
+          margin-bottom: 20px;
+        }
+        h1 {
+          color: #ff6b6b;
+          margin: 0 0 10px 0;
+        }
+        p {
+          color: #666;
+          margin: 10px 0;
+        }
+        .message {
+          color: #ff6b6b;
+          font-size: 16px;
+          margin: 20px 0;
+        }
+        .close-btn {
+          background: #0057b8;
+          color: white;
+          border: none;
+          padding: 10px 30px;
+          border-radius: 5px;
+          font-size: 16px;
+          cursor: pointer;
+          margin-top: 20px;
+        }
+        .close-btn:hover {
+          background: #003d7a;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="cancel-icon">❌</div>
+        <h1>Payment Cancelled</h1>
+        <p>Your payment was not completed.</p>
+        <div class="message">Please try again or contact support if you need help.</div>
+        <p style="font-size: 14px; color: #999;">You can now close this window.</p>
+        <button class="close-btn" onclick="window.close()">Close</button>
+      </div>
+    </body>
+    </html>
+  `)
+})
+
 // 404 catch-all handler (must be AFTER all other routes and static files)
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.path, method: req.method })
