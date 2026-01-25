@@ -112,6 +112,24 @@ function initializeData() {
       console.log(`[INIT] ⚠ Payments file corrupted:`, e.message)
     }
   }
+
+  // Initialize readings file if not exists (CRITICAL: required by /api/houses and other endpoints)
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  if (!fs.existsSync(READINGS_FILE)) {
+    console.log(`[INIT] Readings file does not exist, creating...`)
+    fs.writeFileSync(READINGS_FILE, JSON.stringify([], null, 2))
+  } else {
+    console.log(`[INIT] Readings file exists, loading...`)
+    try {
+      const existing = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+      if (Array.isArray(existing)) {
+        console.log(`[INIT] ✓ Loaded ${existing.length} readings from persistent storage`)
+      }
+    } catch (e) {
+      console.log(`[INIT] ⚠ Readings file corrupted:`, e.message)
+      fs.writeFileSync(READINGS_FILE, JSON.stringify([], null, 2))
+    }
+  }
 }
 
 function ensureDataFiles() {
@@ -742,6 +760,43 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   }
 })
 
+// User: Get billing history (payment records with meter baselines for consumption tracking)
+app.get('/api/billing-history', authMiddleware, (req, res) => {
+  const userId = req.user.userId
+  
+  try {
+    const users = readJSON(USERS_FILE)
+    const user = users.find(u => u.id === userId)
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+    
+    const payments = readJSON(PAYMENTS_FILE)
+    const userPayments = payments
+      .filter(p => p.userId === userId)
+      .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
+    
+    // Return payment history with meter baselines for consumption calculation
+    const history = userPayments.map(p => ({
+      id: p.id,
+      amount: p.amount,
+      paymentDate: p.paymentDate,
+      billingMonth: p.billingMonth,
+      billingYear: p.billingYear,
+      status: p.status,
+      paymentMethod: p.paymentMethod || 'manual',
+      meterReadingAtPayment: p.meterReadingAtPayment || 0,
+      consumptionThisPeriod: p.consumptionThisPeriod || 0
+    }))
+    
+    console.log(`[BILLING-HISTORY] ✓ Returned ${history.length} payment records for user ${userId}`)
+    res.json({ history, userCreatedAt: user.createdAt })
+  } catch (err) {
+    console.error('[BILLING-HISTORY] ERROR:', err.message)
+    res.status(500).json({ error: 'Failed to load billing history' })
+  }
+})
+
 // ESP32 Device readings submission (no auth for now, can add device token validation later)
 app.post('/api/readings', async (req, res) => {
   const timestamp = new Date().toISOString()
@@ -776,17 +831,43 @@ app.post('/api/readings', async (req, res) => {
   const { house, totalLiters, cubicMeters, timestamp: reqTimestamp } = req.body || {}
   console.log(`[ESP32-READING] Parsed reading data: house=${house}, totalLiters=${totalLiters}, cubicMeters=${cubicMeters}, deviceId=${deviceId}`)
   
+  // CRITICAL VALIDATION: Ensure all values are valid numbers
   if (!house || totalLiters === undefined || cubicMeters === undefined) {
     console.log(`[ESP32-READING] ✗ REJECTED - Missing required fields`)
     return res.status(400).json({ error: 'house, totalLiters, and cubicMeters required' })
   }
-  if (cubicMeters < 0 || totalLiters < 0) {
-    console.log(`[ESP32-READING] ✗ REJECTED - Negative reading values`)
-    return res.status(400).json({ error: 'Readings cannot be negative' })
+  
+  // Validate data types
+  if (typeof cubicMeters !== 'number' || !Number.isFinite(cubicMeters)) {
+    console.error(`[ESP32-READING] ✗ REJECTED - cubicMeters must be a valid number, got: ${typeof cubicMeters} (${cubicMeters})`)
+    return res.status(400).json({ error: 'cubicMeters must be a valid number' })
   }
-  if (cubicMeters > 1000000 || totalLiters > 1000000000) {
-    console.log(`[ESP32-READING] ✗ REJECTED - Reading value exceeds maximum`)
-    return res.status(400).json({ error: 'Reading value exceeds maximum allowed' })
+  
+  if (typeof totalLiters !== 'number' || !Number.isFinite(totalLiters)) {
+    console.error(`[ESP32-READING] ✗ REJECTED - totalLiters must be a valid number, got: ${typeof totalLiters} (${totalLiters})`)
+    return res.status(400).json({ error: 'totalLiters must be a valid number' })
+  }
+  
+  // Validate ranges
+  if (cubicMeters < 0) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Negative cubicMeters: ${cubicMeters}`)
+    return res.status(400).json({ error: 'cubicMeters cannot be negative' })
+  }
+  
+  if (totalLiters < 0) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Negative totalLiters: ${totalLiters}`)
+    return res.status(400).json({ error: 'totalLiters cannot be negative' })
+  }
+  
+  // Sanity check: maximum values (meter rarely exceeds 1000 m³)
+  if (cubicMeters > 1000000) {
+    console.log(`[ESP32-READING] ✗ REJECTED - cubicMeters exceeds maximum: ${cubicMeters}`)
+    return res.status(400).json({ error: 'cubicMeters exceeds maximum allowed value' })
+  }
+  
+  if (totalLiters > 1000000000) {
+    console.log(`[ESP32-READING] ✗ REJECTED - totalLiters exceeds maximum: ${totalLiters}`)
+    return res.status(400).json({ error: 'totalLiters exceeds maximum allowed value' })
   }
   
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
