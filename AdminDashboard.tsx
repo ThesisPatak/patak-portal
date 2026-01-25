@@ -683,9 +683,6 @@ const AdminDashboard: React.FC = () => {
                               Due Date
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Bill Status
-                            </th>
-                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Action
                             </th>
                           </tr>
@@ -734,11 +731,6 @@ const AdminDashboard: React.FC = () => {
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
                                 {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
-                              </td>
-                              <td style={{ padding: "1rem", textAlign: "center" }}>
-                                <span style={{ color: billStatus.color, fontWeight: 600, fontSize: "0.9rem" }}>
-                                  {billStatus.text}
-                                </span>
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
                                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
