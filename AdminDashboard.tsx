@@ -1149,11 +1149,14 @@ const AdminDashboard: React.FC = () => {
                                 );
                                 
                                 if (payment) {
+                                  const paymentDate = payment.verifiedAt || payment.submittedAt || payment.paidAt;
+                                  const formattedDate = paymentDate ? new Date(paymentDate).toLocaleDateString() : 'Unknown';
+                                  
                                   return (
                                     <div style={{ fontSize: isMobile ? "0.75rem" : "0.85rem" }}>
                                       <div style={{ color: '#4caf50', fontWeight: 600 }}>✅ Paid ₱{parseFloat(payment.amount).toFixed(2)}</div>
                                       <div style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '2px' }}>
-                                        {new Date(payment.paymentDate).toLocaleDateString()}
+                                        {formattedDate}
                                       </div>
                                     </div>
                                   );
