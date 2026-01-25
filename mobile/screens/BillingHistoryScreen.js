@@ -31,7 +31,7 @@ function computeResidentialBill(usage) {
   return Number(total.toFixed(2));
 }
 
-function generateBillingHistory(readings, createdAt) {
+function generateBillingHistory(readings, createdAt, payments = []) {
   const history = [];
   const now = new Date();
 
@@ -117,6 +117,24 @@ function generateBillingHistory(readings, createdAt) {
     // Total consumption only for past/current periods, 0 for upcoming
     const totalConsumption = (billStatus === 'Upcoming') ? '0.000000' : latestMeterReading.toFixed(6);
     
+    // Calculate billing month and year for this period
+    const billingMonth = periodStartDate.getMonth() + 1;
+    const billingYear = periodStartDate.getFullYear();
+    
+    // Check if payment exists and is verified for this billing period
+    const payment = payments.find(p => 
+      p.billingMonth === billingMonth && 
+      p.billingYear === billingYear && 
+      (p.status === 'verified' || p.status === 'PAID')
+    );
+    
+    // Update status to PAID if payment found
+    if (payment) {
+      billStatus = 'Paid';
+      statusColor = '#059669';
+      statusIcon = '✅';
+    }
+    
     history.push({
       month: monthStr,
       monthDate: periodStartDate,
@@ -127,6 +145,8 @@ function generateBillingHistory(readings, createdAt) {
       statusColor,
       statusIcon,
       dueDate: periodEndDate.toISOString().split('T')[0],
+      billingMonth,
+      billingYear,
     });
   }
   
@@ -162,24 +182,26 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
       const history = data.history || [];
       setReadings(history);
 
-      // Generate billing history - use dashboard userCreatedAt
-      const createdAt = dashboardRoot.userCreatedAt || new Date().toISOString();
-      const bills = generateBillingHistory(history, createdAt);
-      setBillingHistory(bills);
-      
-      // Get payment history
+      // Get payment history FIRST before generating billing history
+      let paymentsList = [];
       try {
         const paymentsRes = await fetch(`https://patak-portal-production.up.railway.app/api/payments/${encodeURIComponent(username)}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (paymentsRes.ok) {
           const paymentsData = await paymentsRes.json();
-          setPayments(paymentsData.payments || []);
+          paymentsList = paymentsData.payments || [];
+          setPayments(paymentsList);
         }
       } catch (paymentErr) {
         console.log('Could not load payments:', paymentErr);
         setPayments([]);
       }
+
+      // Generate billing history - use dashboard userCreatedAt
+      const createdAt = dashboardRoot.userCreatedAt || new Date().toISOString();
+      const bills = generateBillingHistory(history, createdAt, paymentsList);
+      setBillingHistory(bills);
     } catch (e) {
       console.error('Error loading data:', e);
       setError(e.message || 'Failed to load billing history');

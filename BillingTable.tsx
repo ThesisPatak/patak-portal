@@ -10,11 +10,14 @@ interface BillingPeriod {
   statusColor: string;
   statusIcon: string;
   dueDate: string;
+  billingMonth?: number;
+  billingYear?: number;
 }
 
 const BillingTable: React.FC = () => {
   const [billingHistory, setBillingHistory] = useState<BillingPeriod[]>([]);
   const [usageData, setUsageData] = useState<any>(null);
+  const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +48,7 @@ const BillingTable: React.FC = () => {
   }
 
   // Generates billing history based on first reading date + 1 month cycles
-  function generateBillingHistory(readings: any[], createdAt: string): BillingPeriod[] {
+  function generateBillingHistory(readings: any[], createdAt: string, payments: any[] = []): BillingPeriod[] {
     const history: BillingPeriod[] = [];
     const now = new Date();
 
@@ -133,6 +136,24 @@ const BillingTable: React.FC = () => {
       // Total consumption only for past/current periods, 0 for upcoming
       const totalConsumption = (billStatus === 'Upcoming') ? '0.000000' : latestMeterReading.toFixed(6);
 
+      // Calculate billing month and year for this period
+      const billingMonth = periodStartDate.getMonth() + 1;
+      const billingYear = periodStartDate.getFullYear();
+
+      // Check if payment exists and is verified for this billing period
+      const payment = payments.find(p => 
+        p.billingMonth === billingMonth && 
+        p.billingYear === billingYear && 
+        (p.status === 'verified' || p.status === 'PAID')
+      );
+
+      // Update status to PAID if payment found
+      if (payment) {
+        billStatus = 'Paid';
+        statusColor = '#059669';
+        statusIcon = '✅';
+      }
+
       history.push({
         month: monthStr,
         monthDate: periodStartDate,
@@ -143,6 +164,8 @@ const BillingTable: React.FC = () => {
         statusColor,
         statusIcon,
         dueDate: periodEndDate.toISOString().split('T')[0],
+        billingMonth,
+        billingYear,
       });
     }
 
@@ -156,23 +179,33 @@ const BillingTable: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Get dashboard and usage data
-        const [dashboardRes, usageRes] = await Promise.all([
+        // Get dashboard, usage data, and payment data
+        const [dashboardRes, usageRes, paymentsRes] = await Promise.all([
           fetch('/api/houses'),
           fetch('/api/user/readings'),
+          fetch('/api/payments').catch(() => ({ ok: false })),
         ]);
 
         if (dashboardRes.ok && usageRes.ok) {
           const dashboardData = await dashboardRes.json();
           const usageDataRaw = await usageRes.json();
+          let paymentsData: any[] = [];
+
+          // Fetch payments if endpoint available
+          if (paymentsRes.ok) {
+            const paymentResponse = await paymentsRes.json();
+            paymentsData = paymentResponse.payments || [];
+          }
 
           if (mounted) {
             setUsageData(dashboardData);
+            setPayments(paymentsData);
 
-            // Generate billing history matching mobile app logic
+            // Generate billing history with payment status
             const history = generateBillingHistory(
               usageDataRaw.history || [],
-              dashboardData.userCreatedAt || new Date().toISOString()
+              dashboardData.userCreatedAt || new Date().toISOString(),
+              paymentsData
             );
 
             setBillingHistory(history);

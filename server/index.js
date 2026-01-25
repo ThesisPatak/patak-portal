@@ -1904,6 +1904,15 @@ app.post('/api/admin/gcash/reject/:paymentId', authMiddleware, (req, res) => {
   }
 })
 
+// User: Get current user's payments
+app.get('/api/payments', authMiddleware, (req, res) => {
+  const username = req.user.username
+  const payments = readJSON(PAYMENTS_FILE)
+  const userPayments = payments.filter(p => p.username === username)
+  
+  res.json({ payments: userPayments })
+})
+
 // User/Admin: Get payments for a user
 app.get('/api/payments/:username', authMiddleware, (req, res) => {
   const { username } = req.params
