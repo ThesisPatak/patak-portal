@@ -171,6 +171,22 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
             </View>
           </View>
         </View>
+
+        {/* QR Code Instructions */}
+        <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
+          <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
+            📖 How to Pay
+          </Text>
+
+          <View style={{ marginBottom: SPACING.small }}>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
+                <Text style={{ color: 'white', fontWeight: '800' }}>1</Text>
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Click Pay Now</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>You will be taken to PayMongo</Text>
+              </View>
             </View>
 
             <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
@@ -178,7 +194,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                 <Text style={{ color: 'white', fontWeight: '800' }}>2</Text>
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Scan This QR Code</Text>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Scan QR Code</Text>
                 <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Point your camera at the code</Text>
               </View>
             </View>
