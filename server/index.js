@@ -96,6 +96,22 @@ function initializeData() {
       console.log(`[INIT] ⚠ Devices file corrupted:`, e.message)
     }
   }
+
+  // Initialize payments if not exists
+  if (!fs.existsSync(PAYMENTS_FILE)) {
+    console.log(`[INIT] Payments file does not exist, creating...`)
+    fs.writeFileSync(PAYMENTS_FILE, JSON.stringify([], null, 2))
+  } else {
+    console.log(`[INIT] Payments file exists, loading...`)
+    try {
+      const existing = JSON.parse(fs.readFileSync(PAYMENTS_FILE, 'utf8'))
+      if (Array.isArray(existing)) {
+        console.log(`[INIT] ✓ Loaded ${existing.length} payments from persistent storage`)
+      }
+    } catch (e) {
+      console.log(`[INIT] ⚠ Payments file corrupted:`, e.message)
+    }
+  }
 }
 
 function ensureDataFiles() {
