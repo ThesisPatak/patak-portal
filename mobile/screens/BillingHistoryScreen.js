@@ -128,11 +128,23 @@ function generateBillingHistory(readings, createdAt, payments = []) {
       (p.status === 'verified' || p.status === 'PAID')
     );
     
-    // Update status to PAID if payment found
-    if (payment) {
-      billStatus = 'Paid';
-      statusColor = '#059669';
-      statusIcon = '✅';
+    // Update status to PAID if payment found and is within billing period
+    let paymentDate = '';
+    if (payment && payment.createdAt) {
+      const paymentTime = new Date(payment.createdAt);
+      // Only show as PAID if payment was made during or within the billing period
+      if (paymentTime >= periodStartDate && paymentTime <= periodEndDate) {
+        billStatus = 'Paid';
+        statusColor = '#059669';
+        statusIcon = '✅';
+        paymentDate = new Date(payment.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
     }
     
     history.push({
@@ -147,6 +159,7 @@ function generateBillingHistory(readings, createdAt, payments = []) {
       dueDate: periodEndDate.toISOString().split('T')[0],
       billingMonth,
       billingYear,
+      paymentDate,
     });
   }
   
@@ -350,37 +363,26 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
 
                   <View>
                     <Text style={{ color: '#aaa', fontSize: 11, marginBottom: 2 }}>Status</Text>
-                    {(() => {
-                      const payment = payments.find(p => {
-                        const billDate = new Date(item.dueDate);
-                        return p.billingMonth === (billDate.getMonth() + 1) && p.billingYear === billDate.getFullYear();
-                      });
-                      
-                      if (payment) {
-                        return (
-                          <View>
-                            <Text style={{ color: '#4caf50', fontSize: 12, fontWeight: '600' }}>
-                              ✅ Paid
-                            </Text>
-                            <Text style={{ color: '#aaa', fontSize: 10, marginTop: 2 }}>
-                              on {new Date(payment.paymentDate).toLocaleDateString()}
-                            </Text>
-                          </View>
-                        );
-                      }
-                      
-                      return (
-                        <Text
-                          style={{
-                            color: item.statusColor || '#ff9800',
-                            fontSize: 12,
-                            fontWeight: '600',
-                          }}
-                        >
-                          {item.statusIcon} {item.billStatus}
+                    {item.billStatus === 'Paid' && item.paymentDate ? (
+                      <View>
+                        <Text style={{ color: '#059669', fontSize: 12, fontWeight: '600' }}>
+                          ✅ Paid
                         </Text>
-                      );
-                    })()}
+                        <Text style={{ color: '#aaa', fontSize: 10, marginTop: 2 }}>
+                          {item.paymentDate}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text
+                        style={{
+                          color: item.statusColor || '#ff9800',
+                          fontSize: 12,
+                          fontWeight: '600',
+                        }}
+                      >
+                        {item.statusIcon} {item.billStatus}
+                      </Text>
+                    )}
                   </View>
                 </View>
               );

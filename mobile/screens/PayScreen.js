@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Linking } from 'react-native';
 import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
@@ -8,9 +8,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const house = payInfo?.house ?? username ?? 'Account';
   const billingMonth = payInfo?.billingMonth || new Date().getMonth() + 1;
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
-  const [qrCode, setQrCode] = useState(null);
-  const [qrLoading, setQrLoading] = useState(false);
-  const [showQR, setShowQR] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
   // Month names for display
@@ -20,10 +18,10 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const nextYear = billingMonth === 12 ? billingYear + 1 : billingYear;
   const billingPeriod = `${startMonth} ${billingYear} - ${nextMonth} ${nextYear}`;
 
-  // Fetch PayMongo QR code
-  const generateQRCode = async () => {
+  // Request checkout URL and redirect to PayMongo
+  const initiatePayment = async () => {
     try {
-      setQrLoading(true);
+      setPaymentLoading(true);
       const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
         method: 'POST',
         headers: {
@@ -47,28 +45,28 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       }
 
       const data = await response.json();
-      console.log('QR Code Response:', data);
+      console.log('Checkout Response:', data);
       
-      if (data.qrCode) {
-        setQrCode(data.qrCode);
-        setShowQR(true);
-      } else if (data.checkoutUrl) {
-        // Fallback to checkout URL if QR not available
-        setQrCode(data.checkoutUrl);
-        setShowQR(true);
+      // Get checkout URL (either checkoutUrl or fallback to qrCode)
+      const checkoutUrl = data.checkoutUrl || data.qrCode;
+      
+      if (checkoutUrl) {
+        // Open PayMongo checkout in browser
+        await Linking.openURL(checkoutUrl);
+        Alert.alert('Payment', 'Opening payment page...\n\nAfter payment, the status will update automatically when you return to the app.');
       } else {
-        console.error('No QR code or checkout URL in response:', data);
-        Alert.alert('Error', 'Failed to generate QR code - no payment URL returned');
+        console.error('No checkout URL in response:', data);
+        Alert.alert('Error', 'Failed to get payment link');
       }
     } catch (err) {
-      console.error('Failed to fetch QR code:', err);
-      Alert.alert('Error', 'Failed to generate QR code: ' + err.message);
+      console.error('Failed to initiate payment:', err);
+      Alert.alert('Error', 'Failed to process payment: ' + err.message);
     } finally {
-      setQrLoading(false);
+      setPaymentLoading(false);
     }
   };
 
-  // Payment verification happens automatically via webhook after user scans QR and completes payment
+  // Payment verification happens automatically via webhook after user completes payment in browser
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }}>
@@ -81,7 +79,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         {/* Payment Method Title */}
         <View style={{ alignItems: 'center', marginBottom: SPACING.large, paddingVertical: SPACING.base }}>
           <Text style={{ fontSize: TYPO.bodySize + 2, fontWeight: '700', color: '#0066CC', marginBottom: SPACING.small }}>
-            💳 QR Code Payment
+            💳 Online Payment
           </Text>
           <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center' }}>
             Fast • Secure • Instant
@@ -110,46 +108,69 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
         </View>
 
-        {/* QR Code Section */}
-        {showQR && (
-          <>
-            {qrLoading ? (
-              <View style={[styles.card, { alignItems: 'center', padding: SPACING.large, marginBottom: SPACING.base }]}>
-                <ActivityIndicator size="large" color={COLORS.glowBlue} />
-                <Text style={{ marginTop: SPACING.base, color: '#666' }}>Generating QR Code...</Text>
-              </View>
-            ) : qrCode ? (
-              <View style={[styles.card, { backgroundColor: '#f0fff4', borderLeftWidth: 4, borderLeftColor: '#059669', marginBottom: SPACING.base, alignItems: 'center', padding: SPACING.large }]}>
-                <Text style={{ fontSize: TYPO.bodySize, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
-                  📱 Scan to Pay
-                </Text>
-                <Image
-                  source={{ uri: qrCode }}
-                  style={{ width: 250, height: 250, marginBottom: SPACING.base, borderRadius: 8 }}
-                />
-                <Text style={{ fontSize: TYPO.smallSize, color: '#666', textAlign: 'center', marginTop: SPACING.base }}>
-                  Use any payment app: GCash, Maya, OnePay, etc.
-                </Text>
-              </View>
-            ) : null}
-          </>
-        )}
+        {/* Pay Now Button */}
+        <TouchableOpacity
+          onPress={initiatePayment}
+          disabled={paymentLoading}
+          style={[
+            styles.primaryButton,
+            {
+              backgroundColor: paymentLoading ? '#ccc' : '#0066CC',
+              marginBottom: SPACING.large,
+              padding: SPACING.base + 4,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+            },
+          ]}
+        >
+          {paymentLoading ? (
+            <>
+              <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
+              <Text style={[styles.primaryButtonText, { color: 'white' }]}>Processing...</Text>
+            </>
+          ) : (
+            <Text style={[styles.primaryButtonText, { color: 'white', fontSize: TYPO.bodySize + 2, fontWeight: '800' }]}>
+              💳 Pay Now
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Info: Payment will be processed in browser */}
+        <View style={[styles.card, { backgroundColor: '#f0fff4', borderLeftWidth: 4, borderLeftColor: '#059669', marginBottom: SPACING.base }]}>
+          <Text style={{ fontSize: TYPO.smallSize, color: '#059669', fontWeight: '600' }}>
+            ℹ️ You will be redirected to PayMongo to complete payment securely.
+          </Text>
+          <Text style={{ fontSize: TYPO.smallSize - 1, color: '#666', marginTop: SPACING.small }}>
+            After payment, return to the app and your billing status will update automatically.
+          </Text>
+        </View>
 
         {/* Payment Instructions */}
         <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
           <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
-            📋 How to Pay
+            📋 Accepted Payment Methods
           </Text>
 
           <View style={{ marginBottom: SPACING.small }}>
             <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
-              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
-                <Text style={{ color: 'white', fontWeight: '800' }}>1</Text>
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Open Your Payment App</Text>
-                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>GCash, Maya, OnePay, etc.</Text>
-              </View>
+              <Text style={{ marginRight: SPACING.small }}>💳</Text>
+              <Text style={{ flex: 1, color: '#555' }}>Credit/Debit Cards (Visa, Mastercard)</Text>
+            </View>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <Text style={{ marginRight: SPACING.small }}>📱</Text>
+              <Text style={{ flex: 1, color: '#555' }}>GCash</Text>
+            </View>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <Text style={{ marginRight: SPACING.small }}>💰</Text>
+              <Text style={{ flex: 1, color: '#555' }}>Maya (formerly PayMaya)</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={{ marginRight: SPACING.small }}>🏦</Text>
+              <Text style={{ flex: 1, color: '#555' }}>Bank Transfers</Text>
+            </View>
+          </View>
+        </View>
             </View>
 
             <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
@@ -174,6 +195,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
         </View>
 
+        {/* Generate QR Button - Primary Action */}
+        {!showQR && (
         {/* Generate QR Button - Primary Action */}
         {!showQR && (
           <TouchableOpacity

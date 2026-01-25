@@ -12,6 +12,8 @@ interface BillingPeriod {
   dueDate: string;
   billingMonth?: number;
   billingYear?: number;
+  paymentDate?: string;  // Payment timestamp (if paid)
+  paymentAmount?: string; // Payment amount (if paid)
 }
 
 const BillingTable: React.FC = () => {
@@ -147,11 +149,25 @@ const BillingTable: React.FC = () => {
         (p.status === 'verified' || p.status === 'PAID')
       );
 
-      // Update status to PAID if payment found
-      if (payment) {
-        billStatus = 'Paid';
-        statusColor = '#059669';
-        statusIcon = '✅';
+      // Update status to PAID if payment found and is within billing period
+      let paymentDate = '';
+      let paymentAmount = '';
+      if (payment && payment.createdAt) {
+        const paymentTime = new Date(payment.createdAt);
+        // Only show as PAID if payment was made during or within the billing period
+        if (paymentTime >= periodStartDate && paymentTime <= periodEndDate) {
+          billStatus = 'Paid';
+          statusColor = '#059669';
+          statusIcon = '✅';
+          paymentDate = new Date(payment.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          paymentAmount = payment.amount ? `₱${Number(payment.amount).toFixed(2)}` : '';
+        }
       }
 
       history.push({
@@ -166,6 +182,8 @@ const BillingTable: React.FC = () => {
         dueDate: periodEndDate.toISOString().split('T')[0],
         billingMonth,
         billingYear,
+        paymentDate,
+        paymentAmount,
       });
     }
 
@@ -264,6 +282,7 @@ const BillingTable: React.FC = () => {
               <th style={{ textAlign: 'right', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Amount Due (₱)</th>
               <th style={{ textAlign: 'center', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Due Date</th>
               <th style={{ textAlign: 'center', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Status</th>
+              <th style={{ textAlign: 'center', padding: '8px 12px', background: '#f3f7fb', borderRadius: 6 }}>Payment Details</th>
             </tr>
           </thead>
           <tbody>
@@ -276,6 +295,17 @@ const BillingTable: React.FC = () => {
                 <td style={{ padding: '10px 12px', textAlign: 'center', color: '#555' }}>{period.dueDate}</td>
                 <td style={{ padding: '10px 12px', textAlign: 'center', color: period.statusColor, fontWeight: '600' }}>
                   {period.statusIcon} {period.billStatus}
+                </td>
+                <td style={{ padding: '10px 12px', textAlign: 'center', fontSize: '12px', color: '#666' }}>
+                  {period.paymentDate ? (
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#059669' }}>Paid</div>
+                      <div style={{ fontSize: '11px', marginTop: '4px' }}>{period.paymentDate}</div>
+                      {period.paymentAmount && <div style={{ fontSize: '11px', marginTop: '2px' }}>{period.paymentAmount}</div>}
+                    </div>
+                  ) : (
+                    <span style={{ color: '#999' }}>—</span>
+                  )}
                 </td>
               </tr>
             ))}
