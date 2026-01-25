@@ -212,6 +212,13 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
 
   useEffect(() => {
     loadData();
+    
+    // Auto-refresh billing data every 3 seconds to catch payment updates
+    const interval = setInterval(() => {
+      loadData();
+    }, 3000);
+    
+    return () => clearInterval(interval);
   }, [token]);
 
   const onRefresh = async () => {
