@@ -197,8 +197,6 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
         {/* Generate QR Button - Primary Action */}
         {!showQR && (
-        {/* Generate QR Button - Primary Action */}
-        {!showQR && (
           <TouchableOpacity
             onPress={generateQRCode}
             disabled={qrLoading}
