@@ -294,10 +294,36 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
         </View>
 
-        {/* QR Code Instructions */}
+        {/* Payment Instructions */}
         <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
           <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
-            📖 How to Pay
+            Accepted Payment Methods
+          </Text>
+
+          <View style={{ marginBottom: SPACING.small }}>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <Text style={{ marginRight: SPACING.small }}>•</Text>
+              <Text style={{ flex: 1, color: '#555' }}>Credit/Debit Cards (Visa, Mastercard)</Text>
+            </View>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <Text style={{ marginRight: SPACING.small }}>•</Text>
+              <Text style={{ flex: 1, color: '#555' }}>GCash</Text>
+            </View>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <Text style={{ marginRight: SPACING.small }}>•</Text>
+              <Text style={{ flex: 1, color: '#555' }}>Maya (formerly PayMaya)</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={{ marginRight: SPACING.small }}>•</Text>
+              <Text style={{ flex: 1, color: '#555' }}>Bank Transfers</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* How to Pay Instructions */}
+        <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
+          <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
+            How to Pay
           </Text>
 
           <View style={{ marginBottom: SPACING.small }}>
@@ -306,8 +332,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
                 <Text style={{ color: 'white', fontWeight: '800' }}>1</Text>
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Click "Pay Now"</Text>
-                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>You will be redirected to PayMongo</Text>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Click Pay Now</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Redirected to PayMongo checkout</Text>
               </View>
             </View>
 
@@ -327,7 +353,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
               </View>
               <View style={{ flex: 1, justifyContent: 'center' }}>
                 <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Confirm Payment</Text>
-                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Your bill will update automatically</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Your bill updates automatically</Text>
               </View>
             </View>
           </View>
@@ -335,8 +361,8 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
         {/* Security Info */}
         <View style={[styles.card, { backgroundColor: '#f0fff4', marginBottom: SPACING.large }]}>
-          <Text style={{ fontSize: TYPO.bodySize - 2, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
-            🔒 Secure Payment
+          <Text style={{ fontSize: TYPO.bodySize - 1, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
+            Secure Payment
           </Text>
           <Text style={{ fontSize: TYPO.smallSize - 1, color: '#666', lineHeight: 18 }}>
             All transactions are encrypted and processed securely through PayMongo. Your payment information is never stored on our servers.
@@ -346,10 +372,6 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
     </ScrollView>
   );
 }
-            🔒 Secure Payment
-          </Text>
-          <Text style={{ fontSize: TYPO.smallSize - 2, color: '#666', lineHeight: 18 }}>
-            Your payment is protected by PayMongo's secure payment gateway. Your account will not be charged until payment is successfully confirmed.
           </Text>
         </View>
       </View>
