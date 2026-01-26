@@ -18,10 +18,11 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   }
 
   if (!token) {
+    console.error('[PayScreen] ❌ FATAL: token is missing!', { payInfo, username, token: token ? 'EXISTS' : 'NULL' });
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', padding: SPACING.base }}>
         <Text style={{ color: '#ff6b6b', fontSize: 16, fontWeight: 'bold', marginBottom: SPACING.base }}>⚠️ Authentication Error</Text>
-        <Text style={{ color: '#666', textAlign: 'center', marginBottom: SPACING.large }}>You are not authenticated. Please log in again.</Text>
+        <Text style={{ color: '#666', textAlign: 'center', marginBottom: SPACING.large }}>You are not authenticated. Your session may have expired. Please log in again.</Text>
         <TouchableOpacity style={[styles.primaryButton]} onPress={onBack}>
           <Text style={styles.primaryButtonText}>← Go Back</Text>
         </TouchableOpacity>
@@ -60,6 +61,10 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const initiatePayment = async () => {
     let timeoutId = null;
     try {
+      console.log('[PayScreen] Starting payment initiation...');
+      console.log('[PayScreen] Token:', token ? `✓ (${token.substring(0, 20)}...)` : '❌ MISSING');
+      console.log('[PayScreen] Amount:', amount, 'Centavos:', Math.round(Number(amount) * 100));
+      
       setPaymentLoading(true);
       const amountCentavos = Math.round(Number(amount) * 100);
       if (amountCentavos <= 0) {
@@ -73,6 +78,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       const controller = new AbortController();
       timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
+      console.log('[PayScreen] Sending request to backend...');
       const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
         method: 'POST',
         headers: {
@@ -89,6 +95,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         signal: controller.signal, // Add abort signal for timeout
       });
       
+      console.log('[PayScreen] Backend response status:', response.status);
       if (timeoutId) {
         clearTimeout(timeoutId); // Clear timeout if request completes
       }
@@ -101,13 +108,13 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         } catch (e) {
           errorData = { error: errorText || 'Unknown server error' };
         }
-        console.error('Server error:', response.status, errorData);
+        console.error('[PayScreen] ❌ Server error:', response.status, errorData);
         Alert.alert('Error', `Server error: ${errorData.error || 'Unknown error'}`);
         return;
       }
 
       const data = await response.json();
-      console.log('Checkout Response:', data);
+      console.log('[PayScreen] ✓ Checkout response received:', { checkoutUrl: data.checkoutUrl ? 'EXISTS' : 'MISSING', qrCode: data.qrCode ? 'EXISTS' : 'MISSING' });
       
       // Get checkout URL (either checkoutUrl or fallback to qrCode)
       const checkoutUrl = data.checkoutUrl || data.qrCode;
@@ -129,7 +136,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       if (timeoutId) {
         clearTimeout(timeoutId); // Ensure timeout is cleared on error
       }
-      console.error('Failed to initiate payment:', err);
+      console.error('[PayScreen] ❌ Payment initiation failed:', err.name, err.message);
       
       // Handle timeout error specifically
       if (err.name === 'AbortError') {
