@@ -1570,7 +1570,7 @@ app.get('/api/device/:deviceId/pending-commands', (req, res) => {
 })
 
 // User: Record a payment for their bill
-app.post('/api/payments/record', authMiddleware, (req, res) => {
+app.post('/api/payments/record', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
   console.log(`\n[${timestamp}] [RECORD-PAYMENT] Request received`)
   
