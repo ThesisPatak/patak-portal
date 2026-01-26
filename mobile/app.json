@@ -26,11 +26,11 @@
       "supportsTabletOS": true,
       "bundleIdentifier": "com.patak.mobile"
     },
+    "owner": "deploypatak",
     "extra": {
       "eas": {
-        "projectId": "839922df-2630-4088-9666-7da23e2b47d2"
+        "projectId": "6394acab-d06a-437b-8aff-021dd1592604"
       }
-    },
-    "owner": "patakm1"
+    }
   }
 }
