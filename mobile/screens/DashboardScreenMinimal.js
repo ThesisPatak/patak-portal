@@ -4,8 +4,13 @@ import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, TYPO, SPACING } from './variables';
 
-// Tiered water billing calculation
-function calculateWaterBill(cubicMeters) {
+// Tiered water billing calculation - ONLY applies if there's actual consumption or billing period has started
+function calculateWaterBill(cubicMeters, hasActiveReadings = true) {
+  // If no readings at all, no bill yet
+  if (!hasActiveReadings || cubicMeters === 0) {
+    return 0; // Return 0 to indicate no bill yet
+  }
+  
   const MINIMUM_CHARGE = 255.00;
   const FREE_USAGE = 10; // cubic meters included in minimum
   
@@ -277,8 +282,17 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
       {/* Estimated Bill */}
       <View style={[styles.card, { marginBottom: SPACING.large, alignItems: 'center' }]}>
         <Text style={{ fontSize: 14, color: COLORS.glowBlue, fontWeight: '600', marginBottom: SPACING.base }}>MONTHLY BILL</Text>
-        <Text style={{ fontSize: 36, fontWeight: '900', color: COLORS.glowBlue }}>₱{calculateWaterBill(totalUsage).toFixed(2)}</Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, marginTop: SPACING.small }}>Due: {dueDate}</Text>
+        {totalUsage === 0 ? (
+          <>
+            <Text style={{ fontSize: 28, fontWeight: '900', color: '#999' }}>Not yet active</Text>
+            <Text style={{ fontSize: 12, color: '#666', marginTop: SPACING.small }}>Waiting for first reading...</Text>
+          </>
+        ) : (
+          <>
+            <Text style={{ fontSize: 36, fontWeight: '900', color: COLORS.glowBlue }}>₱{calculateWaterBill(totalUsage, true).toFixed(2)}</Text>
+            <Text style={{ fontSize: 12, color: COLORS.text, marginTop: SPACING.small }}>Due: {dueDate}</Text>
+          </>
+        )}
       </View>
 
       {/* Devices */}
@@ -310,17 +324,20 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           <Text style={styles.primaryButtonText}>📋 Billing History</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.primaryButton]} onPress={() => {
-          const currentDate = new Date();
-          const billingMonth = currentDate.getMonth() + 1;
-          const billingYear = currentDate.getFullYear();
-          const billAmount = calculateWaterBill(totalUsage);
-          if (billAmount > 0) {
-            onPay(username || 'Account', billAmount, billingMonth, billingYear);
-          } else {
-            Alert.alert('No Bill', 'No consumption recorded yet. Please wait for the first reading.');
-          }
-        }}>
+        <TouchableOpacity 
+          style={[styles.primaryButton, totalUsage === 0 && { opacity: 0.5 }]} 
+          disabled={totalUsage === 0}
+          onPress={() => {
+            const currentDate = new Date();
+            const billingMonth = currentDate.getMonth() + 1;
+            const billingYear = currentDate.getFullYear();
+            const billAmount = calculateWaterBill(totalUsage, true);
+            if (billAmount > 0) {
+              onPay(username || 'Account', billAmount, billingMonth, billingYear);
+            } else {
+              Alert.alert('No Bill', 'No consumption recorded yet. Please wait for the first reading from your water meter.');
+            }
+          }}>
           <Text style={styles.primaryButtonText}>💳 Pay Bill</Text>
         </TouchableOpacity>
 

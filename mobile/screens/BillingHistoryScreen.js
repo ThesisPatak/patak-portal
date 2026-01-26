@@ -7,7 +7,9 @@ import { COLORS, SPACING } from './variables';
 // Tiered billing formula matching web app (BillingTable.tsx)
 function computeResidentialBill(usage) {
   const MINIMUM = 255.0;
-  if (!usage || usage <= 10) return Number(MINIMUM.toFixed(2));
+  // No bill if no usage
+  if (!usage || usage <= 0) return 0;
+  if (usage <= 10) return Number(MINIMUM.toFixed(2));
   let excess = usage - 10;
   let total = MINIMUM;
   if (excess > 0) {
