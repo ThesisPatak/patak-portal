@@ -46,6 +46,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
 
   // Request checkout URL and redirect to PayMongo
   const initiatePayment = async () => {
+    let timeoutId = null;
     try {
       setPaymentLoading(true);
       const amountCentavos = Math.round(Number(amount) * 100);
@@ -58,7 +59,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       // Add timeout to prevent app hanging on slow networks
       // 10 seconds is reasonable for payment API - if longer, likely network issue
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
         method: 'POST',
@@ -76,10 +77,18 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         signal: controller.signal, // Add abort signal for timeout
       });
       
-      clearTimeout(timeoutId); // Clear timeout if request completes
+      if (timeoutId) {
+        clearTimeout(timeoutId); // Clear timeout if request completes
+      }
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorText = await response.text();
+        let errorData = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          errorData = { error: errorText || 'Unknown server error' };
+        }
         console.error('Server error:', response.status, errorData);
         Alert.alert('Error', `Server error: ${errorData.error || 'Unknown error'}`);
         return;
@@ -105,14 +114,16 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         Alert.alert('Error', 'Failed to get payment link. Please try again.');
       }
     } catch (err) {
-      clearTimeout(timeoutId); // Ensure timeout is cleared on error
+      if (timeoutId) {
+        clearTimeout(timeoutId); // Ensure timeout is cleared on error
+      }
       console.error('Failed to initiate payment:', err);
       
       // Handle timeout error specifically
       if (err.name === 'AbortError') {
         Alert.alert('Payment Timeout', 'The payment request took too long. Please check your internet connection and try again.');
       } else {
-        Alert.alert('Error', 'Failed to process payment: ' + err.message);
+        Alert.alert('Error', 'Failed to process payment: ' + (err.message || 'Unknown error'));
       }
     } finally {
       setPaymentLoading(false);
