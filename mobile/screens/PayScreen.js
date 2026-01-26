@@ -372,9 +372,3 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
     </ScrollView>
   );
 }
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
-  );
-}
