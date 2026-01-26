@@ -471,6 +471,28 @@ void setup() {
     Serial.print("IP: ");
     Serial.println(WiFi.localIP());
     
+    // Initialize NTP time synchronization (UTC+8 for Philippines)
+    configTime(8 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+    Serial.println("NTP requested - waiting for time sync...");
+    
+    // Wait for NTP time sync (max 30 seconds)
+    time_t now = time(nullptr);
+    int ntp_wait = 0;
+    while (now < 1577836800 && ntp_wait < 60) {  // Check for year 2020+
+      delay(500);
+      now = time(nullptr);
+      ntp_wait++;
+      if (ntp_wait % 4 == 0) Serial.print('.');
+    }
+    Serial.println();
+    
+    if (now > 1577836800) {
+      Serial.print("✓ NTP synced! Current time: ");
+      Serial.println(now);
+    } else {
+      Serial.println("⚠ NTP sync timeout - using epoch time, readings may show 1970-01-01");
+    }
+    
     // Initialize mDNS for auto-discovery
     String mdnsHostname = DEVICE_ID;
     mdnsHostname.toLowerCase();
