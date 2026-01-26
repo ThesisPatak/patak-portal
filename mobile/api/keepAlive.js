@@ -2,8 +2,6 @@
 // Pings the backend every 5 minutes to keep it warm and responsive
 // Also maintains session even when app is backgrounded
 
-import { AppState } from 'react-native';
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://patak-portal-production.up.railway.app';
 const KEEP_ALIVE_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
 let keepAliveTimer = null;
@@ -36,10 +34,15 @@ export function stopKeepAlive() {
 async function pingBackend() {
   try {
     const now = new Date().toLocaleTimeString();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
     const response = await fetch(`${BACKEND_URL}/health`, {
       method: 'GET',
-      timeout: 8000, // 8 second timeout for background pings
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       lastPingTime = new Date();
@@ -53,7 +56,9 @@ async function pingBackend() {
     }
   } catch (error) {
     // Silently fail - keep-alive is best-effort
-    if (error.message && error.message.includes('Network')) {
+    if (error.name === 'AbortError') {
+      console.log('[KeepAlive] Ping timeout - will retry next interval');
+    } else if (error.message && error.message.includes('Network')) {
       console.log('[KeepAlive] Network unavailable - will retry next interval');
     } else {
       console.log('[KeepAlive] Ping error (non-critical):', error.message);
