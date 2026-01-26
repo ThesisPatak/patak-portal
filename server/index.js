@@ -21,6 +21,28 @@ const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
+// File operation queue to prevent concurrent read/write race conditions
+const fileOperationQueue = new Map() // { filePath: Promise }
+
+function queueFileOperation(filePath, operation) {
+  const existingPromise = fileOperationQueue.get(filePath) || Promise.resolve()
+  
+  const newPromise = existingPromise.then(() => {
+    return operation()
+  }).catch(err => {
+    console.error(`[QUEUE] Error in file operation for ${filePath}:`, err.message)
+    throw err
+  }).finally(() => {
+    // Clean up queue if this is the last operation
+    if (fileOperationQueue.get(filePath) === newPromise) {
+      fileOperationQueue.delete(filePath)
+    }
+  })
+  
+  fileOperationQueue.set(filePath, newPromise)
+  return newPromise
+}
+
 // Real-time SSE client tracking for broadcasting readings
 const sseClients = new Map() // { userId: Set<{ res, sendEvent }> }
 
@@ -151,56 +173,59 @@ function readJSON(file) {
 }
 
 function writeJSON(file, obj) {
-  try {
-    // Create directory if it doesn't exist
-    const dir = path.dirname(file)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-      console.log(`[IO] Created directory: ${dir}`)
+  // Queue this write operation to prevent race conditions
+  return queueFileOperation(file, async () => {
+    try {
+      // Create directory if it doesn't exist
+      const dir = path.dirname(file)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+        console.log(`[IO] Created directory: ${dir}`)
+      }
+      
+      // Write to temporary file first, then rename (atomic operation)
+      const tempFile = file + '.tmp'
+      const jsonStr = JSON.stringify(obj, null, 2)
+      console.log(`[IO] Writing ${obj.length || Object.keys(obj).length} items to ${path.basename(file)}`)
+      console.log(`[IO] JSON size: ${jsonStr.length} bytes`)
+      
+      // Make sure temp file is deleted if it exists
+      if (fs.existsSync(tempFile)) {
+        fs.unlinkSync(tempFile)
+      }
+      
+      // Write to temp file
+      fs.writeFileSync(tempFile, jsonStr, { flag: 'w' })
+      console.log(`[IO] ✓ Wrote to temp file: ${tempFile}`)
+      
+      // Verify temp file was written
+      if (!fs.existsSync(tempFile)) {
+        throw new Error(`Temp file not created: ${tempFile}`)
+      }
+      const tempStats = fs.statSync(tempFile)
+      console.log(`[IO] ✓ Temp file verified: ${tempStats.size} bytes`)
+      
+      // Atomic rename (overwrites original)
+      fs.renameSync(tempFile, file)
+      console.log(`[IO] ✓ Renamed temp to final: ${file}`)
+      
+      // Verify final file exists and has content
+      if (!fs.existsSync(file)) {
+        throw new Error(`Final file not found after rename: ${file}`)
+      }
+      const finalStats = fs.statSync(file)
+      console.log(`[IO] ✓ Final file verified: ${finalStats.size} bytes`)
+      
+      // Double-check by reading back
+      const readBack = JSON.parse(fs.readFileSync(file, 'utf8'))
+      const itemCount = Array.isArray(readBack) ? readBack.length : Object.keys(readBack).length
+      console.log(`[IO] ✓ READ VERIFICATION PASSED - File contains ${itemCount} items`)
+    } catch (e) {
+      console.error(`[IO] ✗ ERROR writing to ${file}: ${e.message}`)
+      console.error(`[IO] Stack:`, e.stack)
+      throw e // Rethrow to caller so they know write failed
     }
-    
-    // Write to temporary file first, then rename (atomic operation)
-    const tempFile = file + '.tmp'
-    const jsonStr = JSON.stringify(obj, null, 2)
-    console.log(`[IO] Writing ${obj.length || Object.keys(obj).length} items to ${path.basename(file)}`)
-    console.log(`[IO] JSON size: ${jsonStr.length} bytes`)
-    
-    // Make sure temp file is deleted if it exists
-    if (fs.existsSync(tempFile)) {
-      fs.unlinkSync(tempFile)
-    }
-    
-    // Write to temp file
-    fs.writeFileSync(tempFile, jsonStr, { flag: 'w' })
-    console.log(`[IO] ✓ Wrote to temp file: ${tempFile}`)
-    
-    // Verify temp file was written
-    if (!fs.existsSync(tempFile)) {
-      throw new Error(`Temp file not created: ${tempFile}`)
-    }
-    const tempStats = fs.statSync(tempFile)
-    console.log(`[IO] ✓ Temp file verified: ${tempStats.size} bytes`)
-    
-    // Atomic rename (overwrites original)
-    fs.renameSync(tempFile, file)
-    console.log(`[IO] ✓ Renamed temp to final: ${file}`)
-    
-    // Verify final file exists and has content
-    if (!fs.existsSync(file)) {
-      throw new Error(`Final file not found after rename: ${file}`)
-    }
-    const finalStats = fs.statSync(file)
-    console.log(`[IO] ✓ Final file verified: ${finalStats.size} bytes`)
-    
-    // Double-check by reading back
-    const readBack = JSON.parse(fs.readFileSync(file, 'utf8'))
-    const itemCount = Array.isArray(readBack) ? readBack.length : Object.keys(readBack).length
-    console.log(`[IO] ✓ READ VERIFICATION PASSED - File contains ${itemCount} items`)
-  } catch (e) {
-    console.error(`[IO] ✗ ERROR writing to ${file}: ${e.message}`)
-    console.error(`[IO] Stack:`, e.stack)
-    throw e // Rethrow to caller so they know write failed
-  }
+  })
 }
 
 ensureDataFiles()
@@ -456,7 +481,7 @@ app.post('/auth/register', async (req, res) => {
     console.log(`[REGISTER] Array contents:`, users.map(u => ({ id: u.id, username: u.username, isAdmin: u.isAdmin })))
     
     console.log(`[REGISTER] About to write ${users.length} users to disk (${USERS_FILE})...`)
-    writeJSON(USERS_FILE, users)
+    await writeJSON(USERS_FILE, users)
     console.log(`[REGISTER] ✓ SAVED - User file now contains ${users.length} users`)
     
     // Verify the write was successful by reading back
@@ -529,7 +554,7 @@ app.post('/auth/change-password', authMiddleware, async (req, res) => {
   
   user.passwordHash = await bcrypt.hash(newPassword, 10)
   user.lastPasswordChange = new Date().toISOString()
-  writeJSON(USERS_FILE, users)
+  await writeJSON(USERS_FILE, users)
   
   res.json({ message: 'Password changed successfully' })
 })
@@ -896,7 +921,7 @@ app.post('/api/readings', async (req, res) => {
   
   readings.push(reading)
   console.log(`[ESP32-READING] Writing ${readings.length} readings to disk...`)
-  writeJSON(READINGS_FILE, readings)
+  await writeJSON(READINGS_FILE, readings)
   console.log(`[ESP32-READING] ✓ Reading saved. Total readings now: ${readings.length}`)
   
   // Update device's lastSeen timestamp to mark it as online
@@ -905,7 +930,7 @@ app.post('/api/readings', async (req, res) => {
   if (device) {
     device.lastSeen = new Date().toISOString()
     console.log(`[ESP32-READING] Updated device '${deviceId}' lastSeen timestamp`)
-    writeJSON(DEVICES_FILE, devices)
+    await writeJSON(DEVICES_FILE, devices)
   } else {
     console.log(`[ESP32-READING] ⚠ Device '${deviceId}' not found in devices list`)
   }
@@ -1210,7 +1235,7 @@ app.post('/devices/link', authMiddleware, async (req, res) => {
   device.pendingTokenCreatedAt = new Date().toISOString()
   console.log(`[DEVICE-LINK] ✓ Stored pending token for ESP32 to claim`)
   
-  writeJSON(DEVICES_FILE, devices)
+  await writeJSON(DEVICES_FILE, devices)
   
   res.status(200).json({
     ok: true,
@@ -1242,7 +1267,7 @@ app.post('/devices/check-commands', async (req, res) => {
   if (device.resetRequested) {
     commands.push('reset')
     device.resetRequested = false // Clear flag after sending
-    writeJSON(DEVICES_FILE, devices)
+    await writeJSON(DEVICES_FILE, devices)
   }
   
   res.json({ commands })
@@ -1283,7 +1308,7 @@ app.post('/devices/claim-token', async (req, res) => {
   device.lastTokenClaimedAt = new Date().toISOString()
   device.lastIP = req.ip
   device.lastSeen = new Date().toISOString()
-  writeJSON(DEVICES_FILE, devices)
+  await writeJSON(DEVICES_FILE, devices)
   
   console.log(`[CLAIM-TOKEN] ✓ Token claimed and cleared from pending`)
   
@@ -1304,7 +1329,7 @@ app.post('/devices/heartbeat', async (req, res) => {
   device.lastSeen = new Date().toISOString()
   device.lastIP = req.ip
   device.status = 'online'
-  writeJSON(DEVICES_FILE, devices)
+  await writeJSON(DEVICES_FILE, devices)
   res.json({ ok: true })
 })
 
@@ -1621,7 +1646,7 @@ app.post('/api/payments/record', authMiddleware, (req, res) => {
     }
     
     payments.push(newPayment)
-    writeJSON(PAYMENTS_FILE, payments)
+    await writeJSON(PAYMENTS_FILE, payments)
     
     // Log payment with consumption details
     if (paymentMethod === 'gcash') {

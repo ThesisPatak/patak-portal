@@ -54,6 +54,12 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         setPaymentLoading(false);
         return;
       }
+      
+      // Add timeout to prevent app hanging on slow networks
+      // 10 seconds is reasonable for payment API - if longer, likely network issue
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
         method: 'POST',
         headers: {
@@ -67,7 +73,10 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           billingMonth: billingMonth,
           billingYear: billingYear,
         }),
+        signal: controller.signal, // Add abort signal for timeout
       });
+      
+      clearTimeout(timeoutId); // Clear timeout if request completes
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -96,8 +105,15 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         Alert.alert('Error', 'Failed to get payment link. Please try again.');
       }
     } catch (err) {
+      clearTimeout(timeoutId); // Ensure timeout is cleared on error
       console.error('Failed to initiate payment:', err);
-      Alert.alert('Error', 'Failed to process payment: ' + err.message);
+      
+      // Handle timeout error specifically
+      if (err.name === 'AbortError') {
+        Alert.alert('Payment Timeout', 'The payment request took too long. Please check your internet connection and try again.');
+      } else {
+        Alert.alert('Error', 'Failed to process payment: ' + err.message);
+      }
     } finally {
       setPaymentLoading(false);
     }
