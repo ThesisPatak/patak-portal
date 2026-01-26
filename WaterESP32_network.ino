@@ -42,7 +42,7 @@ unsigned long lastSaveMillis = 0;
 unsigned long lastTokenPollMillis = 0;  // For polling backend for pending tokens
 
 // Device Authentication
-String DEVICE_ID = "ESP32-002";  // Change per device or use MAC address
+String DEVICE_ID = "ESP32-001";  // Change per device or use MAC address
 String DEVICE_TOKEN = "";  // Will be set via serial command or loaded from Preferences
 
 // Backend URL for token claiming
@@ -168,7 +168,7 @@ void handleSerial() {
 const char* WIFI_SSID = "PLDTHOMEFIBRBsDd4"; // <-- set your SSID
 const char* WIFI_PASS = "PLDTWIFITd5XU"; // <-- set your password
 const char* SERVER_URL = "https://patak-portal-production.up.railway.app/api/readings"; // <-- cloud backend URL
-const char* HOUSE_NAME = "house2"; // change per device
+const char* HOUSE_NAME = "house1"; // change per device
 
 // Debug: if set to 1 the device will POST a reading every interval (high traffic)
 // set to 0 for normal behaviour (saves only every SAVE_MS and manual 'send').
