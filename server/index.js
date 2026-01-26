@@ -1711,6 +1711,22 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   console.log(`\n[${timestamp}] [PAYMONGO-CREATE] Creating checkout`)
   console.log(`[PAYMONGO-CREATE] User: ${username}, Amount: ₱${amount / 100}, Billing: ${billingMonth}/${billingYear}`)
 
+  // Validate required fields
+  if (!amount || amount <= 0) {
+    console.error('[PAYMONGO-CREATE] ❌ Invalid amount:', amount)
+    return res.status(400).json({ error: 'Invalid amount. Amount must be greater than 0.' })
+  }
+
+  if (!billingMonth || !billingYear || billingMonth < 1 || billingMonth > 12) {
+    console.error('[PAYMONGO-CREATE] ❌ Invalid billing period:', { billingMonth, billingYear })
+    return res.status(400).json({ error: 'Invalid billing month/year' })
+  }
+
+  if (!userId || !username) {
+    console.error('[PAYMONGO-CREATE] ❌ Missing user info')
+    return res.status(401).json({ error: 'User not authenticated' })
+  }
+
   const PAYMONGO_PUBLIC_KEY = process.env.PAYMONGO_PUBLIC_KEY
   const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY
   
@@ -1823,7 +1839,8 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
     
   } catch (err) {
     console.error('[PAYMONGO-CREATE] ❌ Error:', err.message)
-    res.status(500).json({ error: 'Failed to create payment', message: err.message })
+    console.error('[PAYMONGO-CREATE] Stack:', err.stack)
+    return res.status(500).json({ error: 'Failed to create payment', message: err.message })
   }
 })
 

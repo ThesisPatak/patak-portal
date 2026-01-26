@@ -4,12 +4,24 @@ import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
 export default function PayScreen({ payInfo, token, username, onBack, onPaymentSuccess }) {
-  // Validate payInfo exists
+  // Validate inputs
   if (!payInfo) {
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', padding: SPACING.base }}>
         <Text style={{ color: '#ff6b6b', fontSize: 16, fontWeight: 'bold', marginBottom: SPACING.base }}>⚠️ Payment Information Missing</Text>
         <Text style={{ color: '#666', textAlign: 'center', marginBottom: SPACING.large }}>No bill selected. Please go back and try again.</Text>
+        <TouchableOpacity style={[styles.primaryButton]} onPress={onBack}>
+          <Text style={styles.primaryButtonText}>← Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (!token) {
+    return (
+      <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', padding: SPACING.base }}>
+        <Text style={{ color: '#ff6b6b', fontSize: 16, fontWeight: 'bold', marginBottom: SPACING.base }}>⚠️ Authentication Error</Text>
+        <Text style={{ color: '#666', textAlign: 'center', marginBottom: SPACING.large }}>You are not authenticated. Please log in again.</Text>
         <TouchableOpacity style={[styles.primaryButton]} onPress={onBack}>
           <Text style={styles.primaryButtonText}>← Go Back</Text>
         </TouchableOpacity>
@@ -275,50 +287,58 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           </View>
         </View>
 
-        {/* Generate QR Button - Primary Action */}
-        {!showQR && (
-          <TouchableOpacity
-            onPress={generateQRCode}
-            disabled={qrLoading}
-            style={[
-              styles.primaryButton,
-              {
-                opacity: qrLoading ? 0.6 : 1,
-                width: '100%',
-                backgroundColor: '#059669',
-                paddingVertical: SPACING.base + 4,
-                marginBottom: SPACING.base,
-              }
-            ]}
-          >
-            {qrLoading ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                <ActivityIndicator size="small" color="white" style={{ marginRight: SPACING.small }} />
-                <Text style={[styles.primaryButtonText]}>Generating...</Text>
-              </View>
-            ) : (
-              <Text style={[styles.primaryButtonText, { fontSize: TYPO.bodySize + 1 }]}>
-                📱 Generate QR Code & Pay
-              </Text>
-            )}
-          </TouchableOpacity>
-        )}
+        {/* QR Code Instructions */}
+        <View style={[styles.card, { backgroundColor: '#f8fbff', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
+          <Text style={{ fontSize: TYPO.bodySize + 1, fontWeight: '800', color: '#0057b8', marginBottom: SPACING.base }}>
+            📖 How to Pay
+          </Text>
 
-        {/* Info: After QR is scanned, payment will be verified automatically */}
-        {showQR && (
-          <View style={[styles.card, { backgroundColor: '#dbeafe', borderLeftWidth: 4, borderLeftColor: '#0066CC', marginBottom: SPACING.base }]}>
-            <Text style={{ fontSize: TYPO.smallSize, color: '#0057b8', fontWeight: '700', marginBottom: SPACING.small }}>
-              ℹ️ Payment Processing
-            </Text>
-            <Text style={{ fontSize: TYPO.smallSize - 1, color: '#0057b8', lineHeight: 18 }}>
-              After you scan and complete payment in your payment app, your account will be automatically updated within 1-2 minutes.
-            </Text>
+          <View style={{ marginBottom: SPACING.small }}>
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
+                <Text style={{ color: 'white', fontWeight: '800' }}>1</Text>
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Click "Pay Now"</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>You will be redirected to PayMongo</Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', marginBottom: SPACING.small }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
+                <Text style={{ color: 'white', fontWeight: '800' }}>2</Text>
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Choose Payment Method</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Card, GCash, Maya, or Bank Transfer</Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#0066CC', justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base }}>
+                <Text style={{ color: 'white', fontWeight: '800' }}>3</Text>
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ fontWeight: '700', color: '#0057b8', fontSize: TYPO.smallSize + 1 }}>Confirm Payment</Text>
+                <Text style={{ color: '#555', fontSize: TYPO.smallSize - 1, marginTop: 2 }}>Your bill will update automatically</Text>
+              </View>
+            </View>
           </View>
-        )}
+        </View>
 
         {/* Security Info */}
         <View style={[styles.card, { backgroundColor: '#f0fff4', marginBottom: SPACING.large }]}>
           <Text style={{ fontSize: TYPO.bodySize - 2, fontWeight: '700', color: '#059669', marginBottom: SPACING.base }}>
+            🔒 Secure Payment
+          </Text>
+          <Text style={{ fontSize: TYPO.smallSize - 1, color: '#666', lineHeight: 18 }}>
+            All transactions are encrypted and processed securely through PayMongo. Your payment information is never stored on our servers.
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+}
             🔒 Secure Payment
           </Text>
           <Text style={{ fontSize: TYPO.smallSize - 2, color: '#666', lineHeight: 18 }}>
