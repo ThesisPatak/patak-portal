@@ -684,6 +684,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   let totalBill = 0
   
   userDevices.forEach(device => {
+    const now = new Date()
     const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
     console.log('[HOUSES] Device', device.deviceId, 'has', deviceReadings.length, 'readings')
     const lastReading = deviceReadings[0]
@@ -692,7 +693,6 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const readingsThisMonth = deviceReadings.filter(r => {
       // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
       const date = new Date(r.receivedAt || r.timestamp)
-      const now = new Date()
       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
     })
     
@@ -724,6 +724,13 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     }
     
     const currentPeriodConsumption = Math.max(0, currentConsumptionValue - periodStartMeterReading)
+    
+    // Get readings from previous period for comparison
+    const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const previousPeriodReadings = deviceReadings.filter(r => {
+      const date = new Date(r.receivedAt || r.timestamp)
+      return date.getMonth() === previousMonthDate.getMonth() && date.getFullYear() === previousMonthDate.getFullYear()
+    })
     
     // Previous Consumption = readings in previous period (latest in period - oldest in period)
     const previousConsumption = previousPeriodReadings.length > 0
