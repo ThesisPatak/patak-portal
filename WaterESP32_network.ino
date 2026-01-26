@@ -272,7 +272,8 @@ void sendReading() {
   char body[512];
   time_t now = time(nullptr);
   char iso[64] = "1970-01-01T00:00:00Z";
-  if (now > 100000) {
+  // Check if time is reasonable (after year 2020 = 1577836800 seconds)
+  if (now > 1577836800) {
     struct tm t;
     gmtime_r(&now, &t);
     strftime(iso, sizeof(iso), "%Y-%m-%dT%H:%M:%SZ", &t);
