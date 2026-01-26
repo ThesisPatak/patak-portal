@@ -186,13 +186,15 @@ void ensureWiFi() {
   if (WiFi.status() == WL_CONNECTED) {
     Serial.print("WiFi connected, IP="); Serial.println(WiFi.localIP());
     // initialize NTP time so we can send ISO timestamps
-    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+    // Set timezone to Asia/Manila (UTC+8)
+    configTime(8 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     Serial.println("NTP requested - waiting for time sync...");
     
     // Wait for NTP time sync (max 30 seconds)
     time_t now = time(nullptr);
     int ntp_wait = 0;
-    while (now < 24 * 3600 && ntp_wait < 60) {  // 24 hours = 86400 seconds
+    // Check if time is reasonable (after year 2020 = 1577836800 seconds)
+    while (now < 1577836800 && ntp_wait < 60) {
       delay(500);
       now = time(nullptr);
       ntp_wait++;
@@ -200,7 +202,7 @@ void ensureWiFi() {
     }
     Serial.println();
     
-    if (now > 24 * 3600) {
+    if (now > 1577836800) {
       Serial.print("✓ NTP synced! Current time: ");
       Serial.println(now);
     } else {
