@@ -25,7 +25,8 @@ const BillingTable: React.FC = () => {
 
   function computeResidentialBill(usage: number) {
     const MINIMUM = 255.0;
-    if (!usage || usage <= 10) return Number(MINIMUM.toFixed(2));
+    if (!usage || usage <= 0) return 0;
+    if (usage <= 10) return Number(MINIMUM.toFixed(2));
     let excess = usage - 10;
     let total = MINIMUM;
     if (excess > 0) {
