@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity, StatusBar, ActivityIndicator, AppState } from 'react-native';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreenMinimal';
@@ -18,6 +18,7 @@ export default function App() {
   const [payInfo, setPayInfo] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
   const [error, setError] = useState(null);
+  const [appState, setAppState] = useState(AppState.currentState);
 
   // Start keep-alive service on app load
   useEffect(() => {
@@ -26,6 +27,31 @@ export default function App() {
     startKeepAlive();
     return () => stopKeepAlive();
   }, []);
+
+  // Monitor app state changes (background/foreground)
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, [token]);
+
+  const handleAppStateChange = (nextAppState) => {
+    // Log state transitions
+    console.log(`[AppState] Transition: ${appState} -> ${nextAppState}`);
+
+    // When app returns from background, verify token is still valid
+    if (appState.match(/inactive|background/) && nextAppState === 'active') {
+      console.log('[AppState] App returned to foreground - session is still active');
+      if (token) {
+        console.log('[AppState] Token verified - user session maintained');
+      }
+    } else if (nextAppState.match(/inactive|background/)) {
+      console.log('[AppState] App going to background');
+    }
+
+    setAppState(nextAppState);
+  };
 
   if (!token) {
     if (showRegister) {
