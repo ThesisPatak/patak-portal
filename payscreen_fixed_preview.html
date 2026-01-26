@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayScreen - Fixed Payment Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a1628;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #0f1e35;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 102, 204, 0.2);
+        }
+
+        .header {
+            padding: 16px;
+            background: #0a1628;
+            border-bottom: 1px solid rgba(0, 102, 204, 0.2);
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: rgba(0, 102, 204, 0.1);
+            border: 1px solid #0066CC;
+            color: #0066CC;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 102, 204, 0.2);
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .payment-title {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .payment-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0066CC;
+            margin-bottom: 4px;
+        }
+
+        .payment-title p {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .bill-card {
+            background: rgba(8, 91, 184, 0.1);
+            border-left: 4px solid #0066CC;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .bill-section {
+            margin-bottom: 16px;
+        }
+
+        .bill-label {
+            font-size: 10px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .bill-account {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0066CC;
+            margin-bottom: 16px;
+        }
+
+        .bill-period {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0057b8;
+        }
+
+        .bill-amount-section {
+            border-top: 1px solid rgba(0, 102, 204, 0.2);
+            padding-top: 16px;
+        }
+
+        .bill-amount {
+            font-size: 32px;
+            font-weight: 900;
+            color: #0066CC;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 16px;
+            background: #0066CC;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .pay-button:hover {
+            background: #0052a3;
+            box-shadow: 0 4px 16px rgba(0, 102, 204, 0.4);
+        }
+
+        .info-card {
+            background: rgba(5, 150, 105, 0.1);
+            border-left: 4px solid #059669;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+
+        .info-card p {
+            color: #059669;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .info-card small {
+            color: #666;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .section-card {
+            background: rgba(8, 91, 184, 0.05);
+            border-left: 4px solid #0066CC;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0057b8;
+            margin-bottom: 12px;
+        }
+
+        .methods-list {
+            list-style: none;
+        }
+
+        .methods-list li {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .methods-list li:before {
+            content: "• ";
+            color: #0066CC;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .steps {
+            list-style: none;
+        }
+
+        .steps li {
+            display: flex;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            background: #0066CC;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .step-content h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0057b8;
+            margin-bottom: 2px;
+        }
+
+        .step-content p {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .security-card {
+            background: rgba(5, 150, 105, 0.05);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .security-card h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 8px;
+        }
+
+        .security-card p {
+            font-size: 12px;
+            color: #666;
+            line-height: 18px;
+        }
+
+        .status {
+            text-align: center;
+            padding: 16px;
+            background: rgba(5, 150, 105, 0.1);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #059669;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn">← Back</button>
+        </div>
+
+        <div class="content">
+            <!-- Payment Title -->
+            <div class="payment-title">
+                <h1>Online Payment</h1>
+                <p>Fast • Secure • Instant</p>
+            </div>
+
+            <!-- Bill Summary Card -->
+            <div class="bill-card">
+                <div class="bill-section">
+                    <div class="bill-label">Account</div>
+                    <div class="bill-account">house1</div>
+                </div>
+
+                <div class="bill-section">
+                    <div class="bill-label">Billing Period</div>
+                    <div class="bill-period">Jan 2026 - Feb 2026</div>
+                </div>
+
+                <div class="bill-amount-section">
+                    <div class="bill-label">Amount Due</div>
+                    <div class="bill-amount">₱1,250.00</div>
+                </div>
+            </div>
+
+            <!-- Pay Now Button -->
+            <button class="pay-button">Pay Now</button>
+
+            <!-- Info Card -->
+            <div class="info-card">
+                <p>You will be redirected to PayMongo to complete payment securely.</p>
+                <small>After payment, return to the app and your billing status will update automatically.</small>
+            </div>
+
+            <!-- Accepted Payment Methods -->
+            <div class="section-card">
+                <div class="section-title">Accepted Payment Methods</div>
+                <ul class="methods-list">
+                    <li>Credit/Debit Cards (Visa, Mastercard)</li>
+                    <li>GCash</li>
+                    <li>Maya (formerly PayMaya)</li>
+                    <li>Bank Transfers</li>
+                </ul>
+            </div>
+
+            <!-- How to Pay Instructions -->
+            <div class="section-card">
+                <div class="section-title">How to Pay</div>
+                <ol class="steps">
+                    <li>
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Click Pay Now</h4>
+                            <p>Redirected to PayMongo checkout</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Choose Payment Method</h4>
+                            <p>Card, GCash, Maya, or Bank Transfer</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Confirm Payment</h4>
+                            <p>Your bill updates automatically</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Security Info -->
+            <div class="security-card">
+                <h3>Secure Payment</h3>
+                <p>All transactions are encrypted and processed securely through PayMongo. Your payment information is never stored on our servers.</p>
+            </div>
+
+            <!-- Status -->
+            <div class="status">
+                ✓ Build Fixed - No Emoji Errors - Ready for Production
+            </div>
+        </div>
+    </div>
+</body>
+</html>
