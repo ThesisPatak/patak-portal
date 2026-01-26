@@ -314,7 +314,12 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           const currentDate = new Date();
           const billingMonth = currentDate.getMonth() + 1;
           const billingYear = currentDate.getFullYear();
-          onPay(username || 'Account', calculateWaterBill(totalUsage), billingMonth, billingYear);
+          const billAmount = calculateWaterBill(totalUsage);
+          if (billAmount > 0) {
+            onPay(username || 'Account', billAmount, billingMonth, billingYear);
+          } else {
+            Alert.alert('No Bill', 'No consumption recorded yet. Please wait for the first reading.');
+          }
         }}>
           <Text style={styles.primaryButtonText}>💳 Pay Bill</Text>
         </TouchableOpacity>

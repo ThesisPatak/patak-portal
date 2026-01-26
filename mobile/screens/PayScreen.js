@@ -4,17 +4,43 @@ import styles from './styles';
 import { COLORS, SPACING, TYPO } from './variables';
 
 export default function PayScreen({ payInfo, token, username, onBack, onPaymentSuccess }) {
-  const amount = payInfo?.amount ?? 0;
+  // Validate payInfo exists
+  if (!payInfo) {
+    return (
+      <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', padding: SPACING.base }}>
+        <Text style={{ color: '#ff6b6b', fontSize: 16, fontWeight: 'bold', marginBottom: SPACING.base }}>⚠️ Payment Information Missing</Text>
+        <Text style={{ color: '#666', textAlign: 'center', marginBottom: SPACING.large }}>No bill selected. Please go back and try again.</Text>
+        <TouchableOpacity style={[styles.primaryButton]} onPress={onBack}>
+          <Text style={styles.primaryButtonText}>← Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const amount = Number(payInfo?.amount) || 0;
   const house = payInfo?.house ?? username ?? 'Account';
   const billingMonth = payInfo?.billingMonth || new Date().getMonth() + 1;
   const billingYear = payInfo?.billingYear || new Date().getFullYear();
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [referenceNumber] = useState(`REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
 
+  // Validate amount
+  if (amount <= 0 || isNaN(amount)) {
+    return (
+      <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', padding: SPACING.base }}>
+        <Text style={{ color: '#ff6b6b', fontSize: 16, fontWeight: 'bold', marginBottom: SPACING.base }}>⚠️ Invalid Amount</Text>
+        <Text style={{ color: '#666', textAlign: 'center', marginBottom: SPACING.large }}>The bill amount is invalid (₱{amount}). Please check your data and try again.</Text>
+        <TouchableOpacity style={[styles.primaryButton]} onPress={onBack}>
+          <Text style={styles.primaryButtonText}>← Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   // Month names for display
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const startMonth = monthNames[billingMonth - 1];
-  const nextMonth = billingMonth === 12 ? monthNames[0] : monthNames[billingMonth];
+  const startMonth = monthNames[billingMonth - 1] || 'Jan';
+  const nextMonth = billingMonth === 12 ? monthNames[0] : monthNames[billingMonth] || 'Jan';
   const nextYear = billingMonth === 12 ? billingYear + 1 : billingYear;
   const billingPeriod = `${startMonth} ${billingYear} - ${nextMonth} ${nextYear}`;
 
@@ -22,6 +48,12 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   const initiatePayment = async () => {
     try {
       setPaymentLoading(true);
+      const amountCentavos = Math.round(Number(amount) * 100);
+      if (amountCentavos <= 0) {
+        Alert.alert('Error', 'Invalid amount. Bill amount must be greater than 0.');
+        setPaymentLoading(false);
+        return;
+      }
       const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
         method: 'POST',
         headers: {
@@ -29,7 +61,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          amount: Number(amount) * 100, // PayMongo uses centavos
+          amount: amountCentavos, // PayMongo uses centavos
           description: `Water Bill - ${house} (${billingMonth}/${billingYear})`,
           reference: referenceNumber,
           billingMonth: billingMonth,
@@ -51,12 +83,17 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       const checkoutUrl = data.checkoutUrl || data.qrCode;
       
       if (checkoutUrl) {
-        // Open PayMongo checkout in browser
-        await Linking.openURL(checkoutUrl);
-        Alert.alert('Payment', 'Opening payment page...\n\nAfter payment, the status will update automatically when you return to the app.');
+        try {
+          // Open PayMongo checkout in browser
+          await Linking.openURL(checkoutUrl);
+          Alert.alert('Payment', 'Opening payment page...\n\nAfter payment, the status will update automatically when you return to the app.');
+        } catch (linkErr) {
+          console.error('Failed to open URL:', linkErr);
+          Alert.alert('Error', 'Could not open payment link. Please try again.');
+        }
       } else {
         console.error('No checkout URL in response:', data);
-        Alert.alert('Error', 'Failed to get payment link');
+        Alert.alert('Error', 'Failed to get payment link. Please try again.');
       }
     } catch (err) {
       console.error('Failed to initiate payment:', err);
