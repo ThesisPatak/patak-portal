@@ -1202,7 +1202,7 @@ const AdminDashboard: React.FC = () => {
                                   );
                                 }
                                 
-                                return <span style={{ color: '#aaa' }}>—</span>;
+                                return <span style={{ color: '#ff9800', fontWeight: 600 }}>⏳ Pending</span>;
                               })()}
                             </td>
                           </tr>

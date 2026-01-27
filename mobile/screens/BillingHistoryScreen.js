@@ -399,7 +399,7 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
                           fontWeight: '600',
                         }}
                       >
-                        {item.statusIcon} {item.billStatus}
+                        {item.statusIcon} {item.billStatus || 'Pending'}
                       </Text>
                     )}
                   </View>
