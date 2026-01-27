@@ -941,12 +941,12 @@ app.post('/api/readings', async (req, res) => {
   console.log(`[ESP32-READING] ✓ Reading saved. Total readings now: ${readings.length}`)
   
   // Update device's lastSeen timestamp to mark it as online
-  const devices = readJSON(DEVICES_FILE)
-  const device = devices.find(d => d.deviceId === deviceId)
-  if (device) {
-    device.lastSeen = new Date().toISOString()
+  const devicesForUpdate = readJSON(DEVICES_FILE)
+  const deviceForUpdate = devicesForUpdate.find(d => d.deviceId === deviceId)
+  if (deviceForUpdate) {
+    deviceForUpdate.lastSeen = new Date().toISOString()
     console.log(`[ESP32-READING] Updated device '${deviceId}' lastSeen timestamp`)
-    await writeJSON(DEVICES_FILE, devices)
+    await writeJSON(DEVICES_FILE, devicesForUpdate)
   } else {
     console.log(`[ESP32-READING] ⚠ Device '${deviceId}' not found in devices list`)
   }
