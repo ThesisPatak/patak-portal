@@ -23,7 +23,7 @@ function calculateWaterBill(cubicMeters: number): number {
   const MINIMUM_CHARGE = 255.00;
   const FREE_USAGE = 10; // cubic meters included in minimum
   
-  // Always charge minimum even if no consumption
+  // Always charge minimum even with zero consumption
   if (cubicMeters <= 0) {
     return MINIMUM_CHARGE;
   }
