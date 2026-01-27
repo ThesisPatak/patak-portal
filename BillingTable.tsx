@@ -251,13 +251,13 @@ const BillingTable: React.FC = () => {
             setPayments(paymentsData);
 
             // Generate billing history with payment status
-            const history = generateBillingHistory(
+            const filteredHistory = generateBillingHistory(
               usageDataRaw.history || [],
               dashboardData.userCreatedAt || new Date().toISOString(),
               paymentsData
             );
 
-            setBillingHistory(history);
+            setBillingHistory(filteredHistory);
           }
         } else {
           setError('Failed to load billing data');
