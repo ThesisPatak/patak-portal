@@ -331,7 +331,44 @@ const AdminDashboard: React.FC = () => {
       });
     }
 
-    return history;
+    // Only show current cycle, and next cycle only if current is paid
+    const visibleCycles: any[] = [];
+    if (history.length > 0) {
+      // Determine billing month/year for the first (current) cycle
+      const firstCycle = history[0];
+      const billDate = firstCycle.monthDate instanceof Date ? firstCycle.monthDate : new Date(firstCycle.monthDate);
+      const billingMonth = billDate.getMonth() + 1;
+      const billingYear = billDate.getFullYear();
+
+      const paymentForFirst = (userPayments || []).find(p =>
+        p.billingMonth === billingMonth &&
+        p.billingYear === billingYear &&
+        (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
+      );
+
+      if (paymentForFirst) {
+        // First is paid, show it as Paid and next as Current (if available)
+        history[0].billStatus = 'Paid';
+        history[0].statusColor = '#059669';
+        history[0].statusIcon = '✅';
+        visibleCycles.push(history[0]);
+
+        if (history.length > 1) {
+          history[1].billStatus = 'Current';
+          history[1].statusColor = '#4CAF50';
+          history[1].statusIcon = '📊';
+          visibleCycles.push(history[1]);
+        }
+      } else {
+        // First is not paid, show it as Current only
+        history[0].billStatus = 'Current';
+        history[0].statusColor = '#4CAF50';
+        history[0].statusIcon = '📊';
+        visibleCycles.push(history[0]);
+      }
+    }
+
+    return visibleCycles;
   };
 
   // Delete user account
