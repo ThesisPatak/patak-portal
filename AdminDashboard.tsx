@@ -245,79 +245,55 @@ const AdminDashboard: React.FC = () => {
       latestMeterReading = sorted[0].cubicMeters || 0;
     }
 
-    // Generate 12 calendar months starting from current month
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
+    // Generate two 31-day billing cycles starting from the first reading (or account creation)
+    const allReadingsSortedAsc = (allReadings || []).sort((a: any, b: any) => {
+      const da = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+      const db = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+      return da.getTime() - db.getTime();
+    });
 
-    for (let month = 0; month < 12; month++) {
-      // Calculate year and month for each billing period
-      const monthIndex = (currentMonth + month) % 12;
-      const yearOffset = Math.floor((currentMonth + month) / 12);
-      const year = currentYear + yearOffset;
-      
-      const periodStartDate = new Date(year, monthIndex, 1);
-      const periodEndDate = new Date(year, monthIndex + 1, 1);
+    let firstReadingDate: Date | null = null;
+    if (allReadingsSortedAsc.length > 0) {
+      firstReadingDate = allReadingsSortedAsc[0].receivedAt ? new Date(allReadingsSortedAsc[0].receivedAt) : new Date(allReadingsSortedAsc[0].timestamp);
+    }
 
-      // Get readings for this month
-      const periodReadings = (readings || [])
-        .filter((r: any) => {
-          const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
-          return readingDate >= periodStartDate && readingDate < periodEndDate;
-        })
-        .sort((a: any, b: any) => {
-          const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
-          const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
-          return dateA.getTime() - dateB.getTime();
-        });
+    if (!firstReadingDate) {
+      firstReadingDate = new Date(createdAt);
+    }
 
-      let consumption = 0;
-      
-      // Determine bill status first
-      let billStatus = 'Pending';
-      if (now > periodEndDate) {
-        billStatus = 'Overdue';
-      } else if (now >= periodStartDate && now < periodEndDate) {
-        billStatus = 'Current';
-      } else if (now < periodStartDate) {
-        billStatus = 'Upcoming';
-      }
+    for (let i = 0; i < 2; i++) {
+      const periodStartDate = new Date(firstReadingDate);
+      periodStartDate.setDate(periodStartDate.getDate() + (i * 31));
+      const periodEndDate = new Date(periodStartDate);
+      periodEndDate.setDate(periodEndDate.getDate() + 31);
 
-      // Determine a sensible baseline for the period start:
-      // 1) use the last reading BEFORE the period start if available (best baseline)
-      // 2) otherwise, if there is a reading inside the period, use the first reading of the period
-      // 3) otherwise baseline = 0
-      let periodStartMeterReading = 0;
-      const readingsBeforePeriod = (readings || []).filter((r: any) => {
-        const rd = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
-        return rd < periodStartDate;
+      // Get readings for this period
+      const periodReadings = (readings || []).filter((r: any) => {
+        const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
+        return readingDate >= periodStartDate && readingDate < periodEndDate;
       }).sort((a: any, b: any) => {
-        const da = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
-        const db = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
-        return da.getTime() - db.getTime();
+        const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+        const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+        return dateA.getTime() - dateB.getTime();
       });
 
-      if (readingsBeforePeriod.length > 0) {
-        periodStartMeterReading = readingsBeforePeriod[readingsBeforePeriod.length - 1].cubicMeters || 0;
-      } else if (periodReadings.length > 0) {
-        periodStartMeterReading = periodReadings[0].cubicMeters || 0;
-      } else {
-        periodStartMeterReading = 0;
-      }
+      let consumption = 0;
 
-      // For current month, calculate usage since period start baseline (latest cumulative - baseline)
-      if (billStatus === 'Current') {
-        consumption = Math.max(0, latestMeterReading - periodStartMeterReading);
-      } else if (periodReadings.length > 0) {
-        // Past months: consumption is last - first within the period
+      // Status will be determined after payment check
+      let billStatus = 'Pending';
+      let statusColor = '#ff9800';
+      let statusIcon = '⏳';
+
+      // Calculate consumption as DIFFERENCE between period readings (not cumulative total)
+      if (periodReadings.length > 0) {
         const firstReading = periodReadings[0];
         const lastReading = periodReadings[periodReadings.length - 1];
         consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
       }
 
-      const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const monthStr = `${periodStartDate.toLocaleString('default',{month:'short', day:'numeric'})} – ${new Date(periodEndDate.getTime()-1).toLocaleString('default',{month:'short', day:'numeric', year:'numeric'})}`;
       const amountDue = calculateWaterBill(consumption);
 
-      // Total consumption only for past/current months, 0 for upcoming
       const totalConsumption = (billStatus === 'Upcoming') ? '0.000000' : latestMeterReading.toFixed(6);
 
       history.push({
@@ -327,7 +303,11 @@ const AdminDashboard: React.FC = () => {
         totalConsumption: totalConsumption,
         amountDue: amountDue.toFixed(2),
         billStatus,
+        statusColor,
+        statusIcon,
         dueDate: periodEndDate.toISOString().split('T')[0],
+        billingMonth: periodStartDate.getMonth() + 1,
+        billingYear: periodStartDate.getFullYear()
       });
     }
 

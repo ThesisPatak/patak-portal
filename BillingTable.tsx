@@ -118,7 +118,7 @@ const BillingTable: React.FC = () => {
       // Note: For periods with no readings, consumption stays 0
       // which will trigger minimum charge in computeResidentialBill()
 
-      const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const monthStr = `${periodStartDate.toLocaleString('default',{month:'short', day:'numeric'})} – ${new Date(periodEndDate.getTime()-1).toLocaleString('default',{month:'short', day:'numeric', year:'numeric'})}`;
       const amountDue = computeResidentialBill(consumption);
 
       // Total consumption shows the cumulative meter reading
