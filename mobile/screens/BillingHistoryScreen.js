@@ -159,22 +159,26 @@ function generateBillingHistory(readings, createdAt, payments = []) {
     });
   }
   
-  // Apply payment chain logic: if first is paid, second becomes Current
-  for (let idx = 0; idx < history.length; idx++) {
-    if (history[idx].billStatus === 'Paid' && idx + 1 < history.length) {
-      history[idx + 1].billStatus = 'Current';
-      history[idx + 1].statusColor = '#4CAF50';
-      history[idx + 1].statusIcon = '📊';
-    } else if (history[idx].billStatus !== 'Paid' && history[idx].billStatus !== 'Current') {
-      // Mark first unpaid as Current
-      history[idx].billStatus = 'Current';
-      history[idx].statusColor = '#4CAF50';
-      history[idx].statusIcon = '📊';
-      break;
+  // Only show current cycle, and next cycle only if current is paid
+  let visibleCycles = [];
+  
+  // Always show first cycle (current)
+  if (history.length > 0) {
+    history[0].billStatus = 'Current';
+    history[0].statusColor = '#4CAF50';
+    history[0].statusIcon = '📊';
+    visibleCycles.push(history[0]);
+    
+    // Show second cycle ONLY if first is paid
+    if (history[0].billStatus === 'Paid' && history.length > 1) {
+      history[1].billStatus = 'Current';
+      history[1].statusColor = '#4CAF50';
+      history[1].statusIcon = '📊';
+      visibleCycles.push(history[1]);
     }
   }
   
-  return history;
+  return visibleCycles;
 }
 
 export default function BillingHistoryScreen({ token, username, onBack }) {
