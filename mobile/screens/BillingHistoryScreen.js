@@ -130,10 +130,12 @@ function generateBillingHistory(readings, createdAt, payments = []) {
     
     // Update status to PAID if payment found
     let paymentDate = '';
+    let isPaid = false;
     if (payment && payment.createdAt) {
       billStatus = 'Paid';
       statusColor = '#059669';
       statusIcon = '✅';
+      isPaid = true;
       paymentDate = new Date(payment.createdAt).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -156,25 +158,36 @@ function generateBillingHistory(readings, createdAt, payments = []) {
       billingMonth,
       billingYear,
       paymentDate,
+      isPaid,
     });
   }
   
   // Only show current cycle, and next cycle only if current is paid
   let visibleCycles = [];
   
-  // Always show first cycle (current)
+  // Always show first cycle
   if (history.length > 0) {
-    history[0].billStatus = 'Current';
-    history[0].statusColor = '#4CAF50';
-    history[0].statusIcon = '📊';
-    visibleCycles.push(history[0]);
-    
-    // Show second cycle ONLY if first is paid
-    if (history[0].billStatus === 'Paid' && history.length > 1) {
-      history[1].billStatus = 'Current';
-      history[1].statusColor = '#4CAF50';
-      history[1].statusIcon = '📊';
-      visibleCycles.push(history[1]);
+    // Check ORIGINAL status before modifying
+    if (history[0].isPaid) {
+      // First is paid, show it as Paid and next as Current
+      history[0].billStatus = 'Paid';
+      history[0].statusColor = '#059669';
+      history[0].statusIcon = '✅';
+      visibleCycles.push(history[0]);
+      
+      // Show second cycle as Current if available
+      if (history.length > 1) {
+        history[1].billStatus = 'Current';
+        history[1].statusColor = '#4CAF50';
+        history[1].statusIcon = '📊';
+        visibleCycles.push(history[1]);
+      }
+    } else {
+      // First is not paid, show it as Current only
+      history[0].billStatus = 'Current';
+      history[0].statusColor = '#4CAF50';
+      history[0].statusIcon = '📊';
+      visibleCycles.push(history[0]);
     }
   }
   
