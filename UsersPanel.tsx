@@ -38,7 +38,7 @@ export default function UsersPanel() {
     <section style={{ marginTop: 24 }}>
       <h2 style={{ color: '#0057b8' }}>User Management</h2>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-        <input placeholder="Paste admin token here" value={token} onChange={e=>setToken(e.target.value)} style={{ flex: 1, padding: '0.5rem', borderRadius: 6, border: '1px solid #ddd' }} />
+        <input id="adminToken" name="adminToken" placeholder="Paste admin token here" value={token} onChange={e=>setToken(e.target.value)} style={{ flex: 1, padding: '0.5rem', borderRadius: 6, border: '1px solid #ddd' }} />
         <button onClick={saveToken} style={{ background:'#0057b8', color:'#fff', border:'none', padding:'0.5rem 0.8rem', borderRadius:6 }}>Set Token</button>
         <button onClick={clearToken} style={{ background:'#eee', border:'1px solid #ddd', padding:'0.5rem 0.8rem', borderRadius:6 }}>Clear</button>
       </div>

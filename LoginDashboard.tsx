@@ -100,6 +100,8 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
               Username
             </label>
             <input
+              id="username"
+              name="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -137,6 +139,8 @@ const LoginDashboard: React.FC<LoginDashboardProps> = ({ onLogin }) => {
             </label>
             <div style={{ position: "relative" }}>
               <input
+                id="password"
+                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

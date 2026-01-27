@@ -54,8 +54,8 @@ const AdminUsers: React.FC = () => {
     <div style={{ marginTop: 12 }}>
       {msg ? <div style={{ marginBottom: 8, color: '#b00' }}>{msg}</div> : null}
       <form onSubmit={createUser} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-        <input placeholder="House ID" value={newHouse} onChange={e=>setNewHouse(e.target.value)} style={{padding:'0.5rem',borderRadius:8,border:'1px solid #ddd'}} />
-        <input placeholder="Password" value={newPass} onChange={e=>setNewPass(e.target.value)} style={{padding:'0.5rem',borderRadius:8,border:'1px solid #ddd'}} />
+        <input id="houseId" name="houseId" placeholder="House ID" value={newHouse} onChange={e=>setNewHouse(e.target.value)} style={{padding:'0.5rem',borderRadius:8,border:'1px solid #ddd'}} />
+        <input id="newPassword" name="newPassword" type="password" placeholder="Password" value={newPass} onChange={e=>setNewPass(e.target.value)} style={{padding:'0.5rem',borderRadius:8,border:'1px solid #ddd'}} />
         <button style={{padding:'0.5rem 0.75rem',background:'#0057b8',color:'#fff',border:'none',borderRadius:8}}>Create</button>
         <button type="button" onClick={load} style={{padding:'0.5rem 0.75rem',borderRadius:8}}>Reload</button>
       </form>

@@ -537,6 +537,8 @@ const AdminDashboard: React.FC = () => {
                   
                   {/* Search Input */}
                   <input
+                    id="searchUsername"
+                    name="searchUsername"
                     type="text"
                     placeholder="🔍 Search by username..."
                     value={searchUsername}
@@ -903,6 +905,8 @@ const AdminDashboard: React.FC = () => {
             )}
 
             <input
+              id="currentPassword"
+              name="currentPassword"
               type="password"
               placeholder="Current Password"
               value={currentPassword}
@@ -919,6 +923,8 @@ const AdminDashboard: React.FC = () => {
             />
 
             <input
+              id="newPassword"
+              name="newPassword"
               type="password"
               placeholder="New Password"
               value={newPassword}
@@ -935,6 +941,8 @@ const AdminDashboard: React.FC = () => {
             />
 
             <input
+              id="confirmPassword"
+              name="confirmPassword"
               type="password"
               placeholder="Confirm New Password"
               value={confirmPassword}

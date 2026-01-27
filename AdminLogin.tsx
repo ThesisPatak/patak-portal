@@ -157,6 +157,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             {/* Username Field */}
             <div style={{ marginBottom: "1rem", textAlign: "left" }}>
               <input
+                id="adminUsername"
+                name="adminUsername"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -189,6 +191,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             {/* Password Field */}
             <div style={{ marginBottom: "1rem", textAlign: "left", position: "relative" }}>
               <input
+                id="adminPassword"
+                name="adminPassword"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
