@@ -59,14 +59,11 @@ function generateBillingHistory(readings, createdAt, payments = []) {
     latestMeterReading = sortedDesc[0].cubicMeters || 0;
   }
   
-  // If no readings, use createdAt as reference
-  if (!firstReadingDate) {
-    firstReadingDate = new Date(createdAt);
-  }
-  
-  // Generate current + next 31-day billing period (continuous billing cycle)
+  // Generate two 31-day billing cycles starting from account creation date
+  const billingBaseDate = new Date(createdAt);
+
   for (let i = 0; i < 2; i++) {
-    const periodStartDate = new Date(firstReadingDate);
+    const periodStartDate = new Date(billingBaseDate);
     periodStartDate.setDate(periodStartDate.getDate() + (i * 31));
     
     const periodEndDate = new Date(periodStartDate);

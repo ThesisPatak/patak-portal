@@ -245,24 +245,11 @@ const AdminDashboard: React.FC = () => {
       latestMeterReading = sorted[0].cubicMeters || 0;
     }
 
-    // Generate two 31-day billing cycles starting from the first reading (or account creation)
-    const allReadingsSortedAsc = (allReadings || []).sort((a: any, b: any) => {
-      const da = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
-      const db = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
-      return da.getTime() - db.getTime();
-    });
-
-    let firstReadingDate: Date | null = null;
-    if (allReadingsSortedAsc.length > 0) {
-      firstReadingDate = allReadingsSortedAsc[0].receivedAt ? new Date(allReadingsSortedAsc[0].receivedAt) : new Date(allReadingsSortedAsc[0].timestamp);
-    }
-
-    if (!firstReadingDate) {
-      firstReadingDate = new Date(createdAt);
-    }
+    // Generate two 31-day billing cycles starting from account creation date
+    const billingBaseDate = new Date(createdAt);
 
     for (let i = 0; i < 2; i++) {
-      const periodStartDate = new Date(firstReadingDate);
+      const periodStartDate = new Date(billingBaseDate);
       periodStartDate.setDate(periodStartDate.getDate() + (i * 31));
       const periodEndDate = new Date(periodStartDate);
       periodEndDate.setDate(periodEndDate.getDate() + 31);
