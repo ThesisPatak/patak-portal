@@ -96,20 +96,9 @@ function generateBillingHistory(readings, createdAt, payments = []) {
       const lastReading = periodReadings[periodReadings.length - 1];
       // Consumption = Meter at period end - Meter at period start
       consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
-    } else if (billStatus === 'Current') {
-      // No readings this period yet, use meter reading from last payment as baseline
-      const billingMonth = periodStartDate.getMonth() + 1;
-      const billingYear = periodStartDate.getFullYear();
-      const lastPayment = payments.find(p => 
-        p.billingMonth === billingMonth && 
-        p.billingYear === billingYear &&
-        p.meterReadingAtPayment !== undefined
-      );
-      if (lastPayment) {
-        // Consumption = Current meter - meter at last payment
-        consumption = Math.max(0, latestMeterReading - lastPayment.meterReadingAtPayment);
-      }
     }
+    // Note: For periods with no readings, consumption stays 0
+    // which will trigger minimum charge in computeResidentialBill()
     
     const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
     const amountDue = computeResidentialBill(consumption);
