@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 
 interface BillingPeriod {
   month: string;
-  monthDate: Date;
   consumption: string;
   totalConsumption: string;
   amountDue: string;
@@ -10,15 +9,12 @@ interface BillingPeriod {
   statusColor: string;
   statusIcon: string;
   dueDate: string;
-  billingMonth?: number;
-  billingYear?: number;
-  paymentDate?: string;  // Payment timestamp (if paid)
-  paymentAmount?: string; // Payment amount (if paid)
+  paymentDate?: string;
+  paymentAmount?: string;
 }
 
 const BillingTable: React.FC = () => {
   const [billingHistory, setBillingHistory] = useState<BillingPeriod[]>([]);
-  const [usageData, setUsageData] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,7 +157,6 @@ const BillingTable: React.FC = () => {
 
       history.push({
         month: monthStr,
-        monthDate: periodStartDate,
         consumption: consumption.toFixed(6),
         totalConsumption: totalConsumption,
         amountDue: amountDue.toFixed(2),
@@ -169,22 +164,23 @@ const BillingTable: React.FC = () => {
         statusColor,
         statusIcon,
         dueDate: periodEndDate.toISOString().split('T')[0],
-        billingMonth,
-        billingYear,
         paymentDate,
         paymentAmount,
-        isPaid,
       });
     }
 
     // Only show current cycle, and next cycle only if current is paid
     let visibleCycles = [];
     
-    // Always show first cycle (current)
     if (history.length > 0) {
-      // Check ORIGINAL status before modifying
-      if (history[0].isPaid) {
-        // First is paid, show it as Paid and next as Current
+      const firstCyclePaid = !!payments.find(p => 
+        p.billingMonth === history[0].dueDate?.split('-')[1] && 
+        p.billingYear === history[0].dueDate?.split('-')[0] &&
+        (p.status === 'verified' || p.status === 'PAID')
+      );
+      
+      if (firstCyclePaid) {
+        // First cycle is paid, show it as Paid and next as Current
         history[0].billStatus = 'Paid';
         history[0].statusColor = '#059669';
         history[0].statusIcon = '✅';
@@ -198,7 +194,7 @@ const BillingTable: React.FC = () => {
           visibleCycles.push(history[1]);
         }
       } else {
-        // First is not paid, show it as Current only
+        // First cycle is not paid, show it as Current only
         history[0].billStatus = 'Current';
         history[0].statusColor = '#4CAF50';
         history[0].statusIcon = '📊';
@@ -235,7 +231,6 @@ const BillingTable: React.FC = () => {
           }
 
           if (mounted) {
-            setUsageData(dashboardData);
             setPayments(paymentsData);
 
             // Generate billing history with payment status
@@ -288,7 +283,7 @@ const BillingTable: React.FC = () => {
 
   return (
     <section>
-      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>📋 Billing Period (Current + Next) v2.0</h2>
+      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>📋 Billing Period (Current + Next)</h2>
       {billingHistory.length === 0 ? (
         <div style={{ padding: '1rem', color: '#888' }}>No billing history available.</div>
       ) : (
