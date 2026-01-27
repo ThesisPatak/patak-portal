@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Patak Mobile",
-    "slug": "patak-mobile",
+    "slug": "patak-mobile-v2",
     "version": "1.0.0",
     "sdkVersion": "51.0.0",
     "icon": "./assets/Wicon.png",
@@ -27,11 +27,6 @@
       "supportsTabletOS": true,
       "bundleIdentifier": "com.patak.mobile"
     },
-    "owner": "deploypatak",
-    "extra": {
-      "eas": {
-        "projectId": "6394acab-d06a-437b-8aff-021dd1592604"
-      }
-    }
+    "owner": "deploypatak"
   }
 }

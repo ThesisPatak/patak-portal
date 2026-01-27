@@ -210,7 +210,11 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
     const fetchDeviceReadings = () => {
       houses.forEach(houseId => {
         const originalDeviceId = keyMap[houseId];
-        fetch(`/api/readings/${originalDeviceId}`)
+        fetch(`/api/readings/${originalDeviceId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
           .then(res => res.json())
           .then(data => {
             setDeviceReadings(prev => ({ ...prev, [houseId]: data.byDevice || {} }));
@@ -226,7 +230,7 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ token, username, onLogo
     const interval = setInterval(fetchDeviceReadings, 5000);
 
     return () => clearInterval(interval);
-  }, [houses.join(",")]);
+  }, [houses.join(","), token]);
 
   return (
     <>

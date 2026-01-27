@@ -50,10 +50,9 @@ const BillingTable: React.FC = () => {
     return Number(total.toFixed(2));
   }
 
-  // Generates billing history based on first reading date + 1 month cycles
+  // Generates billing history based on first reading date + 31-day cycles
   function generateBillingHistory(readings: any[], createdAt: string, payments: any[] = []): BillingPeriod[] {
     const history: BillingPeriod[] = [];
-    const now = new Date();
 
     // Get the latest meter reading (cumulative total)
     const allReadings = readings || [];
@@ -83,13 +82,13 @@ const BillingTable: React.FC = () => {
       firstReadingDate = new Date(createdAt);
     }
 
-    // Generate 12 billing periods starting from first reading date
-    for (let i = 0; i < 12; i++) {
+    // Generate current + next 31-day billing period (continuous billing cycle)
+    for (let i = 0; i < 2; i++) {
       const periodStartDate = new Date(firstReadingDate);
-      periodStartDate.setMonth(periodStartDate.getMonth() + i);
+      periodStartDate.setDate(periodStartDate.getDate() + (i * 31));
       
-      const periodEndDate = new Date(firstReadingDate);
-      periodEndDate.setMonth(periodEndDate.getMonth() + i + 1);
+      const periodEndDate = new Date(periodStartDate);
+      periodEndDate.setDate(periodEndDate.getDate() + 31);
 
       // Get readings for this period
       const periodReadings = (readings || [])
@@ -105,24 +104,10 @@ const BillingTable: React.FC = () => {
 
       let consumption = 0;
 
-      // Determine bill status
+      // Status will be determined after payment check
       let billStatus = 'Pending';
       let statusColor = '#ff9800';
       let statusIcon = '⏳';
-
-      if (now > periodEndDate) {
-        billStatus = 'Overdue';
-        statusColor = '#ff6b6b';
-        statusIcon = '🔴';
-      } else if (now >= periodStartDate && now < periodEndDate) {
-        billStatus = 'Current';
-        statusColor = '#4CAF50';
-        statusIcon = '📊';
-      } else if (now < periodStartDate) {
-        billStatus = 'Upcoming';
-        statusColor = '#2196F3';
-        statusIcon = '📅';
-      }
 
       // Calculate consumption as DIFFERENCE between period readings (not cumulative total)
       // This properly resets with each billing period
@@ -149,8 +134,9 @@ const BillingTable: React.FC = () => {
       const monthStr = periodStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
       const amountDue = computeResidentialBill(consumption);
 
-      // Total consumption only for past/current periods, 0 for upcoming
-      const totalConsumption = (billStatus === 'Upcoming') ? '0.000000' : latestMeterReading.toFixed(6);
+      // Total consumption shows the cumulative meter reading
+      // For upcoming periods with no consumption data yet, still apply minimum charge
+      const totalConsumption = latestMeterReading.toFixed(6);
 
       // Calculate billing month and year for this period
       const billingMonth = periodStartDate.getMonth() + 1;
@@ -163,25 +149,21 @@ const BillingTable: React.FC = () => {
         (p.status === 'verified' || p.status === 'PAID')
       );
 
-      // Update status to PAID if payment found and is within billing period
+      // Update status to PAID if payment found
       let paymentDate = '';
       let paymentAmount = '';
       if (payment && payment.createdAt) {
-        const paymentTime = new Date(payment.createdAt);
-        // Only show as PAID if payment was made during or within the billing period
-        if (paymentTime >= periodStartDate && paymentTime <= periodEndDate) {
-          billStatus = 'Paid';
-          statusColor = '#059669';
-          statusIcon = '✅';
-          paymentDate = new Date(payment.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          paymentAmount = payment.amount ? `₱${Number(payment.amount).toFixed(2)}` : '';
-        }
+        billStatus = 'Paid';
+        statusColor = '#059669';
+        statusIcon = '✅';
+        paymentDate = new Date(payment.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        paymentAmount = payment.amount ? `₱${Number(payment.amount).toFixed(2)}` : '';
       }
 
       history.push({
@@ -199,6 +181,21 @@ const BillingTable: React.FC = () => {
         paymentDate,
         paymentAmount,
       });
+    }
+
+    // Apply payment chain logic: if first is paid, second becomes Current
+    for (let idx = 0; idx < history.length; idx++) {
+      if (history[idx].billStatus === 'Paid' && idx + 1 < history.length) {
+        history[idx + 1].billStatus = 'Current';
+        history[idx + 1].statusColor = '#4CAF50';
+        history[idx + 1].statusIcon = '📊';
+      } else if (history[idx].billStatus !== 'Paid' && history[idx].billStatus !== 'Current') {
+        // Mark first unpaid as Current
+        history[idx].billStatus = 'Current';
+        history[idx].statusColor = '#4CAF50';
+        history[idx].statusIcon = '📊';
+        break;
+      }
     }
 
     return history;
@@ -283,7 +280,7 @@ const BillingTable: React.FC = () => {
 
   return (
     <section>
-      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>📋 Billing History (12 Months)</h2>
+      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>📋 Billing Period (Current + Next)</h2>
       {billingHistory.length === 0 ? (
         <div style={{ padding: '1rem', color: '#888' }}>No billing history available.</div>
       ) : (

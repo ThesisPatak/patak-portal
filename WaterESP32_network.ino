@@ -134,6 +134,15 @@ void handleSerial() {
     } else if (s.equalsIgnoreCase("send")) {
       Serial.println("Manual send requested.");
       sendReading();
+    } else if (s.equalsIgnoreCase("clear")) {
+      // Clear the device token
+      DEVICE_TOKEN = "";
+      prefs.begin("flow", false);
+      prefs.putString("deviceToken", DEVICE_TOKEN);
+      prefs.end();
+      Serial.println("[TOKEN] ✓ Device token cleared!");
+      Serial.println("[TOKEN] Token removed from flash storage.");
+      Serial.println("[TOKEN] Device will now poll for a new token from the backend.");
     } else if (s.startsWith("token ")) {
       String newToken = s.substring(6);
       DEVICE_TOKEN = newToken;
@@ -158,7 +167,7 @@ void handleSerial() {
       Serial.println(WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected");
     } else {
       Serial.println("Commands: r (reset), c <val> (calibrate), p (pulses), cal <liters> (calibrate),");
-      Serial.println("send (send reading), token <device_token> (set auth token), status (show status)");
+      Serial.println("send (send reading), clear (clear token), token <device_token> (set auth token), status (show status)");
     }
   }
 }
@@ -519,6 +528,8 @@ void setup() {
   Serial.println("  c <value>    -> set pulses-per-liter, e.g. 'c 339.250358' (saves)");
   Serial.println("  p            -> print total accumulated pulses");
   Serial.println("  cal <liters> -> compute PPL = totalPulsesAccum / <liters>, apply & save");
+  Serial.println("  send         -> manually send reading to backend");
+  Serial.println("  clear        -> clear device token and restart polling");
   Serial.println();
 }
 

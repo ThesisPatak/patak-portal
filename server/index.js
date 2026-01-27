@@ -863,6 +863,15 @@ app.post('/api/readings', async (req, res) => {
   const { house, totalLiters, cubicMeters, timestamp: reqTimestamp } = req.body || {}
   console.log(`[ESP32-READING] Parsed reading data: house=${house}, totalLiters=${totalLiters}, cubicMeters=${cubicMeters}, deviceId=${deviceId}`)
   
+  // CRITICAL VALIDATION: Check if device actually exists in database
+  const devices = readJSON(DEVICES_FILE)
+  const device = devices.find(d => d.deviceId === deviceId)
+  if (!device) {
+    console.log(`[ESP32-READING] ✗ REJECTED - Device not found in database: ${deviceId}`)
+    return res.status(403).json({ error: 'Device not registered. Please register device first.' })
+  }
+  console.log(`[ESP32-READING] ✓ Device validated: ${deviceId} belongs to user ${device.ownerUserId}`)
+  
   // CRITICAL VALIDATION: Ensure all values are valid numbers
   if (!house || totalLiters === undefined || cubicMeters === undefined) {
     console.log(`[ESP32-READING] ✗ REJECTED - Missing required fields`)
