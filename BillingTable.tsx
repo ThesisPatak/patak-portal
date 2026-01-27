@@ -288,7 +288,7 @@ const BillingTable: React.FC = () => {
 
   return (
     <section>
-      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>📋 Billing Period (Current + Next)</h2>
+      <h2 style={{ color: "#0057b8", marginBottom: 12 }}>📋 Billing Period (Current + Next) v2.0</h2>
       {billingHistory.length === 0 ? (
         <div style={{ padding: '1rem', color: '#888' }}>No billing history available.</div>
       ) : (
