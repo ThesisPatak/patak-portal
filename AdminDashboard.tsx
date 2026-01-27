@@ -704,7 +704,7 @@ const AdminDashboard: React.FC = () => {
                               <div>
                                 <div style={{ color: "#666", marginBottom: "0.2rem" }}>Due Date</div>
                                 <div style={{ fontSize: "0.85rem", color: "#999" }}>
-                                  {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
+                                  {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split("T")[0]}
                                 </div>
                               </div>
                               <div>
@@ -797,7 +797,7 @@ const AdminDashboard: React.FC = () => {
                                 ₱{user.monthlyBill.toFixed(2)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", color: "#666", fontSize: "0.95rem" }}>
-                                {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split("T")[0]}
+                                {user.cubicMeters === 0 ? 'Not yet active' : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split("T")[0]}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
                                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
