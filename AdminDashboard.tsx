@@ -1195,14 +1195,14 @@ const AdminDashboard: React.FC = () => {
                             </td>
                             <td style={{ padding: "0.75rem", textAlign: "center" }}>
                               {(() => {
-                                const billDate = new Date(bill.dueDate);
                                 const payment = userPayments.find(p => 
-                                  p.billingMonth === (billDate.getMonth() + 1) && 
-                                  p.billingYear === billDate.getFullYear()
+                                  p.billingMonth === bill.billingMonth && 
+                                  p.billingYear === bill.billingYear &&
+                                  (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
                                 );
                                 
                                 if (payment) {
-                                  const paymentDate = payment.verifiedAt || payment.submittedAt || payment.paidAt;
+                                  const paymentDate = payment.paymentDate || payment.verifiedAt || payment.submittedAt || payment.paidAt;
                                   const formattedDate = paymentDate ? new Date(paymentDate).toLocaleDateString() : 'Unknown';
                                   
                                   return (
