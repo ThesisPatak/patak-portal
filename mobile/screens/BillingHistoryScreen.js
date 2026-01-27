@@ -114,24 +114,28 @@ function generateBillingHistory(readings, createdAt, payments = []) {
     const payment = payments.find(p => 
       p.billingMonth === billingMonth && 
       p.billingYear === billingYear && 
-      (p.status === 'verified' || p.status === 'PAID')
+      (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
     );
     
     // Update status to PAID if payment found
     let paymentDate = '';
     let isPaid = false;
-    if (payment && payment.createdAt) {
+    if (payment) {
       billStatus = 'Paid';
       statusColor = '#059669';
       statusIcon = '✅';
       isPaid = true;
-      paymentDate = new Date(payment.createdAt).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      // Use paymentDate if available, otherwise createdAt
+      const dateToUse = payment.paymentDate || payment.createdAt;
+      if (dateToUse) {
+        paymentDate = new Date(dateToUse).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
     }
     
     history.push({
@@ -215,7 +219,8 @@ export default function BillingHistoryScreen({ token, username, onBack }) {
       // Get payment history FIRST before generating billing history
       let paymentsList = [];
       try {
-        const paymentsRes = await fetch(`https://patak-portal-production.up.railway.app/api/payments/${encodeURIComponent(username)}`, {
+        const baseUrl = await Api.getServerUrl();
+        const paymentsRes = await fetch(`${baseUrl}/api/payments/${encodeURIComponent(username)}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (paymentsRes.ok) {
