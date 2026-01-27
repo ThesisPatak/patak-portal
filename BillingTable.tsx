@@ -21,7 +21,8 @@ const BillingTable: React.FC = () => {
 
   function computeResidentialBill(usage: number) {
     const MINIMUM = 255.0;
-    if (!usage || usage <= 0) return 0;
+    // Always charge minimum (₱255) even if no usage
+    if (!usage || usage <= 0) return MINIMUM;
     if (usage <= 10) return Number(MINIMUM.toFixed(2));
     let excess = usage - 10;
     let total = MINIMUM;
