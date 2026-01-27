@@ -282,10 +282,33 @@ const AdminDashboard: React.FC = () => {
         billStatus = 'Upcoming';
       }
 
-      // For current month, show latest meter reading. For past months, show difference between readings in that month
-      if (billStatus === 'Current') {
-        consumption = latestMeterReading;
+      // Determine a sensible baseline for the period start:
+      // 1) use the last reading BEFORE the period start if available (best baseline)
+      // 2) otherwise, if there is a reading inside the period, use the first reading of the period
+      // 3) otherwise baseline = 0
+      let periodStartMeterReading = 0;
+      const readingsBeforePeriod = (readings || []).filter((r: any) => {
+        const rd = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
+        return rd < periodStartDate;
+      }).sort((a: any, b: any) => {
+        const da = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
+        const db = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
+        return da.getTime() - db.getTime();
+      });
+
+      if (readingsBeforePeriod.length > 0) {
+        periodStartMeterReading = readingsBeforePeriod[readingsBeforePeriod.length - 1].cubicMeters || 0;
       } else if (periodReadings.length > 0) {
+        periodStartMeterReading = periodReadings[0].cubicMeters || 0;
+      } else {
+        periodStartMeterReading = 0;
+      }
+
+      // For current month, calculate usage since period start baseline (latest cumulative - baseline)
+      if (billStatus === 'Current') {
+        consumption = Math.max(0, latestMeterReading - periodStartMeterReading);
+      } else if (periodReadings.length > 0) {
+        // Past months: consumption is last - first within the period
         const firstReading = periodReadings[0];
         const lastReading = periodReadings[periodReadings.length - 1];
         consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
