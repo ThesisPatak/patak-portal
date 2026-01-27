@@ -83,7 +83,9 @@ const BillingTable: React.FC = () => {
     }
 
     // Generate current + next 31-day billing period (continuous billing cycle)
-    for (let i = 0; i < 2; i++) {
+    // Limit to 2 cycles maximum
+    const maxCycles = 2;
+    for (let i = 0; i < maxCycles; i++) {
       const periodStartDate = new Date(firstReadingDate);
       periodStartDate.setDate(periodStartDate.getDate() + (i * 31));
       
@@ -215,6 +217,7 @@ const BillingTable: React.FC = () => {
       }
     }
 
+    console.log('Billing History Filter Result:', { totalGenerated: history.length, visibleCount: visibleCycles.length, cycles: visibleCycles });
     return visibleCycles;
   }
 
