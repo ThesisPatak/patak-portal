@@ -138,7 +138,7 @@ const BillingTable: React.FC = () => {
       const payment = payments.find(p => 
         p.billingMonth === billingMonth && 
         p.billingYear === billingYear && 
-        (p.status === 'verified' || p.status === 'PAID')
+        (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
       );
 
       // Update status to PAID if payment found
@@ -181,7 +181,7 @@ const BillingTable: React.FC = () => {
       const firstCyclePaid = !!payments.find(p => 
         p.billingMonth === history[0].dueDate?.split('-')[1] && 
         p.billingYear === history[0].dueDate?.split('-')[0] &&
-        (p.status === 'verified' || p.status === 'PAID')
+        (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
       );
       
       if (firstCyclePaid) {

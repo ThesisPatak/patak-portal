@@ -2463,6 +2463,31 @@ app.get('/payment/success', (req, res) => {
   console.log(`\n[${timestamp}] [PAYMENT-SUCCESS] Payment success callback`)
   console.log(`[PAYMENT-SUCCESS] Reference: ${reference}`)
   
+  // Update payment status in database
+  if (reference) {
+    try {
+      const payments = readJSON(PAYMENTS_FILE)
+      const paymentIndex = payments.findIndex(p => p.referenceNumber === reference)
+      
+      if (paymentIndex !== -1) {
+        const payment = payments[paymentIndex]
+        console.log(`[PAYMENT-SUCCESS] Found payment: ${payment.username} - ₱${payment.amount} (${payment.billingMonth}/${payment.billingYear})`)
+        
+        // Update status to confirmed
+        payment.status = 'confirmed'
+        payment.confirmedAt = timestamp
+        payments[paymentIndex] = payment
+        writeJSON(PAYMENTS_FILE, payments)
+        
+        console.log(`[PAYMENT-SUCCESS] ✓ Payment marked as confirmed for ${payment.username}`)
+      } else {
+        console.log(`[PAYMENT-SUCCESS] ⚠ Payment not found for reference: ${reference}`)
+      }
+    } catch (err) {
+      console.error(`[PAYMENT-SUCCESS] Error updating payment status:`, err.message)
+    }
+  }
+  
   // Send HTML response to user
   res.send(`
     <!DOCTYPE html>
