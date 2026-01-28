@@ -19,11 +19,11 @@ function calculateFlowRate(liters, durationSeconds) {
 }
 
 // Tiered water billing calculation - MUST MATCH SERVER & DASHBOARD
+// Import from a shared utility or use the same logic as DashboardScreenMinimal
 function calculateWaterBill(cubicMeters) {
   const MINIMUM_CHARGE = 255.00;
   const FREE_USAGE = 10; // cubic meters included in minimum
   
-  // No bill if no consumption
   if (cubicMeters <= 0) {
     return 0;
   }
@@ -33,15 +33,12 @@ function calculateWaterBill(cubicMeters) {
   }
   
   const excess = cubicMeters - FREE_USAGE;
-  
-  // Apply tiered rates for usage above 10 m³
   const tier1 = Math.min(excess, 10);           // 11-20 m³: 33.00 per m³
   const tier2 = Math.min(Math.max(excess - 10, 0), 10);  // 21-30 m³: 40.50 per m³
   const tier3 = Math.min(Math.max(excess - 20, 0), 10);  // 31-40 m³: 48.00 per m³
   const tier4 = Math.max(excess - 30, 0);      // 41+ m³: 55.50 per m³
   
   const excessCharge = (tier1 * 33.00) + (tier2 * 40.50) + (tier3 * 48.00) + (tier4 * 55.50);
-  
   return Math.round((MINIMUM_CHARGE + excessCharge) * 100) / 100;
 }
 

@@ -358,6 +358,11 @@ function generateId(prefix = 'id') {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random()*1000)}`
 }
 
+// Helper function for consistent reading sorting (descending by date)
+function sortReadingsByDateDesc(readings) {
+  return readings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
+}
+
 // Tiered water billing calculation based on official schedule
 // Minimum: 255.00 PHP for up to 10 m³
 // Excess rates: 11-20: 33.00, 21-30: 40.50, 31-40: 48.00, 41+: 55.50 PHP per m³
@@ -685,10 +690,10 @@ app.get('/api/houses', authMiddleware, (req, res) => {
   
   userDevices.forEach(device => {
     const now = new Date()
-    const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId).sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
+    const deviceReadings = allReadings.filter(r => r.deviceId === device.deviceId)
+    sortReadingsByDateDesc(deviceReadings) // Sort in place
     console.log('[HOUSES] Device', device.deviceId, 'has', deviceReadings.length, 'readings')
     const lastReading = deviceReadings[0]
-    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
     
     const readingsThisMonth = deviceReadings.filter(r => {
       // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
@@ -1026,15 +1031,14 @@ app.get('/api/user/readings', authMiddleware, (req, res) => {
     // Users must explicitly register a device to see readings
     
     // Sort by receivedAt descending (newest first)
-    // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
-    const sortedReadings = userReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
+    sortReadingsByDateDesc(userReadings)
     
     res.json({ 
-      history: sortedReadings,
+      history: userReadings,
       summary: {
-        totalReadings: sortedReadings.length,
+        totalReadings: userReadings.length,
         deviceCount: userDevices.length,
-        latestReading: sortedReadings[0] || null,
+        latestReading: userReadings[0] || null,
         deviceRegistered: userDevices.length > 0
       }
   })
@@ -1087,12 +1091,11 @@ app.get('/api/usage/history', authMiddleware, (req, res) => {
   }
   
   // Sort by receivedAt descending (newest first)
-  // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
-  const sortedReadings = userReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
+  sortReadingsByDateDesc(userReadings)
   
   // Apply pagination
-  const total = sortedReadings.length
-  const paginated = sortedReadings.slice(offsetNum, offsetNum + limitNum)
+  const total = userReadings.length
+  const paginated = userReadings.slice(offsetNum, offsetNum + limitNum)
   
   // Calculate statistics
   const stats = {
@@ -2323,9 +2326,8 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     // Users must explicitly register a device to see readings
     
     // Sort by receivedAt (server timestamp) descending to get latest reading
-    // Use receivedAt instead of timestamp since timestamp may be stuck at 1970 due to ESP32 NTP issues
-    const sortedReadings = deviceReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
-    const latestReading = sortedReadings[0]
+    sortReadingsByDateDesc(deviceReadings)
+    const latestReading = deviceReadings[0]
     
     // Calculate Current, Previous, and Total Consumption based on billing cycles
     // Billing periods are 31-day cycles starting from account creation date

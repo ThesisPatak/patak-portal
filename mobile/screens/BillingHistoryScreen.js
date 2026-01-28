@@ -99,8 +99,11 @@ function generateBillingHistory(readings, createdAt, payments = []) {
       // No readings in this period, but previous period had readings
       // Use the latest meter reading from all data to show current consumption
       consumption = Math.max(0, latestMeterReading - previousPeriodLastReading);
+    } else if (i === 0 && allReadings.length > 0) {
+      // First period with readings but no period-specific readings yet - show current meter reading
+      consumption = Math.max(0, latestMeterReading);
     }
-    // Note: For periods with no readings, consumption stays 0
+    // Note: For periods with no readings at all, consumption stays 0
     // which will trigger minimum charge in computeResidentialBill()
     
     const monthStr = `${periodStartDate.toLocaleString('default',{month:'short', day:'numeric'})} – ${new Date(periodEndDate.getTime()-1).toLocaleString('default',{month:'short', day:'numeric', year:'numeric'})}`;
