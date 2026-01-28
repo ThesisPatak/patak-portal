@@ -2463,7 +2463,7 @@ app.get('/payment/success', (req, res) => {
   console.log(`\n[${timestamp}] [PAYMENT-SUCCESS] Payment success callback`)
   console.log(`[PAYMENT-SUCCESS] Reference: ${reference}`)
   
-  // Update payment status in database
+  // Update payment status in database and calculate final consumption
   if (reference) {
     try {
       const payments = readJSON(PAYMENTS_FILE)
@@ -2473,6 +2473,47 @@ app.get('/payment/success', (req, res) => {
         const payment = payments[paymentIndex]
         console.log(`[PAYMENT-SUCCESS] Found payment: ${payment.username} - ₱${payment.amount} (${payment.billingMonth}/${payment.billingYear})`)
         
+        // Calculate final consumption for this paid period
+        const readings = readJSON(READINGS_FILE)
+        const userReadings = readings.filter(r => r.userId === payment.userId)
+        
+        // Get the period dates for this billing month/year
+        const users = readJSON(USERS_FILE)
+        const user = users.find(u => u.id === payment.userId)
+        
+        if (user) {
+          const billingBaseDate = new Date(user.createdAt)
+          // Calculate which period this payment is for (0 = first, 1 = second, etc)
+          const billingCycleNum = payment.billingMonth === (new Date(user.createdAt).getMonth() + 1) ? 0 : 1
+          
+          const periodStartDate = new Date(billingBaseDate)
+          periodStartDate.setDate(periodStartDate.getDate() + (billingCycleNum * 31))
+          const periodEndDate = new Date(periodStartDate)
+          periodEndDate.setDate(periodEndDate.getDate() + 31)
+          
+          // Get readings for this specific period
+          const periodReadings = userReadings.filter(r => {
+            const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp)
+            return readingDate >= periodStartDate && readingDate < periodEndDate
+          }).sort((a, b) => {
+            const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp)
+            const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp)
+            return dateA.getTime() - dateB.getTime()
+          })
+          
+          // Calculate final consumption for this paid cycle
+          let finalConsumption = 0
+          if (periodReadings.length > 0) {
+            const firstReading = periodReadings[0].cubicMeters
+            const lastReading = periodReadings[periodReadings.length - 1].cubicMeters
+            finalConsumption = Math.max(0, lastReading - firstReading)
+          }
+          
+          // Store final consumption in payment record (locked for this period)
+          payment.finalConsumption = finalConsumption
+          payment.finalMeterReading = periodReadings.length > 0 ? periodReadings[periodReadings.length - 1].cubicMeters : 0
+        }
+        
         // Update status to confirmed
         payment.status = 'confirmed'
         payment.confirmedAt = timestamp
@@ -2480,6 +2521,7 @@ app.get('/payment/success', (req, res) => {
         writeJSON(PAYMENTS_FILE, payments)
         
         console.log(`[PAYMENT-SUCCESS] ✓ Payment marked as confirmed for ${payment.username}`)
+        console.log(`[PAYMENT-SUCCESS] Final consumption locked: ${payment.finalConsumption || 0} m³`)
       } else {
         console.log(`[PAYMENT-SUCCESS] ⚠ Payment not found for reference: ${reference}`)
       }
@@ -2563,7 +2605,7 @@ app.get('/payment/success', (req, res) => {
         <div class="success-icon">✅</div>
         <h1>Payment Successful!</h1>
         <p>Thank you for your payment.</p>
-        <div class="message">Your bill has been marked as paid.</div>
+        <div class="message">Your bill has been marked as paid and consumption is locked.</div>
         <div class="reference">Reference: ${reference || 'N/A'}</div>
         <p style="font-size: 14px; color: #999;">You can now close this window.</p>
         <button class="close-btn" onclick="window.close()">Close</button>
