@@ -76,6 +76,7 @@ const BillingTable: React.FC = () => {
 
     // Generate two 31-day billing cycles starting from account creation date
     const billingBaseDate = new Date(createdAt);
+    let previousPeriodLastReading = 0; // Track meter reading at end of previous period
 
     // Generate current + next 31-day billing period (continuous billing cycle)
     // Limit to 2 cycles maximum
@@ -113,6 +114,11 @@ const BillingTable: React.FC = () => {
         const lastReading = periodReadings[periodReadings.length - 1];
         // Consumption = Meter at period end - Meter at period start
         consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+        previousPeriodLastReading = lastReading.cubicMeters; // Store for next cycle
+      } else if (i > 0 && previousPeriodLastReading > 0) {
+        // No readings in this period, but previous period had readings
+        // Use the latest meter reading from all data to show current consumption
+        consumption = Math.max(0, latestMeterReading - previousPeriodLastReading);
       }
       // Note: For periods with no readings, consumption stays 0
       // which will trigger minimum charge in computeResidentialBill()

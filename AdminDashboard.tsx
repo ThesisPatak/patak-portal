@@ -247,6 +247,7 @@ const AdminDashboard: React.FC = () => {
 
     // Generate two 31-day billing cycles starting from account creation date
     const billingBaseDate = new Date(createdAt);
+    let previousPeriodLastReading = 0; // Track meter reading at end of previous period
 
     for (let i = 0; i < 2; i++) {
       const periodStartDate = new Date(billingBaseDate);
@@ -273,9 +274,14 @@ const AdminDashboard: React.FC = () => {
 
       // Calculate consumption as DIFFERENCE between period readings (not cumulative total)
       if (periodReadings.length > 0) {
-        const firstReading = periodReadings[0];
-        const lastReading = periodReadings[periodReadings.length - 1];
-        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+        const firstReading = periodReadings[0].cubicMeters;
+        const lastReading = periodReadings[periodReadings.length - 1].cubicMeters;
+        consumption = Math.max(0, lastReading - firstReading);
+        previousPeriodLastReading = lastReading; // Store for next cycle
+      } else if (i > 0 && previousPeriodLastReading > 0) {
+        // No readings in this period, but previous period had readings
+        // Use the latest meter reading from all data to show current consumption
+        consumption = Math.max(0, latestMeterReading - previousPeriodLastReading);
       }
 
       const monthStr = `${periodStartDate.toLocaleString('default',{month:'short', day:'numeric'})} – ${new Date(periodEndDate.getTime()-1).toLocaleString('default',{month:'short', day:'numeric', year:'numeric'})}`;
