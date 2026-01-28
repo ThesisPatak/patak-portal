@@ -2434,7 +2434,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       cubicMeters: currentConsumption,
       totalLiters: currentConsumption * 1000,
       deviceCount: userDevices.length,
-      lastReading: latestReading ? latestReading.timestamp : null,
+      lastReading: latestReading ? { cubicMeters: latestReading.cubicMeters, timestamp: latestReading.timestamp } : null,
       devices: userDevices.map(d => {
         // Compute device status dynamically based on lastSeen timestamp
         // A device is considered 'online' if:

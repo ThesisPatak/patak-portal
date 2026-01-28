@@ -1151,7 +1151,7 @@ const AdminDashboard: React.FC = () => {
                     <div>
                       <span style={{ color: "#666", fontWeight: 600 }}>Total Usage:</span>
                       <div style={{ color: "#333", marginTop: "0.25rem" }}>
-                        {users.find(u => u.id === selectedUserId)?.cubicMeters.toFixed(6) || "0.000000"} m³
+                        {users.find(u => u.id === selectedUserId)?.totalConsumption.toFixed(6) || "0.000000"} m³
                       </div>
                     </div>
                     <div>
