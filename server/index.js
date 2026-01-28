@@ -2376,6 +2376,8 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentConsumption = Math.max(0, lastReading - firstReading)
     }
     
+    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}, Readings: ${currentPeriodReadings.length}, Consumption: ${currentConsumption}`)
+    
     // Previous Consumption = consumption in previous completed period
     // If a payment exists for previous period, use locked consumption; otherwise calculate from readings
     let previousConsumption = 0
