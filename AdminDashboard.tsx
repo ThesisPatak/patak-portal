@@ -1191,7 +1191,7 @@ const AdminDashboard: React.FC = () => {
                             <td style={{ padding: "0.75rem", color: "#333", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.month}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{bill.consumption}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#666", fontSize: "0.9rem" }}>
-                              {bill.billStatus === 'Current' && idx > 0 ? (arr[idx - 1]?.consumption || '—') : '—'}
+                              {bill.billStatus === 'Paid' && idx > 0 ? (arr[idx - 1]?.consumption || '—') : '—'}
                             </td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{bill.totalConsumption}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
