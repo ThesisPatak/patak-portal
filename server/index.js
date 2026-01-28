@@ -2348,6 +2348,25 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const currentPeriodEnd = new Date(currentPeriodStart)
     currentPeriodEnd.setDate(currentPeriodEnd.getDate() + 31)
     
+    // Get all payments for this user
+    const payments = readJSON(PAYMENTS_FILE)
+    const userPayments = payments.filter(p => p.username === user.username)
+    
+    // Check if current calculated period has a payment - if so, move to next period
+    const currentMonth = currentPeriodStart.getMonth() + 1
+    const currentYear = currentPeriodStart.getFullYear()
+    const paymentForCurrentPeriod = userPayments.find(p =>
+      p.billingMonth === currentMonth &&
+      p.billingYear === currentYear &&
+      (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
+    )
+    
+    // If current period is already paid, the "current" incomplete period is actually the next one
+    if (paymentForCurrentPeriod) {
+      currentPeriodStart = currentPeriodEnd
+      currentPeriodEnd.setDate(currentPeriodEnd.getDate() + 31)
+    }
+    
     // Previous period is the one before current
     const previousPeriodStart = new Date(currentPeriodStart)
     previousPeriodStart.setDate(previousPeriodStart.getDate() - 31)
@@ -2369,10 +2388,6 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     let previousConsumption = 0
     const billingMonth = previousPeriodStart.getMonth() + 1
     const billingYear = previousPeriodStart.getFullYear()
-    
-    // Get all payments for this user
-    const payments = readJSON(PAYMENTS_FILE)
-    const userPayments = payments.filter(p => p.username === user.username)
     
     // Find paid payment for previous period
     const prevPayment = userPayments.find(p =>
