@@ -2365,10 +2365,14 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     })
     
     // Current Consumption = consumption in current incomplete period
+    // Sort chronologically (oldest to newest) to get first and last readings
     let currentConsumption = 0
     if (currentPeriodReadings.length > 0) {
-      const firstReading = currentPeriodReadings[0].cubicMeters
-      const lastReading = currentPeriodReadings[currentPeriodReadings.length - 1].cubicMeters
+      const sortedCurrent = currentPeriodReadings.sort((a, b) => 
+        new Date(a.receivedAt || a.timestamp) - new Date(b.receivedAt || b.timestamp)
+      )
+      const firstReading = sortedCurrent[0].cubicMeters
+      const lastReading = sortedCurrent[sortedCurrent.length - 1].cubicMeters
       currentConsumption = Math.max(0, lastReading - firstReading)
     }
     
@@ -2411,8 +2415,8 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentConsumption: currentConsumption,
       previousConsumption: previousConsumption,
       totalConsumption: totalConsumption,
-      cubicMeters: currentConsumption,
-      totalLiters: currentConsumption * 1000,
+      cubicMeters: totalConsumption,
+      totalLiters: totalConsumption * 1000,
       deviceCount: userDevices.length,
       lastReading: latestReading ? latestReading.timestamp : null,
       devices: userDevices.map(d => {
