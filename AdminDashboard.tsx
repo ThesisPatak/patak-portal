@@ -734,9 +734,6 @@ const AdminDashboard: React.FC = () => {
                               Current Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Previous Consumption (m³)
-                            </th>
-                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Total Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
@@ -782,9 +779,6 @@ const AdminDashboard: React.FC = () => {
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
                                 {(user.currentConsumption || 0).toFixed(6)}
-                              </td>
-                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
-                                {(user.previousConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>
                                 {(user.totalConsumption || 0).toFixed(6)}
@@ -1180,6 +1174,7 @@ const AdminDashboard: React.FC = () => {
                         <tr style={{ background: "#f5f7fa", borderBottom: "2px solid #e0e0e0" }}>
                           <th style={{ padding: "0.75rem", textAlign: "left", color: "#333", fontWeight: 600 }}>Month</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Consumption (m³)</th>
+                          <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Previous (m³)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Total Consumption (m³)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Amount Due (₱)</th>
                           <th style={{ padding: "0.75rem", textAlign: "center", color: "#333", fontWeight: 600 }}>Due Date</th>
@@ -1195,6 +1190,7 @@ const AdminDashboard: React.FC = () => {
                           <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0", background: isCurrentPeriod ? "#f0f8ff" : "transparent" }}>
                             <td style={{ padding: "0.75rem", color: "#333", fontWeight: isCurrentPeriod ? 600 : 400 }}>{bill.month}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{bill.consumption}</td>
+                            <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#666", fontSize: "0.9rem" }}>{idx === 0 ? '—' : (arr[idx - 1]?.consumption || '0.000000')}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>{bill.totalConsumption}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", fontWeight: 600, color: "#333" }}>₱{bill.amountDue}</td>
                             <td style={{ padding: "0.75rem", textAlign: "center", color: "#666" }}>{bill.dueDate}</td>
