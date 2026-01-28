@@ -76,7 +76,7 @@ const BillingTable: React.FC = () => {
 
     // Generate two 31-day billing cycles starting from account creation date
     const billingBaseDate = new Date(createdAt);
-    let previousPeriodLastReading = 0; // Track meter reading at end of previous period
+    let previousPeriodLastReading = 0; // Track meter reading at end of previous PAID period
 
     // Generate current + next 31-day billing period (continuous billing cycle)
     // Limit to 2 cycles maximum
@@ -107,30 +107,7 @@ const BillingTable: React.FC = () => {
       let statusColor = '#ff9800';
       let statusIcon = '⏳';
 
-      // Calculate consumption as DIFFERENCE between period readings (not cumulative total)
-      // This properly resets with each billing period
-      if (periodReadings.length > 0) {
-        const firstReading = periodReadings[0];
-        const lastReading = periodReadings[periodReadings.length - 1];
-        // Consumption = Meter at period end - Meter at period start
-        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
-        previousPeriodLastReading = lastReading.cubicMeters; // Store for next cycle
-      } else if (i > 0 && previousPeriodLastReading > 0) {
-        // No readings in this period, but previous period had readings
-        // Use the latest meter reading from all data to show current consumption
-        consumption = Math.max(0, latestMeterReading - previousPeriodLastReading);
-      }
-      // Note: For periods with no readings, consumption stays 0
-      // which will trigger minimum charge in computeResidentialBill()
-
-      const monthStr = `${periodStartDate.toLocaleString('default',{month:'short', day:'numeric'})} – ${new Date(periodEndDate.getTime()-1).toLocaleString('default',{month:'short', day:'numeric', year:'numeric'})}`;
-      const amountDue = computeResidentialBill(consumption);
-
-      // Total consumption shows the cumulative meter reading
-      // For upcoming periods with no consumption data yet, still apply minimum charge
-      const totalConsumption = latestMeterReading.toFixed(6);
-
-      // Calculate billing month and year for this period
+      // Calculate billing month and year EARLY to check if this period was paid
       const billingMonth = periodStartDate.getMonth() + 1;
       const billingYear = periodStartDate.getFullYear();
 
@@ -140,6 +117,38 @@ const BillingTable: React.FC = () => {
         p.billingYear === billingYear && 
         (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
       );
+
+      // COMMONSENSE FIX: For PAID periods, use locked consumption OR calculated
+      // For CURRENT period, use latest meter - previous paid baseline
+      if (payment && payment.lockedConsumption !== undefined && payment.lockedConsumption !== null && payment.lockedConsumption > 0) {
+        // Use locked consumption for paid period (this is what was actually paid)
+        consumption = payment.lockedConsumption;
+        if (periodReadings.length > 0) {
+          previousPeriodLastReading = periodReadings[periodReadings.length - 1].cubicMeters;
+        }
+      } else if (periodReadings.length > 0) {
+        // Calculate consumption as DIFFERENCE between period readings
+        const firstReading = periodReadings[0];
+        const lastReading = periodReadings[periodReadings.length - 1];
+        consumption = Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
+        previousPeriodLastReading = lastReading.cubicMeters;
+      } else if (i > 0 && previousPeriodLastReading > 0) {
+        // CRITICAL FIX: Current period has NO readings yet, but previous was paid
+        // Use: Current meter reading - Previous paid baseline = Current consumption
+        consumption = Math.max(0, latestMeterReading - previousPeriodLastReading);
+      } else if (i === 0 && allReadings.length > 0) {
+        // First period with readings but no period-specific readings yet - show current meter reading
+        consumption = Math.max(0, latestMeterReading);
+      }
+      // Note: For periods with no readings at all, consumption stays 0
+      // which will trigger minimum charge in computeResidentialBill()
+
+      const monthStr = `${periodStartDate.toLocaleString('default',{month:'short', day:'numeric'})} – ${new Date(periodEndDate.getTime()-1).toLocaleString('default',{month:'short', day:'numeric', year:'numeric'})}`;
+      const amountDue = computeResidentialBill(consumption);
+
+      // Total consumption shows the cumulative meter reading
+      // For upcoming periods with no consumption data yet, still apply minimum charge
+      const totalConsumption = latestMeterReading.toFixed(6);
 
       // Update status to PAID if payment found
       let paymentDate = '';
