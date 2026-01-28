@@ -2364,21 +2364,6 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       return date >= previousPeriodStart && date < currentPeriodStart
     })
     
-    // Current Consumption = consumption in current incomplete period
-    // Should NOT include previous period's locked consumption
-    // Sort chronologically (oldest to newest) to get first and last readings
-    let currentConsumption = 0
-    if (currentPeriodReadings.length > 0) {
-      const sortedCurrent = currentPeriodReadings.sort((a, b) => 
-        new Date(a.receivedAt || a.timestamp) - new Date(b.receivedAt || b.timestamp)
-      )
-      const firstReading = sortedCurrent[0].cubicMeters
-      const lastReading = sortedCurrent[sortedCurrent.length - 1].cubicMeters
-      currentConsumption = Math.max(0, lastReading - firstReading)
-    }
-    
-    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}, Readings: ${currentPeriodReadings.length}, Consumption: ${currentConsumption}, PrevLocked: ${previousConsumption}`)
-    
     // Previous Consumption = consumption in previous completed period
     // If a payment exists for previous period, use locked consumption; otherwise calculate from readings
     let previousConsumption = 0
@@ -2405,6 +2390,21 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       const lastReading = previousPeriodReadings[previousPeriodReadings.length - 1].cubicMeters
       previousConsumption = Math.max(0, lastReading - firstReading)
     }
+    
+    // Current Consumption = consumption in current incomplete period
+    // Should NOT include previous period's locked consumption
+    // Sort chronologically (oldest to newest) to get first and last readings
+    let currentConsumption = 0
+    if (currentPeriodReadings.length > 0) {
+      const sortedCurrent = currentPeriodReadings.sort((a, b) => 
+        new Date(a.receivedAt || a.timestamp) - new Date(b.receivedAt || b.timestamp)
+      )
+      const firstReading = sortedCurrent[0].cubicMeters
+      const lastReading = sortedCurrent[sortedCurrent.length - 1].cubicMeters
+      currentConsumption = Math.max(0, lastReading - firstReading)
+    }
+    
+    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}, Readings: ${currentPeriodReadings.length}, Consumption: ${currentConsumption}, PrevLocked: ${previousConsumption}`)
     
     // Total Consumption = latest cumulative meter reading
     const totalConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
