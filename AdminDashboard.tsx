@@ -567,7 +567,7 @@ const AdminDashboard: React.FC = () => {
                     Total Consumption (m³)
                   </div>
                   <div style={{ fontSize: isMobile ? "2rem" : "2.5rem", fontWeight: 700, color: "#0057b8" }}>
-                    {users.reduce((sum, u) => sum + u.cubicMeters, 0).toFixed(6)} m³
+                    {users.reduce((sum, u) => sum + u.totalConsumption, 0).toFixed(6)} m³
                   </div>
                   <div style={{ fontSize: isMobile ? "0.75rem" : "0.85rem", color: "#666", marginTop: "0.5rem" }}>
                     Across all houses

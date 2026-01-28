@@ -2365,6 +2365,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     })
     
     // Current Consumption = consumption in current incomplete period
+    // Should NOT include previous period's locked consumption
     // Sort chronologically (oldest to newest) to get first and last readings
     let currentConsumption = 0
     if (currentPeriodReadings.length > 0) {
@@ -2376,7 +2377,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentConsumption = Math.max(0, lastReading - firstReading)
     }
     
-    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}, Readings: ${currentPeriodReadings.length}, Consumption: ${currentConsumption}`)
+    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}, Readings: ${currentPeriodReadings.length}, Consumption: ${currentConsumption}, PrevLocked: ${previousConsumption}`)
     
     // Previous Consumption = consumption in previous completed period
     // If a payment exists for previous period, use locked consumption; otherwise calculate from readings
@@ -2417,8 +2418,8 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentConsumption: currentConsumption,
       previousConsumption: previousConsumption,
       totalConsumption: totalConsumption,
-      cubicMeters: totalConsumption,
-      totalLiters: totalConsumption * 1000,
+      cubicMeters: currentConsumption,
+      totalLiters: currentConsumption * 1000,
       deviceCount: userDevices.length,
       lastReading: latestReading ? latestReading.timestamp : null,
       devices: userDevices.map(d => {
