@@ -1765,10 +1765,10 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
       paymentMethod: 'paymongo'
     }
 
-    // Store in payments.json
+    // Store in payments.json - AWAIT the write to ensure it completes
     const payments = readJSON(PAYMENTS_FILE)
     payments.push(pendingPayment)
-    writeJSON(PAYMENTS_FILE, payments)
+    await writeJSON(PAYMENTS_FILE, payments)
     console.log(`[PAYMONGO-CREATE] ✓ Pending payment stored for ${username}: ${referenceNum}`)
 
     // Use PayMongo's Checkout Sessions API (works with test keys)
@@ -2456,7 +2456,7 @@ app.post('/admin/reset-device-readings', authMiddleware, (req, res) => {
 
 // ==================== PAYMENT CALLBACK ROUTES ====================
 // PayMongo redirects to these URLs after payment
-app.get('/payment/success', (req, res) => {
+app.get('/payment/success', async (req, res) => {
   const { reference } = req.query
   const timestamp = new Date().toISOString()
   
@@ -2518,7 +2518,7 @@ app.get('/payment/success', (req, res) => {
         payment.status = 'confirmed'
         payment.confirmedAt = timestamp
         payments[paymentIndex] = payment
-        writeJSON(PAYMENTS_FILE, payments)
+        await writeJSON(PAYMENTS_FILE, payments)
         
         console.log(`[PAYMENT-SUCCESS] ✓ Payment marked as confirmed for ${payment.username}`)
         console.log(`[PAYMENT-SUCCESS] Final consumption locked: ${payment.finalConsumption || 0} m³`)
