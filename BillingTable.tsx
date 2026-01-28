@@ -186,10 +186,11 @@ const BillingTable: React.FC = () => {
       const firstCyclePaid = !!payment;
       
       if (firstCyclePaid) {
-        // First cycle is paid, use locked consumption if available
-        if (payment && payment.lockedConsumption !== undefined && payment.lockedConsumption !== null) {
+        // First cycle is paid - use locked consumption if available, otherwise keep calculated value
+        if (payment && payment.lockedConsumption !== undefined && payment.lockedConsumption !== null && payment.lockedConsumption > 0) {
           history[0].consumption = payment.lockedConsumption.toFixed(6);
         }
+        // If no locked consumption, keep the calculated value from history
         
         // First cycle is paid, show it as Paid and next as Current
         history[0].billStatus = 'Paid';

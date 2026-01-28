@@ -165,15 +165,16 @@ function generateBillingHistory(readings, createdAt, payments = []) {
   if (history.length > 0) {
     // Check ORIGINAL status before modifying
     if (history[0].isPaid) {
-      // First is paid, use locked consumption if available
+      // First is paid - use locked consumption if available, otherwise keep calculated value
       const paidPayment = payments.find(p =>
         p.billingMonth === history[0].billingMonth &&
         p.billingYear === history[0].billingYear &&
         (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
       );
-      if (paidPayment && paidPayment.lockedConsumption !== undefined && paidPayment.lockedConsumption !== null) {
+      if (paidPayment && paidPayment.lockedConsumption !== undefined && paidPayment.lockedConsumption !== null && paidPayment.lockedConsumption > 0) {
         history[0].consumption = paidPayment.lockedConsumption.toFixed(6);
       }
+      // If no locked consumption, keep the calculated value from history
       
       // First is paid, show it as Paid and next as Current
       history[0].billStatus = 'Paid';

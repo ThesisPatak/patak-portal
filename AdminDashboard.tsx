@@ -320,10 +320,11 @@ const AdminDashboard: React.FC = () => {
       );
 
       if (paymentForFirst) {
-        // First is paid, use locked consumption if available
-        if (paymentForFirst.lockedConsumption !== undefined && paymentForFirst.lockedConsumption !== null) {
+        // First is paid - use locked consumption if available, otherwise keep calculated value
+        if (paymentForFirst.lockedConsumption !== undefined && paymentForFirst.lockedConsumption !== null && paymentForFirst.lockedConsumption > 0) {
           history[0].consumption = paymentForFirst.lockedConsumption.toFixed(6);
         }
+        // If no locked consumption, keep the calculated value from history
         
         // First is paid, show it as Paid and next as Current (if available)
         history[0].billStatus = 'Paid';
