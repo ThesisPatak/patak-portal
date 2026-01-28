@@ -81,6 +81,37 @@ const Api = {
     }
   },
 
+  // Check if user has any registered devices
+  // Returns: { devices: [...], hasDevices: boolean }
+  checkDeviceRegistration: async (authToken) => {
+    const baseUrl = await Api.getServerUrl();
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+    
+    try {
+      const res = await fetch(`${baseUrl}/devices/list`, {
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        signal: controller.signal
+      })
+      clearTimeout(timeoutId)
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: Failed to check devices`)
+      }
+      const data = await res.json()
+      return {
+        devices: data.devices || [],
+        hasDevices: (data.devices && data.devices.length > 0)
+      }
+    } catch (err) {
+      clearTimeout(timeoutId)
+      if (err.name === 'AbortError') {
+        throw new Error('Device check timeout - check your internet connection')
+      }
+      throw err
+    }
+  },
+
   // Register a device for the authenticated user (owner)
   // Returns: { device: { deviceId, owner, houseId }, deviceToken }
   registerDevice: async (authToken, deviceId, houseId = null, meta = {}) => {

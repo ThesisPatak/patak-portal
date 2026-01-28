@@ -6,9 +6,11 @@ import DashboardScreen from './screens/DashboardScreenMinimal';
 import BillingHistoryScreen from './screens/BillingHistoryScreen';
 import PayScreen from './screens/PayScreen';
 import DeviceScreen from './screens/DeviceScreen';
+import DeviceRegistrationScreen from './screens/DeviceRegistrationScreen';
 import styles from './screens/styles';
 import { COLORS } from './screens/variables';
 import { startKeepAlive, stopKeepAlive } from './api/keepAlive';
+import Api from './api/Api';
 
 
 export default function App() {
@@ -19,6 +21,8 @@ export default function App() {
   const [showRegister, setShowRegister] = useState(false);
   const [error, setError] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
+  const [deviceRegistered, setDeviceRegistered] = useState(false);
+  const [checkingDevice, setCheckingDevice] = useState(true);
 
   // Start keep-alive service on app load
   useEffect(() => {
@@ -35,6 +39,28 @@ export default function App() {
       subscription.remove();
     };
   }, [token]);
+
+  // Check if user has registered a device after login
+  useEffect(() => {
+    if (token && username) {
+      checkDeviceRegistration();
+    }
+  }, [token, username]);
+
+  const checkDeviceRegistration = async () => {
+    setCheckingDevice(true);
+    try {
+      const result = await Api.checkDeviceRegistration(token);
+      setDeviceRegistered(result.hasDevices);
+      console.log('[Device Check] User has devices:', result.hasDevices);
+    } catch (err) {
+      console.error('[Device Check] Failed to check device status:', err);
+      // If check fails, allow to continue (will be blocked at dashboard level)
+      setDeviceRegistered(false);
+    } finally {
+      setCheckingDevice(false);
+    }
+  };
 
   const handleAppStateChange = (nextAppState) => {
     // Log state transitions
@@ -55,13 +81,42 @@ export default function App() {
 
   if (!token) {
     if (showRegister) {
-      return <RegisterScreen onRegister={(token, user) => { setToken(token); setUsername(user); setShowRegister(false); setScreen('dashboard'); }} onBack={() => setShowRegister(false)} />;
+      return <RegisterScreen onRegister={(token, user) => { setToken(token); setUsername(user); setShowRegister(false); setScreen('device-check'); }} onBack={() => setShowRegister(false)} />;
     }
-    return <LoginScreen onLogin={(token, user) => { setToken(token); setUsername(user); setScreen('dashboard'); }} onShowRegister={() => setShowRegister(true)} />;
+    return <LoginScreen onLogin={(token, user) => { setToken(token); setUsername(user); setScreen('device-check'); }} onShowRegister={() => setShowRegister(true)} />;
   }
 
   // Show loading screen after login while dashboard loads
   const renderContent = () => {
+    // Check device registration status first
+    if (screen === 'device-check') {
+      if (checkingDevice) {
+        return (
+          <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: COLORS.glowBlue, fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Checking Device Status...</Text>
+            <ActivityIndicator size="large" color={COLORS.glowBlue} />
+          </View>
+        );
+      }
+
+      if (!deviceRegistered) {
+        return (
+          <DeviceRegistrationScreen
+            token={token}
+            username={username}
+            onDeviceRegistered={() => {
+              setDeviceRegistered(true);
+              setScreen('dashboard');
+            }}
+          />
+        );
+      }
+
+      // Device is registered, go to dashboard
+      setScreen('dashboard');
+      return null;
+    }
+
     if (!screen) {
       return (
         <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
