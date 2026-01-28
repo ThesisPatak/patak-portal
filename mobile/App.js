@@ -93,8 +93,14 @@ export default function App() {
         payInfo={payInfo} 
         token={token}
         username={username}
-        onBack={() => setScreen('dashboard')}
-        onPaymentSuccess={() => setPayInfo(null)}
+        onBack={() => {
+          setPayInfo(null);
+          // Navigate back to billing screen instead of dashboard
+          setScreen('billing');
+        }}
+        onPaymentSuccess={() => {
+          setPayInfo(null);
+        }}
       />;
     }
 

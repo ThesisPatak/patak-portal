@@ -123,7 +123,14 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         try {
           // Open PayMongo checkout in browser
           await Linking.openURL(checkoutUrl);
-          Alert.alert('Payment', 'Opening payment page...\n\nAfter payment, the status will update automatically when you return to the app.');
+          
+          // Call success callback and navigate back to refresh billing data
+          if (onPaymentSuccess) {
+            onPaymentSuccess();
+          }
+          onBack();
+          
+          Alert.alert('Payment Submitted', 'Your payment is being processed. The billing status will update automatically.');
         } catch (linkErr) {
           console.error('Failed to open URL:', linkErr);
           Alert.alert('Error', 'Could not open payment link. Please try again.');

@@ -435,6 +435,20 @@ const AdminDashboard: React.FC = () => {
     };
   }, [token]);
 
+  // Auto-refresh user details modal every 3 seconds when open
+  useEffect(() => {
+    if (!selectedUserId) return;
+    
+    const user = users.find(u => u.id === selectedUserId);
+    if (!user) return;
+    
+    const interval = setInterval(() => {
+      loadUserReadings(selectedUserId, user.username);
+    }, 3000); // Refresh every 3 seconds
+    
+    return () => clearInterval(interval);
+  }, [selectedUserId, users, token]);
+
   return (
     <>
       {!token ? (
@@ -1096,19 +1110,21 @@ const AdminDashboard: React.FC = () => {
                   <h2 style={{ color: "#0057b8", margin: 0, fontSize: isMobile ? "1.3rem" : "1.5rem" }}>
                     {users.find(u => u.id === selectedUserId)?.username}
                   </h2>
-                  <button
-                    onClick={() => setSelectedUserId(null)}
-                    style={{
-                      padding: "0.5rem 1rem",
-                      background: "#f5f5f5",
-                      border: "1px solid #ddd",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Close
-                  </button>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      onClick={() => setSelectedUserId(null)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        background: "#f5f5f5",
+                        border: "1px solid #ddd",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
 
                 {/* User Info */}
