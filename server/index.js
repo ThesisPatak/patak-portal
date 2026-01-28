@@ -2419,19 +2419,6 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentConsumption = Math.max(0, lastReading - firstReading)
     }
     
-    // Total Consumption = latest cumulative meter reading
-    const totalConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
-    
-    console.log(`[DASHBOARD] ${user.username} - Account created: ${userCreatedDate.toISOString().split('T')[0]}, Today: ${now.toISOString().split('T')[0]}`)
-    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${currentPeriodEnd.toISOString().split('T')[0]}`)
-    console.log(`[DASHBOARD] ${user.username} - Previous Period: ${previousPeriodStart.toISOString().split('T')[0]} to ${currentPeriodStart.toISOString().split('T')[0]}`)
-    console.log(`[DASHBOARD] ${user.username} - Current Period Readings: ${currentPeriodReadings.length}, Previous Period Readings: ${previousPeriodReadings.length}`)
-    if (currentPeriodReadings.length > 0) {
-      const sortedCurrent = currentPeriodReadings.sort((a,b) => new Date(a.receivedAt||a.timestamp) - new Date(b.receivedAt||b.timestamp))
-      console.log(`[DASHBOARD] ${user.username} - Current Period: First ${JSON.stringify(sortedCurrent[0])}, Last ${JSON.stringify(sortedCurrent[sortedCurrent.length - 1])}`)
-    }
-    console.log(`[DASHBOARD] ${user.username} - Calculated: Current=${currentConsumption}, Previous=${previousConsumption}, Total=${totalConsumption}`)
-    
     const monthlyBill = calculateWaterBill(currentConsumption)
 
     return {
