@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Patak Mobile",
-    "slug": "patak-mobile-v2",
+    "slug": "patak-mobile",
     "version": "1.0.0",
     "sdkVersion": "51.0.0",
     "icon": "./assets/Wicon.png",
