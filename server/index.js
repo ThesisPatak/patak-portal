@@ -1765,10 +1765,10 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
       paymentMethod: 'paymongo'
     }
 
-    // Store in payments.json - AWAIT the write to ensure it completes
+    // Store in payments.json
     const payments = readJSON(PAYMENTS_FILE)
     payments.push(pendingPayment)
-    await writeJSON(PAYMENTS_FILE, payments)
+    writeJSON(PAYMENTS_FILE, payments)
     console.log(`[PAYMONGO-CREATE] ✓ Pending payment stored for ${username}: ${referenceNum}`)
 
     // Use PayMongo's Checkout Sessions API (works with test keys)
@@ -2456,14 +2456,14 @@ app.post('/admin/reset-device-readings', authMiddleware, (req, res) => {
 
 // ==================== PAYMENT CALLBACK ROUTES ====================
 // PayMongo redirects to these URLs after payment
-app.get('/payment/success', async (req, res) => {
+app.get('/payment/success', (req, res) => {
   const { reference } = req.query
   const timestamp = new Date().toISOString()
   
   console.log(`\n[${timestamp}] [PAYMENT-SUCCESS] Payment success callback`)
   console.log(`[PAYMENT-SUCCESS] Reference: ${reference}`)
   
-  // Update payment status in database and calculate final consumption
+  // Update payment status in database
   if (reference) {
     try {
       const payments = readJSON(PAYMENTS_FILE)
@@ -2473,55 +2473,70 @@ app.get('/payment/success', async (req, res) => {
         const payment = payments[paymentIndex]
         console.log(`[PAYMENT-SUCCESS] Found payment: ${payment.username} - ₱${payment.amount} (${payment.billingMonth}/${payment.billingYear})`)
         
-        // Calculate final consumption for this paid period
-        const readings = readJSON(READINGS_FILE)
-        const userReadings = readings.filter(r => r.userId === payment.userId)
+        // Get readings to calculate and lock consumption for this paid period
+        const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+        let allReadings = []
+        try {
+          if (fs.existsSync(READINGS_FILE)) {
+            allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+            if (!Array.isArray(allReadings)) allReadings = []
+          }
+        } catch (e) {
+          console.error('[PAYMENT-SUCCESS] Error reading readings:', e)
+        }
         
-        // Get the period dates for this billing month/year
+        // Get user to find device IDs and billing dates
         const users = readJSON(USERS_FILE)
-        const user = users.find(u => u.id === payment.userId)
+        const user = users.find(u => u.username === payment.username)
         
         if (user) {
-          const billingBaseDate = new Date(user.createdAt)
-          // Calculate which period this payment is for (0 = first, 1 = second, etc)
-          const billingCycleNum = payment.billingMonth === (new Date(user.createdAt).getMonth() + 1) ? 0 : 1
+          const devices = readJSON(DEVICES_FILE)
+          const userDevices = devices.filter(d => d.ownerUserId === user.id)
           
+          // Filter readings for this user's devices
+          const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+          
+          // Calculate period dates (31-day cycles from account creation)
+          const billingBaseDate = new Date(user.createdAt)
+          const periodIndex = (payment.billingMonth - (billingBaseDate.getMonth() + 1)) + (payment.billingYear - billingBaseDate.getFullYear()) * 12
           const periodStartDate = new Date(billingBaseDate)
-          periodStartDate.setDate(periodStartDate.getDate() + (billingCycleNum * 31))
+          periodStartDate.setDate(periodStartDate.getDate() + (periodIndex * 31))
           const periodEndDate = new Date(periodStartDate)
           periodEndDate.setDate(periodEndDate.getDate() + 31)
           
-          // Get readings for this specific period
+          // Get readings for this specific billing period
           const periodReadings = userReadings.filter(r => {
-            const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp)
+            const readingDate = new Date(r.receivedAt || r.timestamp)
             return readingDate >= periodStartDate && readingDate < periodEndDate
           }).sort((a, b) => {
-            const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp)
-            const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp)
+            const dateA = new Date(a.receivedAt || a.timestamp)
+            const dateB = new Date(b.receivedAt || b.timestamp)
             return dateA.getTime() - dateB.getTime()
           })
           
-          // Calculate final consumption for this paid cycle
-          let finalConsumption = 0
+          // Calculate consumption for this period and LOCK IT
+          let lockedConsumption = 0
           if (periodReadings.length > 0) {
             const firstReading = periodReadings[0].cubicMeters
             const lastReading = periodReadings[periodReadings.length - 1].cubicMeters
-            finalConsumption = Math.max(0, lastReading - firstReading)
+            lockedConsumption = Math.max(0, lastReading - firstReading)
           }
           
-          // Store final consumption in payment record (locked for this period)
-          payment.finalConsumption = finalConsumption
-          payment.finalMeterReading = periodReadings.length > 0 ? periodReadings[periodReadings.length - 1].cubicMeters : 0
+          // Store locked consumption and meter readings with payment
+          payment.lockedConsumption = lockedConsumption
+          payment.periodStartMeterReading = periodReadings.length > 0 ? periodReadings[0].cubicMeters : 0
+          payment.periodEndMeterReading = periodReadings.length > 0 ? periodReadings[periodReadings.length - 1].cubicMeters : 0
+          
+          console.log(`[PAYMENT-SUCCESS] Locked consumption for paid period: ${lockedConsumption.toFixed(6)} m³`)
         }
         
         // Update status to confirmed
         payment.status = 'confirmed'
         payment.confirmedAt = timestamp
         payments[paymentIndex] = payment
-        await writeJSON(PAYMENTS_FILE, payments)
+        writeJSON(PAYMENTS_FILE, payments)
         
         console.log(`[PAYMENT-SUCCESS] ✓ Payment marked as confirmed for ${payment.username}`)
-        console.log(`[PAYMENT-SUCCESS] Final consumption locked: ${payment.finalConsumption || 0} m³`)
       } else {
         console.log(`[PAYMENT-SUCCESS] ⚠ Payment not found for reference: ${reference}`)
       }
@@ -2605,7 +2620,7 @@ app.get('/payment/success', async (req, res) => {
         <div class="success-icon">✅</div>
         <h1>Payment Successful!</h1>
         <p>Thank you for your payment.</p>
-        <div class="message">Your bill has been marked as paid and consumption is locked.</div>
+        <div class="message">Your bill has been marked as paid.</div>
         <div class="reference">Reference: ${reference || 'N/A'}</div>
         <p style="font-size: 14px; color: #999;">You can now close this window.</p>
         <button class="close-btn" onclick="window.close()">Close</button>

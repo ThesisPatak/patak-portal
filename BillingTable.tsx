@@ -178,23 +178,20 @@ const BillingTable: React.FC = () => {
     let visibleCycles = [];
     
     if (history.length > 0) {
-      const firstCyclePaid = !!payments.find(p => 
+      const payment = payments.find(p => 
         p.billingMonth === history[0].dueDate?.split('-')[1] && 
         p.billingYear === history[0].dueDate?.split('-')[0] &&
         (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
       );
+      const firstCyclePaid = !!payment;
       
       if (firstCyclePaid) {
-        // First cycle is paid, show it as Paid and next as Current
-        // Use locked finalConsumption from payment record (don't recalculate)
-        const payment = payments.find(p => 
-          p.billingMonth === history[0].dueDate?.split('-')[1] && 
-          p.billingYear === history[0].dueDate?.split('-')[0] &&
-          (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
-        );
-        if (payment && payment.finalConsumption !== undefined) {
-          history[0].consumption = payment.finalConsumption.toFixed(6);
+        // First cycle is paid, use locked consumption if available
+        if (payment && payment.lockedConsumption !== undefined && payment.lockedConsumption !== null) {
+          history[0].consumption = payment.lockedConsumption.toFixed(6);
         }
+        
+        // First cycle is paid, show it as Paid and next as Current
         history[0].billStatus = 'Paid';
         history[0].statusColor = '#059669';
         history[0].statusIcon = '✅';

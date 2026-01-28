@@ -320,11 +320,12 @@ const AdminDashboard: React.FC = () => {
       );
 
       if (paymentForFirst) {
-        // First is paid, show it as Paid and next as Current (if available)
-        // Use locked finalConsumption from payment record (don't recalculate)
-        if (paymentForFirst.finalConsumption !== undefined) {
-          history[0].consumption = paymentForFirst.finalConsumption.toFixed(6);
+        // First is paid, use locked consumption if available
+        if (paymentForFirst.lockedConsumption !== undefined && paymentForFirst.lockedConsumption !== null) {
+          history[0].consumption = paymentForFirst.lockedConsumption.toFixed(6);
         }
+        
+        // First is paid, show it as Paid and next as Current (if available)
         history[0].billStatus = 'Paid';
         history[0].statusColor = '#059669';
         history[0].statusIcon = '✅';
