@@ -2404,7 +2404,14 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentConsumption = Math.max(0, lastReading - firstReading)
     }
     
-    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${now.toISOString().split('T')[0]}, Readings: ${currentPeriodReadings.length}, Consumption: ${currentConsumption}, PrevLocked: ${previousConsumption}`)
+    console.log(`[DASHBOARD] ${user.username} - Account created: ${userCreatedDate.toISOString().split('T')[0]}, Today: ${now.toISOString().split('T')[0]}`)
+    console.log(`[DASHBOARD] ${user.username} - Current Period: ${currentPeriodStart.toISOString().split('T')[0]} to ${currentPeriodEnd.toISOString().split('T')[0]}`)
+    console.log(`[DASHBOARD] ${user.username} - Previous Period: ${previousPeriodStart.toISOString().split('T')[0]} to ${currentPeriodStart.toISOString().split('T')[0]}`)
+    console.log(`[DASHBOARD] ${user.username} - Current Period Readings: ${currentPeriodReadings.length}, Previous Period Readings: ${previousPeriodReadings.length}`)
+    if (currentPeriodReadings.length > 0) {
+      console.log(`[DASHBOARD] ${user.username} - Current Period: First reading ${currentPeriodReadings.sort((a,b) => new Date(a.receivedAt||a.timestamp) - new Date(b.receivedAt||b.timestamp))[0].cubicMeters}, Last reading ${currentPeriodReadings.sort((a,b) => new Date(b.receivedAt||b.timestamp) - new Date(a.receivedAt||a.timestamp))[0].cubicMeters}`)
+    }
+    console.log(`[DASHBOARD] ${user.username} - Current Consumption: ${currentConsumption}, Previous: ${previousConsumption}, Total: ${totalConsumption}`)
     
     // Total Consumption = latest cumulative meter reading
     const totalConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
