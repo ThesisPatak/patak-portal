@@ -1750,6 +1750,56 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   }
 
   try {
+    // Calculate consumption for this billing period BEFORE payment is submitted
+    const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+    let allReadings = []
+    try {
+      if (fs.existsSync(READINGS_FILE)) {
+        allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+        if (!Array.isArray(allReadings)) allReadings = []
+      }
+    } catch (e) {
+      console.error('[PAYMONGO-CREATE] Error reading readings:', e)
+    }
+    
+    // Get user and devices
+    const users = readJSON(USERS_FILE)
+    const user = users.find(u => u.id === userId)
+    let consumption = 0
+    
+    if (user) {
+      const devices = readJSON(DEVICES_FILE)
+      const userDevices = devices.filter(d => d.ownerUserId === userId)
+      const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
+      
+      // Calculate period dates (31-day cycles from account creation)
+      const billingBaseDate = new Date(user.createdAt)
+      const periodIndex = (billingMonth - (billingBaseDate.getMonth() + 1)) + (billingYear - billingBaseDate.getFullYear()) * 12
+      const periodStartDate = new Date(billingBaseDate)
+      periodStartDate.setDate(periodStartDate.getDate() + (periodIndex * 31))
+      const periodEndDate = new Date(periodStartDate)
+      periodEndDate.setDate(periodEndDate.getDate() + 31)
+      
+      // Get readings for this specific billing period
+      const periodReadings = userReadings.filter(r => {
+        const readingDate = new Date(r.receivedAt || r.timestamp)
+        return readingDate >= periodStartDate && readingDate < periodEndDate
+      }).sort((a, b) => {
+        const dateA = new Date(a.receivedAt || a.timestamp)
+        const dateB = new Date(b.receivedAt || b.timestamp)
+        return dateA.getTime() - dateB.getTime()
+      })
+      
+      // Calculate consumption
+      if (periodReadings.length > 0) {
+        const firstReading = periodReadings[0].cubicMeters
+        const lastReading = periodReadings[periodReadings.length - 1].cubicMeters
+        consumption = Math.max(0, lastReading - firstReading)
+      }
+      
+      console.log(`[PAYMONGO-CREATE] Calculated consumption for ${billingMonth}/${billingYear}: ${consumption.toFixed(6)} m³`)
+    }
+    
     // Store pending payment FIRST with billing month/year so webhook can find it later
     const referenceNum = reference || `PATAK-${Date.now()}`
     const pendingPayment = {
@@ -1762,7 +1812,8 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
       referenceNumber: referenceNum,
       submittedAt: timestamp,
       status: 'pending_verification',
-      paymentMethod: 'paymongo'
+      paymentMethod: 'paymongo',
+      lockedConsumption: consumption  // LOCK consumption at submission time
     }
 
     // Store in payments.json
@@ -2473,62 +2524,8 @@ app.get('/payment/success', (req, res) => {
         const payment = payments[paymentIndex]
         console.log(`[PAYMENT-SUCCESS] Found payment: ${payment.username} - ₱${payment.amount} (${payment.billingMonth}/${payment.billingYear})`)
         
-        // Get readings to calculate and lock consumption for this paid period
-        const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
-        let allReadings = []
-        try {
-          if (fs.existsSync(READINGS_FILE)) {
-            allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
-            if (!Array.isArray(allReadings)) allReadings = []
-          }
-        } catch (e) {
-          console.error('[PAYMENT-SUCCESS] Error reading readings:', e)
-        }
-        
-        // Get user to find device IDs and billing dates
-        const users = readJSON(USERS_FILE)
-        const user = users.find(u => u.username === payment.username)
-        
-        if (user) {
-          const devices = readJSON(DEVICES_FILE)
-          const userDevices = devices.filter(d => d.ownerUserId === user.id)
-          
-          // Filter readings for this user's devices
-          const userReadings = allReadings.filter(r => userDevices.some(d => d.deviceId === r.deviceId))
-          
-          // Calculate period dates (31-day cycles from account creation)
-          const billingBaseDate = new Date(user.createdAt)
-          const periodIndex = (payment.billingMonth - (billingBaseDate.getMonth() + 1)) + (payment.billingYear - billingBaseDate.getFullYear()) * 12
-          const periodStartDate = new Date(billingBaseDate)
-          periodStartDate.setDate(periodStartDate.getDate() + (periodIndex * 31))
-          const periodEndDate = new Date(periodStartDate)
-          periodEndDate.setDate(periodEndDate.getDate() + 31)
-          
-          // Get readings for this specific billing period
-          const periodReadings = userReadings.filter(r => {
-            const readingDate = new Date(r.receivedAt || r.timestamp)
-            return readingDate >= periodStartDate && readingDate < periodEndDate
-          }).sort((a, b) => {
-            const dateA = new Date(a.receivedAt || a.timestamp)
-            const dateB = new Date(b.receivedAt || b.timestamp)
-            return dateA.getTime() - dateB.getTime()
-          })
-          
-          // Calculate consumption for this period and LOCK IT
-          let lockedConsumption = 0
-          if (periodReadings.length > 0) {
-            const firstReading = periodReadings[0].cubicMeters
-            const lastReading = periodReadings[periodReadings.length - 1].cubicMeters
-            lockedConsumption = Math.max(0, lastReading - firstReading)
-          }
-          
-          // Store locked consumption and meter readings with payment
-          payment.lockedConsumption = lockedConsumption
-          payment.periodStartMeterReading = periodReadings.length > 0 ? periodReadings[0].cubicMeters : 0
-          payment.periodEndMeterReading = periodReadings.length > 0 ? periodReadings[periodReadings.length - 1].cubicMeters : 0
-          
-          console.log(`[PAYMENT-SUCCESS] Locked consumption for paid period: ${lockedConsumption.toFixed(6)} m³`)
-        }
+        // The consumption was already locked at submission time, just confirm the payment
+        console.log(`[PAYMENT-SUCCESS] Locked consumption: ${payment.lockedConsumption?.toFixed(6) || '0.000000'} m³`)
         
         // Update status to confirmed
         payment.status = 'confirmed'
