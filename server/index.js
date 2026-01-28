@@ -2419,6 +2419,9 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       currentConsumption = Math.max(0, lastReading - firstReading)
     }
     
+    // Total Consumption = latest cumulative meter reading
+    const totalConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
+    
     const monthlyBill = calculateWaterBill(currentConsumption)
 
     return {
