@@ -2327,43 +2327,80 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const sortedReadings = deviceReadings.sort((a, b) => new Date(b.receivedAt || b.timestamp) - new Date(a.receivedAt || a.timestamp))
     const latestReading = sortedReadings[0]
     
-    // Calculate Current, Previous, and Total Consumption by billing period
-    // Billing periods are based on user's account creation date (same day each month)
+    // Calculate Current, Previous, and Total Consumption based on billing cycles
+    // Billing periods are 31-day cycles starting from account creation date
     const userCreatedDate = new Date(user.createdAt)
-    const billingStartDay = userCreatedDate.getDate()
     
-    // Get readings for current billing period
+    // Calculate period dates (31-day cycles)
     const now = new Date()
-    let currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), billingStartDay)
-    if (now < currentPeriodStart) {
-      currentPeriodStart = new Date(now.getFullYear(), now.getMonth() - 1, billingStartDay)
+    let currentPeriodStart = new Date(userCreatedDate)
+    let cycleIndex = 0
+    
+    // Find which 31-day cycle we're in
+    while (true) {
+      const periodEnd = new Date(currentPeriodStart)
+      periodEnd.setDate(periodEnd.getDate() + 31)
+      if (periodEnd > now) break
+      currentPeriodStart = periodEnd
+      cycleIndex++
     }
     
-    // Calculate previous period start
-    let previousPeriodStart = new Date(currentPeriodStart)
-    previousPeriodStart.setMonth(previousPeriodStart.getMonth() - 1)
+    const currentPeriodEnd = new Date(currentPeriodStart)
+    currentPeriodEnd.setDate(currentPeriodEnd.getDate() + 31)
     
+    // Previous period is the one before current
+    const previousPeriodStart = new Date(currentPeriodStart)
+    previousPeriodStart.setDate(previousPeriodStart.getDate() - 31)
+    
+    // Get readings for current incomplete billing period
     const currentPeriodReadings = sortedReadings.filter(r => {
-      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
       const date = new Date(r.receivedAt || r.timestamp)
       return date >= currentPeriodStart && date <= now
     })
+    
+    // Get readings for previous completed billing period
     const previousPeriodReadings = sortedReadings.filter(r => {
-      // Use receivedAt (server timestamp) instead of timestamp (which may be 1970 due to NTP sync issues)
       const date = new Date(r.receivedAt || r.timestamp)
       return date >= previousPeriodStart && date < currentPeriodStart
     })
     
-    // Current Consumption = latest meter reading from ESP32 (cumulative total)
-    const currentConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
+    // Current Consumption = consumption in current incomplete period
+    let currentConsumption = 0
+    if (currentPeriodReadings.length > 0) {
+      const firstReading = currentPeriodReadings[0].cubicMeters
+      const lastReading = currentPeriodReadings[currentPeriodReadings.length - 1].cubicMeters
+      currentConsumption = Math.max(0, lastReading - firstReading)
+    }
     
-    // Previous Consumption = usage in previous billing period
-    const previousConsumption = previousPeriodReadings.length > 0
-      ? Math.max(0, (previousPeriodReadings[0].cubicMeters || 0) - (previousPeriodReadings[previousPeriodReadings.length - 1].cubicMeters || 0))
-      : 0
+    // Previous Consumption = consumption in previous completed period
+    // If a payment exists for previous period, use locked consumption; otherwise calculate from readings
+    let previousConsumption = 0
+    const billingMonth = previousPeriodStart.getMonth() + 1
+    const billingYear = previousPeriodStart.getFullYear()
     
-    // Total Consumption = sum of current and previous consumption
-    const totalConsumption = currentConsumption + previousConsumption
+    // Get all payments for this user
+    const payments = readJSON(PAYMENTS_FILE)
+    const userPayments = payments.filter(p => p.username === user.username)
+    
+    // Find paid payment for previous period
+    const prevPayment = userPayments.find(p =>
+      p.billingMonth === billingMonth &&
+      p.billingYear === billingYear &&
+      (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
+    )
+    
+    if (prevPayment && prevPayment.lockedConsumption !== undefined && prevPayment.lockedConsumption !== null) {
+      // Use locked consumption from payment
+      previousConsumption = prevPayment.lockedConsumption
+    } else if (previousPeriodReadings.length > 0) {
+      // Calculate from readings if no payment locked it
+      const firstReading = previousPeriodReadings[0].cubicMeters
+      const lastReading = previousPeriodReadings[previousPeriodReadings.length - 1].cubicMeters
+      previousConsumption = Math.max(0, lastReading - firstReading)
+    }
+    
+    // Total Consumption = latest cumulative meter reading
+    const totalConsumption = latestReading ? (latestReading.cubicMeters || 0) : 0
     
     const monthlyBill = calculateWaterBill(currentConsumption)
 
