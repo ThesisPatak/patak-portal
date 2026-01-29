@@ -1724,7 +1724,8 @@ app.post('/api/payments/record', authMiddleware, async (req, res) => {
       // IMPORTANT: Store meter readings for consumption calculation
       meterReadingAtPayment: currentMeterReading,    // Latest meter reading when payment made
       previousMeterReading: previousMeterReading,    // Baseline from last payment
-      consumptionThisPeriod: consumptionThisPeriod   // Actual usage this period
+      consumptionThisPeriod: consumptionThisPeriod,  // Actual usage this period
+      lockedConsumption: consumptionThisPeriod       // FRONTEND FIELD: Locked consumption for this period
     }
     
     payments.push(newPayment)
@@ -2190,7 +2191,8 @@ app.post('/api/admin/gcash/verify/:paymentId', authMiddleware, (req, res) => {
       status: 'confirmed',
       referenceNumber: payment.referenceNumber,
       gcashPaymentId: payment.id,
-      verifiedBy: req.user.username
+      verifiedBy: req.user.username,
+      lockedConsumption: payment.lockedConsumption  // PRESERVE consumption from pending payment
     }
 
     payments.push(confirmedPayment)

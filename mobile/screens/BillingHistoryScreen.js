@@ -3,38 +3,9 @@ import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, RefreshContr
 import Api from '../api/Api';
 import styles from './styles';
 import { COLORS, SPACING } from './variables';
+import { computeResidentialBill, generateBillingHistory } from '../api/billingUtils';
 
-// Tiered billing formula matching web app (BillingTable.tsx)
-function computeResidentialBill(usage) {
-  const MINIMUM = 255.0;
-  // Always charge minimum even with zero usage
-  if (!usage || usage <= 0) return MINIMUM;
-  if (usage <= 10) return Number(MINIMUM.toFixed(2));
-  let excess = usage - 10;
-  let total = MINIMUM;
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 33.0; // 11-20 m³
-    excess -= m3;
-  }
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 40.5; // 21-30 m³
-    excess -= m3;
-  }
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 48.0; // 31-40 m³
-    excess -= m3;
-  }
-  if (excess > 0) {
-    total += excess * 55.5; // 41+ m³
-  }
-  return Number(total.toFixed(2));
-}
-
-function generateBillingHistory(readings, createdAt, payments = []) {
-  const history = [];
+export default function BillingHistoryScreen({ token, username, onBack }) {
 
   // Get the latest meter reading (cumulative total)
   const allReadings = readings || [];

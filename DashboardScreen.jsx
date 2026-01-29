@@ -2,34 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useAuth } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { computeResidentialBill } from '../api/billingUtils';
 
 const SERVER = 'https://patak-portal-production.up.railway.app'; // Production server
-
-function computeResidentialBill(usage) {
-  const MINIMUM = 255.0;
-  if (!usage || usage <= 10) return Number(MINIMUM.toFixed(2));
-  let excess = usage - 10;
-  let total = MINIMUM;
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 33.0;
-    excess -= m3;
-  }
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 40.5;
-    excess -= m3;
-  }
-  if (excess > 0) {
-    const m3 = Math.min(excess, 10);
-    total += m3 * 48.0;
-    excess -= m3;
-  }
-  if (excess > 0) {
-    total += excess * 55.5;
-  }
-  return Number(total.toFixed(2));
-}
 
 export default function DashboardScreen() {
   const { user, setUser } = useAuth();

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PATAK Portal - Mobile App Screens Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .screens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .phone-frame {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+
+        .phone {
+            background: #000;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 20px 60px rgba(76, 175, 80, 0.3), 
+                        0 0 40px rgba(76, 175, 80, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: 8px solid #1a1a1a;
+            position: relative;
+        }
+
+        .phone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 25px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .screen {
+            background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            border-radius: 30px;
+            overflow: hidden;
+            aspect-ratio: 9/16;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-height: 550px;
+        }
+
+        .status-bar {
+            background: rgba(15, 32, 39, 0.9);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #fff;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .screen-title {
+            padding: 16px;
+            background: linear-gradient(180deg, rgba(76, 175, 80, 0.1) 0%, transparent 100%);
+            border-bottom: 2px solid rgba(76, 175, 80, 0.3);
+            text-align: center;
+        }
+
+        .screen-title h2 {
+            color: #4CAF50;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .screen-title p {
+            color: #999;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background: rgba(76, 175, 80, 0.05);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .card-label {
+            color: #4CAF50;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .card-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .card-subtext {
+            color: #888;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 6px 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+
+        .button-secondary {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(76, 175, 80, 0.1) 100%);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            color: #4CAF50;
+        }
+
+        .device-selector {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+            margin: 8px 0;
+        }
+
+        .device-chip {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 8px;
+            padding: 8px 12px;
+            min-width: fit-content;
+            font-size: 11px;
+            color: #4CAF50;
+            text-align: center;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .device-chip.selected {
+            background: #4CAF50;
+            color: #0f2027;
+            border-color: #4CAF50;
+            font-weight: 700;
+        }
+
+        .device-chip.unavailable {
+            opacity: 0.5;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+            margin: 6px 0;
+        }
+
+        .reading-item {
+            background: rgba(76, 175, 80, 0.08);
+            border-left: 3px solid #4CAF50;
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .reading-item-time {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .reading-item-value {
+            color: #4CAF50;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            background: rgba(15, 32, 39, 0.8);
+            border-top: 1px solid rgba(76, 175, 80, 0.2);
+            font-size: 24px;
+            color: #888;
+            margin-top: auto;
+        }
+
+        .bottom-nav span {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .bottom-nav span:hover {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .alert {
+            background: rgba(255, 152, 0, 0.15);
+            border-left: 3px solid #FF9800;
+            padding: 10px 12px;
+            border-radius: 4px;
+            color: #FFB74D;
+            font-size: 12px;
+            margin: 6px 0;
+        }
+
+        .screen-label {
+            text-align: center;
+            color: #4CAF50;
+            font-weight: 700;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: rgba(76, 175, 80, 0.2);
+            margin: 12px 0;
+        }
+
+        .legend {
+            background: rgba(15, 32, 39, 0.5);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 40px;
+            color: #e0e0e0;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .legend h3 {
+            color: #4CAF50;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .legend-item {
+            margin-bottom: 10px;
+            padding-left: 20px;
+        }
+
+        .legend-item::before {
+            content: '✓';
+            color: #4CAF50;
+            font-weight: 700;
+            margin-left: -15px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 PATAK Portal - Mobile App Screens</h1>
+        <p class="subtitle">Updated UI/UX with Device Whitelist & Registration Improvements</p>
+
+        <div class="screens-grid">
+            <!-- Login Screen -->
+            <div class="phone-frame">
+                <div class="phone">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📡 🔋</span>
+                        </div>
+                        <div class="screen-title">
+                            <h2>Login</h2>
+                        </div>
+                        <div class="screen-content">
+                            <div style="text-align: center; margin: 20px 0;">
+                                <div style="font-size: 48px; margin-bottom: 16px;">💧</div>
+                                <div style="color: #4CAF50; font-size: 24px; font-weight: 700;">PATAK Portal</div>
+                                <div style="color: #888; font-size: 12px; margin-top: 4px;">Water Usage Monitoring</div>
+                            </div>
+
+                            <input class="input-field" placeholder="Username or Email" value="admin@patak.com">
+                            <input class="input-field" placeholder="Password" type="password" value="••••••••">
+
+                            <button class="button">🔓 Login</button>
+                            <button class="button button-secondary">📝 Create Account</button>
+
+                            <div style="text-align: center; margin-top: 20px;">
+                                <div style="color: #888; font-size: 11px;">Secure authentication with JWT tokens</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="screen-label">Login Screen</div>
+            </div>
+
+            <!-- Registration Screen -->
+            <div class="phone-frame">
+                <div class="phone">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📡 🔋</span>
+                        </div>
+                        <div class="screen-title">
+                            <h2>Create Account</h2>
+                        </div>
+                        <div class="screen-content">
+                            <input class="input-field" placeholder="Username" value="newuser">
+                            <input class="input-field" placeholder="Email (optional)" value="">
+                            <input class="input-field" placeholder="Password (min 8 chars)" type="password">
+                            <input class="input-field" placeholder="Confirm Password" type="password">
+
+                            <button class="button">✓ Create Account</button>
+                            <button class="button button-secondary">← Back to Login</button>
+
+                            <div style="color: #888; font-size: 11px; margin-top: 16px; line-height: 1.6;">
+                                📋 By creating an account, you agree to register a device to access the dashboard.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="screen-label">Registration Screen</div>
+            </div>
+
+            <!-- Device Registration Screen (NEW) -->
+            <div class="phone-frame">
+                <div class="phone">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📡 🔋</span>
+                        </div>
+                        <div class="screen-title">
+                            <h2>Register Device</h2>
+                            <p>Select from available devices</p>
+                        </div>
+                        <div class="screen-content">
+                            <div class="card-label">✓ Available Devices</div>
+                            <div class="device-selector">
+                                <div class="device-chip selected">
+                                    <div style="font-weight: 700;">ESP32-001</div>
+                                    <div style="font-size: 10px; margin-top: 2px;">Main House</div>
+                                    <div style="font-size: 9px; margin-top: 2px; color: #0f2027;">✓ Available</div>
+                                </div>
+                                <div class="device-chip">
+                                    <div style="font-weight: 700;">ESP32-002</div>
+                                    <div style="font-size: 10px; margin-top: 2px;">Secondary</div>
+                                    <div style="font-size: 9px; margin-top: 2px;">Available</div>
+                                </div>
+                                <div class="device-chip unavailable">
+                                    <div style="font-weight: 700;">ESP32-003</div>
+                                    <div style="font-size: 10px; margin-top: 2px;">Office</div>
+                                    <div style="font-size: 9px; margin-top: 2px; color: #ff6b6b;">Claimed</div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <div class="card-label">Device ID *</div>
+                            <input class="input-field" placeholder="e.g., ESP32-001" value="ESP32-001">
+
+                            <div class="card-label">House/Location (Optional)</div>
+                            <input class="input-field" placeholder="e.g., Main House" value="Main House">
+
+                            <button class="button">✓ Register Device</button>
+                            <button class="button button-secondary">❓ Need Help?</button>
+
+                            <div class="alert">
+                                💡 Device ID is on your device sticker. Only whitelisted devices can register.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="screen-label">Device Registration (Updated)</div>
+            </div>
+
+            <!-- Dashboard Screen -->
+            <div class="phone-frame">
+                <div class="phone">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📡 🔋</span>
+                        </div>
+                        <div class="screen-title">
+                            <h2>Dashboard</h2>
+                            <p>Welcome back, admin!</p>
+                        </div>
+                        <div class="screen-content">
+                            <div class="card">
+                                <div class="card-label">📊 Current Reading</div>
+                                <div class="card-value">45.3 m³</div>
+                                <div class="card-subtext">From ESP32-001 • Updated 2 min ago</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-label">📈 Current Period Usage</div>
+                                <div class="card-value">35.3 m³</div>
+                                <div class="card-subtext">Since Jan 1 • 3 readings recorded</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-label">💳 Bill Amount</div>
+                                <div class="card-value">₱1,243.50</div>
+                                <div class="card-subtext">For current billing period</div>
+                            </div>
+
+                            <button class="button">💳 Pay Bill</button>
+                            <button class="button button-secondary">📋 View History</button>
+
+                            <div class="bottom-nav">
+                                <span>📊</span>
+                                <span>💧</span>
+                                <span>⚙️</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="screen-label">Dashboard (No Manage Devices)</div>
+            </div>
+
+            <!-- Usage History Screen -->
+            <div class="phone-frame">
+                <div class="phone">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📡 🔋</span>
+                        </div>
+                        <div class="screen-title">
+                            <h2>Usage History</h2>
+                        </div>
+                        <div class="screen-content">
+                            <div class="card">
+                                <div class="card-label">📈 Total This Period</div>
+                                <div class="card-value">35.3 m³</div>
+                            </div>
+
+                            <div class="card-label" style="margin-top: 12px;">Recent Readings</div>
+
+                            <div class="reading-item">
+                                <div>
+                                    <div style="color: #4CAF50; font-weight: 700;">45.3 m³</div>
+                                    <div class="reading-item-time">Just now</div>
+                                </div>
+                                <div>ESP32-001</div>
+                            </div>
+
+                            <div class="reading-item">
+                                <div>
+                                    <div style="color: #4CAF50; font-weight: 700;">45.2 m³</div>
+                                    <div class="reading-item-time">5 minutes ago</div>
+                                </div>
+                                <div>ESP32-001</div>
+                            </div>
+
+                            <div class="reading-item">
+                                <div>
+                                    <div style="color: #4CAF50; font-weight: 700;">45.0 m³</div>
+                                    <div class="reading-item-time">15 minutes ago</div>
+                                </div>
+                                <div>ESP32-001</div>
+                            </div>
+
+                            <div class="reading-item">
+                                <div>
+                                    <div style="color: #4CAF50; font-weight: 700;">44.8 m³</div>
+                                    <div class="reading-item-time">30 minutes ago</div>
+                                </div>
+                                <div>ESP32-001</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="screen-label">Usage History Screen</div>
+            </div>
+
+            <!-- Payment Screen -->
+            <div class="phone-frame">
+                <div class="phone">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📡 🔋</span>
+                        </div>
+                        <div class="screen-title">
+                            <h2>Pay Your Bill</h2>
+                        </div>
+                        <div class="screen-content">
+                            <div class="card">
+                                <div class="card-label">📅 Billing Period</div>
+                                <div style="color: #e0e0e0; font-size: 14px; font-weight: 700;">January 2026</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-label">💰 Total Due</div>
+                                <div class="card-value">₱1,243.50</div>
+                            </div>
+
+                            <div class="card-label" style="margin-top: 12px;">Payment Method</div>
+                            <button class="button" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">💳 GCash Payment</button>
+                            <button class="button button-secondary">🏦 Bank Transfer</button>
+
+                            <div class="alert">
+                                ⚠️ Send payment reference after completing transfer to verify payment status.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="screen-label">Payment Screen</div>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div class="phone-frame">
+                <div class="phone">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📡 🔋</span>
+                        </div>
+                        <div class="screen-title">
+                            <h2>Admin Panel</h2>
+                        </div>
+                        <div class="screen-content">
+                            <div class="card">
+                                <div class="card-label">👥 Total Users</div>
+                                <div class="card-value">12</div>
+                                <div class="card-subtext">2 active today</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-label">🔌 Total Devices</div>
+                                <div class="card-value">15</div>
+                                <div class="card-subtext">14 online • 1 offline</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-label">💧 Total Readings</div>
+                                <div class="card-value">1,247</div>
+                                <div class="card-subtext">Last 7 days</div>
+                            </div>
+
+                            <button class="button">👥 Manage Users</button>
+                            <button class="button">🔌 Manage Devices</button>
+                            <button class="button button-secondary">📊 View Reports</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="screen-label">Admin Dashboard</div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h3>🎯 Key Updates & Features</h3>
+            
+            <div class="legend-item">
+                <strong>Device Whitelist System:</strong> Users can only register from ESP32-001 to ESP32-005. Random device IDs are rejected with helpful error messages.
+            </div>
+
+            <div class="legend-item">
+                <strong>Improved Device Registration:</strong> Device selector UI shows available devices with location and availability status. Users can click to select or manually enter.
+            </div>
+
+            <div class="legend-item">
+                <strong>Removed Manage Devices:</strong> Dashboard no longer has "Manage Devices" button since device registration is a one-time setup step before accessing dashboard.
+            </div>
+
+            <div class="legend-item">
+                <strong>Device Ownership Prevention:</strong> If a device is already claimed by another user, it shows as "Claimed" in red and returns 409 Conflict error.
+            </div>
+
+            <div class="legend-item">
+                <strong>Real-time Device Status:</strong> Shows device locations (Main House, Secondary House, Office, etc.) and availability immediately.
+            </div>
+
+            <div class="legend-item">
+                <strong>Auto-populate Fields:</strong> Clicking a device in the selector automatically fills Device ID and House fields.
+            </div>
+
+            <div class="legend-item">
+                <strong>Security Validation:</strong> Readings endpoint validates device exists before accepting data. Prevents phantom readings from non-existent devices.
+            </div>
+
+            <div class="legend-item">
+                <strong>Better Error Handling:</strong> Device registration errors now include list of available devices to guide users.
+            </div>
+
+            <div class="legend-item">
+                <strong>Mobile-First Design:</strong> All screens optimized for mobile with touch-friendly buttons and responsive layout.
+            </div>
+
+            <div class="legend-item">
+                <strong>Real-time Updates:</strong> Dashboard uses SSE (Server-Sent Events) for real-time readings and status updates.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
