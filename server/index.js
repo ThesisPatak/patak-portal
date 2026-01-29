@@ -2389,7 +2389,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     // Users must explicitly register a device to see readings
     
     // Sort by receivedAt (server timestamp) descending to get latest reading
-    sortReadingsByDateDesc(deviceReadings)
+    deviceReadings = sortReadingsByDateDesc(deviceReadings)
     const latestReading = deviceReadings[0]
     
     // Calculate Current, Previous, and Total Consumption based on billing cycles
@@ -2437,13 +2437,13 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     previousPeriodStart.setDate(previousPeriodStart.getDate() - 31)
     
     // Get readings for current incomplete billing period
-    const currentPeriodReadings = sortedReadings.filter(r => {
+    const currentPeriodReadings = deviceReadings.filter(r => {
       const date = new Date(r.receivedAt || r.timestamp)
       return date >= currentPeriodStart && date <= now
     })
     
     // Get readings for previous completed billing period
-    const previousPeriodReadings = sortedReadings.filter(r => {
+    const previousPeriodReadings = deviceReadings.filter(r => {
       const date = new Date(r.receivedAt || r.timestamp)
       return date >= previousPeriodStart && date < currentPeriodStart
     })

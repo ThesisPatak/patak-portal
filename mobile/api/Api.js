@@ -144,6 +144,33 @@ const Api = {
     }
   },
 
+  // Get list of available devices
+  getAvailableDevices: async (authToken) => {
+    const baseUrl = await Api.getServerUrl();
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    
+    try {
+      const res = await fetch(`${baseUrl}/devices/available`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        signal: controller.signal
+      })
+      clearTimeout(timeoutId)
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: Failed to fetch available devices`)
+      }
+      return res.json()
+    } catch (err) {
+      clearTimeout(timeoutId)
+      if (err.name === 'AbortError') {
+        throw new Error('Request timeout - check your internet connection')
+      }
+      throw err
+    }
+  },
+
   // Reset readings for a house (admin function)
   resetReadings: async (authToken, house) => {
     const baseUrl = await Api.getServerUrl();

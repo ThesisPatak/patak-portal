@@ -11,7 +11,37 @@ export default function DeviceRegistrationScreen({ token, username, onDeviceRegi
   const [houseId, setHouseId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [availableDevices, setAvailableDevices] = useState([]);
+  const [loadingDevices, setLoadingDevices] = useState(false);
   const [showDeviceIdError, setShowDeviceIdError] = useState(false);
+
+  // Load available devices on mount
+  useEffect(() => {
+    const loadAvailableDevices = async () => {
+      setLoadingDevices(true);
+      try {
+        const response = await Api.getAvailableDevices(token);
+        if (response && response.availableDevices) {
+          setAvailableDevices(response.availableDevices);
+        }
+      } catch (err) {
+        console.log('Could not load available devices:', err);
+        setAvailableDevices([]);
+      } finally {
+        setLoadingDevices(false);
+      }
+    };
+    
+    if (token) {
+      loadAvailableDevices();
+    }
+  }, [token]);
+
+  const handleSelectDevice = (device) => {
+    setDeviceId(device.deviceId);
+    setHouseId(device.houseId || '');
+    setShowDeviceIdError(false);
+  };
 
   const handleRegisterDevice = async () => {
     setError('');
@@ -130,6 +160,62 @@ export default function DeviceRegistrationScreen({ token, username, onDeviceRegi
             <Text style={{ color: '#ff0055', fontWeight: '600' }}>⚠ {error}</Text>
           </View>
         ) : null}
+
+        {availableDevices.length > 0 && (
+          <View style={{ marginBottom: SPACING.large }}>
+            <Text
+              style={{
+                fontSize: TYPO.labelSize,
+                color: COLORS.glowGreen,
+                fontWeight: '700',
+                marginBottom: SPACING.small
+              }}
+            >
+              ✓ Available Devices
+            </Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: SPACING.base }}
+            >
+              {availableDevices.map((device, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={{
+                    backgroundColor: deviceId === device.deviceId ? COLORS.glowGreen : 'rgba(76, 175, 80, 0.2)',
+                    borderRadius: 12,
+                    padding: SPACING.small,
+                    marginRight: SPACING.small,
+                    borderWidth: 2,
+                    borderColor: deviceId === device.deviceId ? COLORS.glowGreen : 'rgba(76, 175, 80, 0.5)',
+                    minWidth: 140
+                  }}
+                  onPress={() => handleSelectDevice(device)}
+                >
+                  <Text style={{ 
+                    color: deviceId === device.deviceId ? COLORS.background : COLORS.glowGreen, 
+                    fontWeight: '700',
+                    fontSize: TYPO.bodySize 
+                  }}>
+                    {device.deviceId}
+                  </Text>
+                  <Text style={{ 
+                    color: deviceId === device.deviceId ? COLORS.background : COLORS.glowGreen, 
+                    fontSize: TYPO.smallSize,
+                    marginTop: 4
+                  }}>
+                    {device.location}
+                  </Text>
+                  {device.available ? (
+                    <Text style={{ color: COLORS.glowGreen, fontSize: 12, marginTop: 4 }}>✓ Available</Text>
+                  ) : (
+                    <Text style={{ color: '#ff0055', fontSize: 12, marginTop: 4 }}>Claimed</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         <View style={{ marginBottom: SPACING.large }}>
           <Text

@@ -341,10 +341,6 @@ export default function DashboardScreen({ token, username, onOpenBilling, onLogo
           <Text style={styles.primaryButtonText}>💳 Pay Bill</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.primaryButton]} onPress={onOpenDevices}>
-          <Text style={styles.primaryButtonText}>🎛️ Manage Devices</Text>
-        </TouchableOpacity>
-
         <TouchableOpacity 
           style={[styles.secondaryButton, { marginTop: SPACING.base }]} 
           onPress={() => {
