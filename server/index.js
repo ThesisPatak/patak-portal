@@ -21,6 +21,16 @@ const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
+// Pre-configured allowed devices (whitelist)
+// Only these devices can be registered by users
+const ALLOWED_DEVICES = [
+  { deviceId: 'ESP32-001', houseId: 'house1', location: 'Main House' },
+  { deviceId: 'ESP32-002', houseId: 'house2', location: 'Secondary House' },
+  { deviceId: 'ESP32-003', houseId: 'house3', location: 'Office' },
+  { deviceId: 'ESP32-004', houseId: 'house4', location: 'Warehouse' },
+  { deviceId: 'ESP32-005', houseId: 'house5', location: 'Garden House' }
+]
+
 // File operation queue to prevent concurrent read/write race conditions
 const fileOperationQueue = new Map() // { filePath: Promise }
 
@@ -1126,10 +1136,28 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     return res.status(400).json({ error: 'deviceId required' })
   }
   
+  // Validate that device exists in whitelist
+  const allowedDevice = ALLOWED_DEVICES.find(d => d.deviceId === deviceId)
+  if (!allowedDevice) {
+    console.log(`[DEVICE-REGISTER] ✗ REJECTED - Device '${deviceId}' not in whitelist`)
+    console.log(`[DEVICE-REGISTER] Available devices: ${ALLOWED_DEVICES.map(d => d.deviceId).join(', ')}`)
+    return res.status(400).json({ 
+      error: `Device '${deviceId}' is not registered in the system`,
+      availableDevices: ALLOWED_DEVICES.map(d => ({ deviceId: d.deviceId, location: d.location }))
+    })
+  }
+  
   try {
     const devices = readJSON(DEVICES_FILE)
     const exists = devices.find(d => d.deviceId === deviceId)
-    console.log(`[DEVICE-REGISTER] Device already exists: ${!!exists}`)
+    const claimedByOtherUser = exists && exists.ownerUserId !== req.user.userId
+    
+    if (claimedByOtherUser) {
+      console.log(`[DEVICE-REGISTER] ✗ REJECTED - Device already claimed by user ${exists.ownerUserId}`)
+      return res.status(409).json({ error: `Device '${deviceId}' is already claimed by another user` })
+    }
+    
+    console.log(`[DEVICE-REGISTER] Device already owned by current user: ${!!exists}`)
     
     // Generate device token (JWT that ESP32 can use to authenticate)
     // 10 year expiration allows stable operation during 1-month test and beyond
@@ -1144,7 +1172,8 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     const device = {
       deviceId,
       ownerUserId: req.user.userId,
-      houseId: houseId || null,
+      houseId: houseId || allowedDevice.houseId,
+      location: allowedDevice.location,
       meta: meta || {},
       status: 'registered',
       lastSeen: null,
@@ -1169,6 +1198,40 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error(`[DEVICE-REGISTER] ✗ ERROR:`, err.message)
     res.status(500).json({ error: 'Failed to register device: ' + err.message })
+  }
+})
+
+// Get list of available devices (not yet claimed by any user)
+app.get('/devices/available', authMiddleware, (req, res) => {
+  try {
+    const devices = readJSON(DEVICES_FILE)
+    const availableDevices = ALLOWED_DEVICES.map(allowed => {
+      const claimed = devices.find(d => d.deviceId === allowed.deviceId)
+      return {
+        deviceId: allowed.deviceId,
+        location: allowed.location,
+        houseId: allowed.houseId,
+        available: !claimed,
+        claimedBy: claimed ? claimed.ownerUserId : null,
+        claimedAt: claimed ? claimed.createdAt : null
+      }
+    })
+    res.json({ availableDevices })
+  } catch (err) {
+    console.error(`[DEVICES-AVAILABLE] Error:`, err.message)
+    res.status(500).json({ error: 'Failed to fetch available devices' })
+  }
+})
+
+// Get user's registered devices
+app.get('/devices/my-devices', authMiddleware, (req, res) => {
+  try {
+    const devices = readJSON(DEVICES_FILE)
+    const userDevices = devices.filter(d => d.ownerUserId === req.user.userId)
+    res.json({ devices: userDevices })
+  } catch (err) {
+    console.error(`[MY-DEVICES] Error:`, err.message)
+    res.status(500).json({ error: 'Failed to fetch your devices' })
   }
 })
 
