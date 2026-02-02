@@ -42,6 +42,13 @@ const AdminDashboard: React.FC = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [searchUsername, setSearchUsername] = useState("");
+  
+  // Destructive action confirmation (Delete/Reset with password)
+  const [showDestructiveConfirm, setShowDestructiveConfirm] = useState(false);
+  const [destructiveAction, setDestructiveAction] = useState<{ type: 'delete' | 'reset'; userId: string; username: string } | null>(null);
+  const [destructivePassword, setDestructivePassword] = useState("");
+  const [destructiveError, setDestructiveError] = useState("");
+  const [destructiveLoading, setDestructiveLoading] = useState(false);
 
   // Handle admin login
   const handleLogin = (newToken: string, username: string) => {
@@ -326,33 +333,85 @@ const AdminDashboard: React.FC = () => {
     return visibleCycles;
   };
 
-  // Delete user account
+  // Delete user account - now shows password confirmation modal
   const deleteUser = async (userId: string, username: string) => {
-    if (!window.confirm(`Are you sure you want to delete user "${username}" and all their data? This cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(username)}`, {
-        method: "DELETE",
-        headers: { Authorization: "Bearer " + token },
-      });
-
-      if (!res.ok) throw new Error("Failed to delete user");
-      
-      setUsers(users.filter(u => u.id !== userId));
-      if (selectedUserId === userId) {
-        setSelectedUserId(null);
-        setUserReadings([]);
-      }
-      alert(`User ${username} deleted successfully`);
-    } catch (err) {
-      console.error("Delete error:", err);
-      alert("Failed to delete user");
-    }
+    setDestructiveAction({ type: 'delete', userId, username });
+    setShowDestructiveConfirm(true);
+    setDestructivePassword("");
+    setDestructiveError("");
   };
 
+  // Reset user meter - now shows password confirmation modal
+  const resetUserMeter = async (userId: string, username: string) => {
+    setDestructiveAction({ type: 'reset', userId, username });
+    setShowDestructiveConfirm(true);
+    setDestructivePassword("");
+    setDestructiveError("");
+  };
 
+  // Handle destructive action with password verification
+  const handleDestructiveAction = async () => {
+    if (!destructivePassword) {
+      setDestructiveError("Password required");
+      return;
+    }
+    if (!destructiveAction) return;
+
+    setDestructiveLoading(true);
+    setDestructiveError("");
+
+    try {
+      if (destructiveAction.type === 'delete') {
+        // Delete user
+        const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(destructiveAction.username)}`, {
+          method: "DELETE",
+          headers: { 
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ adminPassword: destructivePassword }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to delete user");
+        }
+
+        setUsers(users.filter(u => u.id !== destructiveAction.userId));
+        if (selectedUserId === destructiveAction.userId) {
+          setSelectedUserId(null);
+          setUserReadings([]);
+        }
+        alert(`User ${destructiveAction.username} deleted successfully`);
+      } else if (destructiveAction.type === 'reset') {
+        // Reset meter
+        const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(destructiveAction.username)}/reset-meter`, {
+          method: "POST",
+          headers: { 
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ adminPassword: destructivePassword }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to reset meter");
+        }
+
+        alert(`Meter reset for ${destructiveAction.username}`);
+        await loadDashboard();
+      }
+
+      setShowDestructiveConfirm(false);
+      setDestructiveAction(null);
+      setDestructivePassword("");
+    } catch (err: any) {
+      setDestructiveError(err.message || "Operation failed");
+    } finally {
+      setDestructiveLoading(false);
+    }
+  };
 
   // Change admin password
   const handleChangePassword = async () => {
@@ -794,20 +853,7 @@ const AdminDashboard: React.FC = () => {
                                     View
                                   </button>
                                   <button
-                                    onClick={async () => {
-                                      if (!window.confirm(`Reset meter for "${user.username}"?`)) return;
-                                      try {
-                                        const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(user.username)}/reset-meter`, {
-                                          method: "POST",
-                                          headers: { Authorization: "Bearer " + token },
-                                        });
-                                        if (!res.ok) throw new Error("Failed");
-                                        alert(`Meter reset for ${user.username}`);
-                                        await loadDashboard();
-                                      } catch (err) {
-                                        alert("Failed to reset meter");
-                                      }
-                                    }}
+                                    onClick={() => resetUserMeter(user.id, user.username)}
                                     style={{
                                       padding: "0.5rem 1rem",
                                       background: "#ff9800",
@@ -1304,6 +1350,136 @@ const AdminDashboard: React.FC = () => {
                 onMouseLeave={(e) => e.currentTarget.style.background = "#dc3545"}
               >
                 Yes, Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Destructive Action Confirmation Modal (Delete/Reset with Password) */}
+      {showDestructiveConfirm && destructiveAction && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            padding: "1rem",
+            boxSizing: "border-box",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: isMobile ? "1.5rem" : "2rem",
+              borderRadius: "12px",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+              maxWidth: "450px",
+              width: "100%",
+            }}
+          >
+            <h2 style={{ color: "#dc3545", marginBottom: "0.5rem", fontSize: isMobile ? "1.1rem" : "1.3rem", fontWeight: 600 }}>
+              ⚠️ Confirm {destructiveAction.type === 'delete' ? 'Delete User' : 'Reset Meter'}
+            </h2>
+            
+            <p style={{ color: "#666", marginBottom: "1rem", fontSize: "0.95rem" }}>
+              {destructiveAction.type === 'delete' 
+                ? `This will permanently delete user "${destructiveAction.username}" and ALL their data (readings, payments, history). This CANNOT be undone.`
+                : `This will reset the water meter for "${destructiveAction.username}". Their current consumption will be locked into their billing history, and the meter will start from 0.`
+              }
+            </p>
+
+            <p style={{ color: "#d97706", background: "#fef3c7", padding: "0.75rem", borderRadius: "6px", marginBottom: "1.5rem", fontSize: "0.9rem" }}>
+              🔐 Enter your admin password to confirm this action.
+            </p>
+
+            {destructiveError && (
+              <div style={{ background: "#f8d7da", color: "#721c24", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" }}>
+                {destructiveError}
+              </div>
+            )}
+
+            <input
+              type="password"
+              placeholder="Admin Password"
+              value={destructivePassword}
+              onChange={(e) => setDestructivePassword(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && destructivePassword) {
+                  handleDestructiveAction();
+                }
+              }}
+              style={{
+                width: "100%",
+                padding: "0.75rem 1rem",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                marginBottom: "1.5rem",
+                fontSize: "0.95rem",
+                boxSizing: "border-box",
+              }}
+            />
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: isMobile ? "0.75rem" : "1rem",
+            }}>
+              <button
+                onClick={() => {
+                  setShowDestructiveConfirm(false);
+                  setDestructiveAction(null);
+                  setDestructivePassword("");
+                  setDestructiveError("");
+                }}
+                style={{
+                  padding: "0.7rem 1.5rem",
+                  background: "#f5f5f5",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: isMobile ? "0.9rem" : "0.95rem",
+                  fontWeight: 600,
+                  color: "#333",
+                  transition: "background 0.2s",
+                  minHeight: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#e8e8e8"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#f5f5f5"}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDestructiveAction}
+                disabled={destructiveLoading || !destructivePassword}
+                style={{
+                  padding: "0.7rem 1.5rem",
+                  background: destructiveLoading || !destructivePassword ? "#ccc" : "#dc3545",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: destructiveLoading || !destructivePassword ? "not-allowed" : "pointer",
+                  fontSize: isMobile ? "0.9rem" : "0.95rem",
+                  fontWeight: 600,
+                  color: "#fff",
+                  transition: "background 0.2s",
+                  minHeight: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onMouseEnter={(e) => !destructiveLoading && destructivePassword && (e.currentTarget.style.background = "#bb2d3b")}
+                onMouseLeave={(e) => !destructiveLoading && destructivePassword && (e.currentTarget.style.background = "#dc3545")}
+              >
+                {destructiveLoading ? "Confirming..." : "Confirm"}
               </button>
             </div>
           </div>
