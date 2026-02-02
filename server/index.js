@@ -2515,12 +2515,15 @@ app.delete('/api/admin/users/:username', authMiddleware, async (req, res) => {
 
 // Admin dashboard endpoint
 app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
-  if (!req.user.isAdmin) return res.status(403).json({ error: 'Admin access required' })
+  if (!req.user.isAdmin) {
+    console.log(`[DASHBOARD] ✗ Unauthorized access - user isAdmin=${req.user.isAdmin}`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
   
-  console.log('[DASHBOARD] Admin dashboard requested by:', req.user.username)
+  console.log(`[DASHBOARD] Admin dashboard requested by: ${req.user.username} (isAdmin=${req.user.isAdmin})`)
   const users = readJSON(USERS_FILE)
-  console.log('[DASHBOARD] Total users in file:', users.length)
-  console.log('[DASHBOARD] Users:', users.map(u => ({ id: u.id, username: u.username, isAdmin: u.isAdmin })))
+  console.log(`[DASHBOARD] Total users in file: ${users.length}`)
+  console.log(`[DASHBOARD] Users:`, users.map(u => ({ id: u.id, username: u.username, isAdmin: u.isAdmin })))
   
   const devices = readJSON(DEVICES_FILE)
   const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
@@ -2688,7 +2691,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     }
   })
 
-  console.log('[DASHBOARD] Returning', userList.length, 'non-admin users')
+  console.log(`[DASHBOARD] Returning ${userList.length} non-admin users:`, userList.map(u => ({ username: u.username, devices: u.deviceCount })))
   res.json({ users: userList })
 })
 
