@@ -26,6 +26,7 @@ const AdminDashboard: React.FC = () => {
   });
 
   const [users, setUsers] = useState<UserData[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userReadings, setUserReadings] = useState<any[]>([]);
@@ -94,6 +95,11 @@ const AdminDashboard: React.FC = () => {
       }
       const data = await res.json();
       console.log('[ADMIN-DASHBOARD] Received users:', data.users?.length || 0);
+      console.log('[ADMIN-DASHBOARD] Pending users:', data.pendingUsers?.length || 0);
+      
+      // Set pending users
+      setPendingUsers(data.pendingUsers || []);
+      
       // Calculate bill using tiered rates
       const usersWithCorrectBill = (data.users || []).map((user: any) => ({
         ...user,
@@ -361,6 +367,15 @@ const AdminDashboard: React.FC = () => {
     setDestructiveError("");
 
     try {
+      // Check if this is a pending user approve action
+      const isPendingUser = pendingUsers.some(u => u.username === destructiveAction.username);
+      
+      if (destructiveAction.type === 'delete' && isPendingUser) {
+        // Approve pending user
+        await handlePendingUserAction(destructiveAction.username, 'approve');
+        return;
+      }
+      
       if (destructiveAction.type === 'delete') {
         // Delete user
         const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(destructiveAction.username)}`, {
@@ -463,6 +478,51 @@ const AdminDashboard: React.FC = () => {
       setPasswordError(err.message || "Failed to change password");
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  // Approve pending user
+  const approvePendingUser = async (username: string) => {
+    setDestructiveAction({ type: 'delete', userId: username, username });
+    setShowDestructiveConfirm(true);
+    setDestructivePassword("");
+    setDestructiveError("");
+  };
+
+  // Handle approve/reject with password
+  const handlePendingUserAction = async (username: string, action: 'approve' | 'reject') => {
+    if (!destructivePassword) {
+      setDestructiveError("Password required");
+      return;
+    }
+
+    setDestructiveLoading(true);
+    setDestructiveError("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(username)}/${action}`, {
+        method: "POST",
+        headers: { 
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ adminPassword: destructivePassword }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `Failed to ${action} user`);
+      }
+
+      alert(`User ${action === 'approve' ? 'approved' : 'rejected'} successfully`);
+      setPendingUsers(pendingUsers.filter(u => u.username !== username));
+      setShowDestructiveConfirm(false);
+      setDestructivePassword("");
+      await loadDashboard();
+    } catch (err: any) {
+      setDestructiveError(err.message || `Failed to ${action} user`);
+    } finally {
+      setDestructiveLoading(false);
     }
   };
 
@@ -612,6 +672,98 @@ const AdminDashboard: React.FC = () => {
 
   
               </section>
+
+              {/* Separator */}
+              <div style={{ height: "1px", background: "#ddd", margin: "2rem 0" }} />
+
+              {/* Pending Registrations Section */}
+              {pendingUsers.length > 0 && (
+                <section style={{ marginBottom: "3rem" }}>
+                  <h2 style={{ color: "#d97706", fontSize: isMobile ? "1.2rem" : "1.5rem", marginBottom: "1.5rem", fontWeight: 600 }}>
+                    ⏳ Pending Registrations ({pendingUsers.length})
+                  </h2>
+                  <div style={{ background: "#fff", borderRadius: "12px", boxShadow: "0 2px 8px #0000000f", overflow: "hidden", overflowX: "auto" }}>
+                    <div style={{ padding: "1rem" }}>
+                      {pendingUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          style={{
+                            background: "#fffbeb",
+                            padding: "1rem",
+                            marginBottom: "0.75rem",
+                            borderRadius: "8px",
+                            border: "1px solid #fcd34d",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: isMobile ? "wrap" : "nowrap",
+                            gap: "1rem"
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 600, color: "#333", fontSize: "0.95rem" }}>
+                              {user.username}
+                            </div>
+                            <div style={{ color: "#666", fontSize: "0.85rem", marginTop: "0.2rem" }}>
+                              {user.email && `Email: ${user.email}`}
+                            </div>
+                            <div style={{ color: "#999", fontSize: "0.8rem", marginTop: "0.2rem" }}>
+                              Registered: {new Date(user.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                            <button
+                              onClick={() => {
+                                setDestructiveAction({ type: 'delete', userId: user.id, username: user.username });
+                                setShowDestructiveConfirm(true);
+                                setDestructivePassword("");
+                                setDestructiveError("");
+                              }}
+                              style={{
+                                padding: "0.5rem 1rem",
+                                background: "#10b981",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                fontWeight: 600,
+                                transition: "background 0.2s",
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = "#059669"}
+                              onMouseLeave={(e) => e.currentTarget.style.background = "#10b981"}
+                            >
+                              ✅ Approve
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to reject "${user.username}"?`)) {
+                                  handlePendingUserAction(user.username, 'reject');
+                                }
+                              }}
+                              style={{
+                                padding: "0.5rem 1rem",
+                                background: "#ef4444",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                fontWeight: 600,
+                                transition: "background 0.2s",
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = "#dc2626"}
+                              onMouseLeave={(e) => e.currentTarget.style.background = "#ef4444"}
+                            >
+                              ❌ Reject
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
 
               {/* Separator */}
               <div style={{ height: "1px", background: "#ddd", margin: "2rem 0" }} />
