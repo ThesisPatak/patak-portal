@@ -1195,6 +1195,49 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
       deviceToken
     })
     console.log(`[DEVICE-REGISTER] ✓✓ SUCCESS - Device registered for user`)
+    
+    // Broadcast updated summary to SSE clients so UI refreshes immediately
+    setTimeout(() => {
+      const allDevices = readJSON(DEVICES_FILE)
+      const userDevices = allDevices.filter(d => d.ownerUserId === req.user.userId)
+      const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+      let allReadings = []
+      try {
+        if (fs.existsSync(READINGS_FILE)) {
+          allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+        }
+      } catch (e) {
+        console.error('[DEVICE-REGISTER-SSE] Failed to load readings:', e)
+      }
+      
+      const summary = {}
+      userDevices.forEach(dev => {
+        const deviceReadings = allReadings.filter(r => r.deviceId === dev.deviceId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        const lastReading = deviceReadings[0]
+        const houseId = dev.houseId || 'unknown'
+        
+        summary[houseId] = {
+          deviceId: dev.deviceId,
+          status: 'offline',
+          totalLiters: lastReading ? lastReading.totalLiters : 0,
+          cubicMeters: lastReading ? lastReading.cubicMeters : 0,
+          last: lastReading || null
+        }
+      })
+      
+      // Broadcast to all SSE clients for this user
+      const clients = sseClients.get(req.user.userId)
+      if (clients) {
+        clients.forEach(client => {
+          try {
+            client.res.write(`event: summary\ndata: ${JSON.stringify({ summary })}\n\n`)
+            console.log(`[DEVICE-REGISTER-SSE] ✓ Broadcasted summary to user ${req.user.userId}`)
+          } catch (err) {
+            console.error('[DEVICE-REGISTER-SSE] Failed to broadcast:', err.message)
+          }
+        })
+      }
+    }, 100)
   } catch (err) {
     console.error(`[DEVICE-REGISTER] ✗ ERROR:`, err.message)
     res.status(500).json({ error: 'Failed to register device: ' + err.message })
