@@ -12,7 +12,9 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Use environment variable for data directory, default to /data for Railway volume
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', '..', 'data')
+// On Railway, DATA_DIR should be set to /data, but fallback to /data anyway since that's the mounted volume
+const DATA_DIR = process.env.DATA_DIR || '/data' || path.join(__dirname, '..', '..', 'data')
+console.log(`[STARTUP] NODE_ENV: ${process.env.NODE_ENV}`)
 console.log(`[STARTUP] DATA_DIR environment variable: ${process.env.DATA_DIR}`)
 console.log(`[STARTUP] Using DATA_DIR: ${DATA_DIR}`)
 console.log(`[STARTUP] Data directory exists: ${fs.existsSync(DATA_DIR)}`)
@@ -22,6 +24,17 @@ const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json')
 console.log(`[STARTUP] Users file path: ${USERS_FILE}`)
 console.log(`[STARTUP] Devices file path: ${DEVICES_FILE}`)
 console.log(`[STARTUP] Payments file path: ${PAYMENTS_FILE}`)
+
+// Verify files are accessible before startup
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    console.log(`[STARTUP] Creating DATA_DIR: ${DATA_DIR}`)
+    fs.mkdirSync(DATA_DIR, { recursive: true })
+  }
+  console.log(`[STARTUP] ✓ DATA_DIR is accessible and writable`)
+} catch (err) {
+  console.error(`[STARTUP] ✗ CRITICAL: DATA_DIR not writable at ${DATA_DIR}:`, err.message)
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
@@ -673,15 +686,21 @@ app.get('/api/stream', authMiddleware, (req, res) => {
 app.get('/api/houses', authMiddleware, (req, res) => {
   try {
     const userId = req.user.userId
+    console.log(`\n[HOUSES] Request for userId: ${userId}`)
+    console.log(`[HOUSES] Reading users from: ${USERS_FILE}`)
     const users = readJSON(USERS_FILE)
     if (!Array.isArray(users)) {
       console.error('[HOUSES] ERROR: users is not an array, got:', typeof users)
       return res.status(500).json({ error: 'Corrupted user data' })
     }
     
+    console.log(`[HOUSES] Total users in file: ${users.length}`)
+    users.forEach((u, idx) => console.log(`  [${idx}] id=${u.id}, username=${u.username}`))
+    
     const user = users.find(u => u.id === userId)
     if (!user) {
-      console.warn(`[HOUSES] User ${userId} not found in ${users.length} users`)
+      console.warn(`[HOUSES] ✗ User ${userId} not found in ${users.length} users`)
+      console.warn(`[HOUSES] ⚠️ This usually means user data wasn't persisted to the volume. Check DATA_DIR: ${DATA_DIR}`)
       return res.status(404).json({ error: 'User not found' })
     }
     
