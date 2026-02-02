@@ -564,6 +564,17 @@ app.post('/auth/login', async (req, res) => {
   if (!user) return res.status(401).json({ error: 'Invalid credentials' })
   
   // Check if user is approved
+  // For existing users without status field, auto-set to 'approved' (backward compatibility)
+  if (!user.status) {
+    user.status = 'approved'
+    const users = readJSON(USERS_FILE)
+    const idx = users.findIndex(u => u.id === user.id)
+    if (idx >= 0) {
+      users[idx].status = 'approved'
+      writeJSON(USERS_FILE, users)
+    }
+  }
+  
   if (user.status === 'pending') {
     return res.status(403).json({ error: 'Account pending admin approval. Please wait for the admin to approve your registration.' })
   }
