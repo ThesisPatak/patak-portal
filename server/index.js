@@ -466,6 +466,49 @@ function authMiddleware(req, res, next) {
   }
 }
 
+// Helper: Check if user account is approved (for resources that require account approval)
+// Returns { isApproved: boolean, statusCode: number, error: string|null }
+function checkUserApprovalStatus(userId, logPrefix = '') {
+  try {
+    const users = readJSON(USERS_FILE)
+    const user = users.find(u => u.id === userId)
+    
+    if (!user) {
+      return { isApproved: false, statusCode: 404, error: 'User not found' }
+    }
+    
+    // Auto-approve existing users without status field (backward compatibility)
+    if (!user.status) {
+      user.status = 'approved'
+      const idx = users.findIndex(u => u.id === userId)
+      if (idx >= 0) {
+        users[idx].status = 'approved'
+        writeJSON(USERS_FILE, users)
+      }
+    }
+    
+    if (user.status === 'approved') {
+      console.log(`${logPrefix} ✓ User ${userId} is approved`)
+      return { isApproved: true, statusCode: 200, error: null }
+    }
+    
+    if (user.status === 'pending') {
+      console.log(`${logPrefix} ✗ User ${userId} is pending approval`)
+      return { isApproved: false, statusCode: 403, error: 'Account pending admin approval. Please wait for the admin to approve your registration.' }
+    }
+    
+    if (user.status === 'rejected') {
+      console.log(`${logPrefix} ✗ User ${userId} was rejected`)
+      return { isApproved: false, statusCode: 403, error: 'Your account registration was rejected by admin.' }
+    }
+    
+    return { isApproved: false, statusCode: 403, error: 'Account status unknown' }
+  } catch (err) {
+    console.error(`${logPrefix} Error checking approval status:`, err.message)
+    return { isApproved: false, statusCode: 500, error: 'Internal server error checking approval status' }
+  }
+}
+
 // Public: Get GCash configuration
 app.get('/api/config/gcash', (req, res) => {
   const gcashNumber = process.env.GCASH_NUMBER || null
@@ -1070,6 +1113,13 @@ app.post('/api/readings', async (req, res) => {
 // Endpoint to get historical readings for charts
 app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
   const { deviceId } = req.params
+  
+  // Check if user is approved
+  const approvalCheck = checkUserApprovalStatus(req.user.userId, '[READINGS]')
+  if (!approvalCheck.isApproved) {
+    return res.status(approvalCheck.statusCode).json({ error: approvalCheck.error })
+  }
+  
   const devices = readJSON(DEVICES_FILE)
   const device = devices.find(d => d.deviceId === deviceId)
   
@@ -1099,6 +1149,12 @@ app.get('/api/readings/:deviceId', authMiddleware, (req, res) => {
 app.get('/api/user/readings', authMiddleware, (req, res) => {
   try {
     const userId = req.user.userId
+    
+    // Check if user is approved
+    const approvalCheck = checkUserApprovalStatus(userId, '[USER-READINGS]')
+    if (!approvalCheck.isApproved) {
+      return res.status(approvalCheck.statusCode).json({ error: approvalCheck.error })
+    }
     
     const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
     let allReadings = []
@@ -1403,6 +1459,12 @@ app.post('/devices/send-token', authMiddleware, async (req, res) => {
   console.log(`\n[${timestamp}] [SEND-TOKEN] Request to send token to ESP32`)
   console.log(`[SEND-TOKEN] deviceId: ${deviceId}, ESP IP: ${espIP}:${espPort}`)
   
+  // Check if user is approved
+  const approvalCheck = checkUserApprovalStatus(req.user.userId, '[SEND-TOKEN]')
+  if (!approvalCheck.isApproved) {
+    return res.status(approvalCheck.statusCode).json({ error: approvalCheck.error })
+  }
+  
   if (!deviceId || !espIP) {
     return res.status(400).json({ error: 'deviceId and espIP required' })
   }
@@ -1445,13 +1507,18 @@ app.post('/devices/send-token', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Failed to send token to device: ' + err.message })
   }
 })
-
 // Link device via backend (cloud-based, works over internet)
 app.post('/devices/link', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
   const { deviceId } = req.body || {}
   console.log(`\n[${timestamp}] [DEVICE-LINK] Request from user ${req.user.userId}`)
   console.log(`[DEVICE-LINK] deviceId: ${deviceId}`)
+  
+  // Check if user is approved
+  const approvalCheck = checkUserApprovalStatus(req.user.userId, '[DEVICE-LINK]')
+  if (!approvalCheck.isApproved) {
+    return res.status(approvalCheck.statusCode).json({ error: approvalCheck.error })
+  }
   
   if (!deviceId) {
     return res.status(400).json({ error: 'deviceId required' })
@@ -1990,6 +2057,12 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
 
   console.log(`\n[${timestamp}] [PAYMONGO-CREATE] Creating checkout`)
   console.log(`[PAYMONGO-CREATE] User: ${username}, Amount: ₱${amount / 100}, Billing: ${billingMonth}/${billingYear}`)
+  
+  // Check if user is approved
+  const approvalCheck = checkUserApprovalStatus(userId, '[PAYMONGO-CREATE]')
+  if (!approvalCheck.isApproved) {
+    return res.status(approvalCheck.statusCode).json({ error: approvalCheck.error })
+  }
 
   // Validate required fields
   if (!amount || amount <= 0) {
@@ -2246,6 +2319,12 @@ app.post('/api/gcash/submit-payment', authMiddleware, (req, res) => {
 
   console.log(`\n[${timestamp}] [GCASH-SUBMIT] Payment submission received`)
   console.log(`[GCASH-SUBMIT] User: ${username}, Amount: ₱${amount}, Billing: ${billingMonth}/${billingYear}`)
+  
+  // Check if user is approved
+  const approvalCheck = checkUserApprovalStatus(userId, '[GCASH-SUBMIT]')
+  if (!approvalCheck.isApproved) {
+    return res.status(approvalCheck.statusCode).json({ error: approvalCheck.error })
+  }
 
   if (!amount || amount <= 0) {
     return res.status(400).json({ error: 'Invalid amount' })
