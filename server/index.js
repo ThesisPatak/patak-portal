@@ -1613,6 +1613,29 @@ app.post('/api/admin/users/:username/reset-meter', authMiddleware, async (req, r
   user.lastReading = null
   writeJSON(USERS_FILE, users)
   
+  // Clear all historical readings for this user's devices
+  const READINGS_FILE = path.join(DATA_DIR, 'readings.json')
+  try {
+    let allReadings = []
+    if (fs.existsSync(READINGS_FILE)) {
+      allReadings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'))
+      if (!Array.isArray(allReadings)) allReadings = []
+    }
+    
+    // Get list of all device IDs owned by this user
+    const userDeviceIds = userDevices.map(d => d.deviceId)
+    
+    // Filter out all readings for this user's devices
+    const filteredReadings = allReadings.filter(r => !userDeviceIds.includes(r.deviceId))
+    
+    // Save filtered readings
+    writeJSON(READINGS_FILE, filteredReadings)
+    console.log(`[RESET-METER] ✓ Cleared ${allReadings.length - filteredReadings.length} historical readings for user's devices`)
+  } catch (e) {
+    console.error('[RESET-METER] Error clearing readings:', e)
+    // Continue anyway - readings clear is secondary to user data reset
+  }
+  
   console.log(`[RESET-METER] ✓ Reset command queued for user: ${user.username}`)
   res.json({ 
     ok: true, 
