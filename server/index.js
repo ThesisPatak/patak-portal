@@ -520,7 +520,7 @@ app.post('/auth/register', async (req, res) => {
     console.log(`[REGISTER] Hashing password...`)
     const passwordHash = await bcrypt.hash(password, 10)
     const userId = generateId('user')
-    const user = { id: userId, email: email || null, username: username || null, passwordHash, isAdmin: false, createdAt: new Date().toISOString() }
+    const user = { id: userId, email: email || null, username: username || null, passwordHash, isAdmin: false, status: 'pending', createdAt: new Date().toISOString() }
     
     console.log(`[REGISTER] Created user object:`, { id: user.id, username: user.username, email: user.email, isAdmin: user.isAdmin, createdAt: user.createdAt })
     users.push(user)
@@ -562,9 +562,18 @@ app.post('/auth/login', async (req, res) => {
   const users = readJSON(USERS_FILE)
   const user = users.find(u => (email && u.email === email) || (username && u.username === username))
   if (!user) return res.status(401).json({ error: 'Invalid credentials' })
+  
+  // Check if user is approved
+  if (user.status === 'pending') {
+    return res.status(403).json({ error: 'Account pending admin approval. Please wait for the admin to approve your registration.' })
+  }
+  if (user.status === 'rejected') {
+    return res.status(403).json({ error: 'Your account registration was rejected by admin.' })
+  }
+  
   const ok = await bcrypt.compare(password, user.passwordHash)
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
-  const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
+  const token = jwt.sign({ userId: user.id, email: user.email, username: user.username, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '1h' })
   res.json({ token, user: { id: user.id, email: user.email, username: user.username, createdAt: user.createdAt } })
 })
 
@@ -2529,6 +2538,111 @@ app.delete('/api/admin/users/:username', authMiddleware, async (req, res) => {
   res.json({ ok: true, message: 'User deleted', deletedUsername: user.username })
 })
 
+// Admin approve/reject user registration
+app.post('/api/admin/users/:username/approve', authMiddleware, async (req, res) => {
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [APPROVE-USER] Request received`)
+  
+  if (!req.user.isAdmin) {
+    console.log(`[APPROVE-USER] ✗ REJECTED - User is not admin`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  const { adminPassword } = req.body
+  if (!adminPassword) {
+    console.log(`[APPROVE-USER] ✗ REJECTED - Admin password not provided`)
+    return res.status(400).json({ error: 'Admin password required' })
+  }
+
+  // Verify admin password
+  const users = readJSON(USERS_FILE)
+  const adminUser = users.find(u => u.isAdmin && u.id === req.user.userId)
+  
+  if (!adminUser) {
+    console.log(`[APPROVE-USER] ✗ REJECTED - Admin user not found`)
+    return res.status(403).json({ error: 'Admin user not found' })
+  }
+
+  const passwordValid = await bcrypt.compare(adminPassword, adminUser.passwordHash)
+  if (!passwordValid) {
+    console.log(`[APPROVE-USER] ✗ REJECTED - Invalid admin password`)
+    return res.status(403).json({ error: 'Invalid admin password' })
+  }
+
+  const { username } = req.params
+  const decodedUsername = decodeURIComponent(username)
+  console.log(`[APPROVE-USER] Target username: "${decodedUsername}"`)
+  
+  const user = users.find(u => u.username === decodedUsername)
+  
+  if (!user) {
+    console.log(`[APPROVE-USER] ✗ User not found`)
+    return res.status(404).json({ error: 'User not found' })
+  }
+  
+  if (user.isAdmin) {
+    console.log(`[APPROVE-USER] ✗ Cannot modify admin user`)
+    return res.status(403).json({ error: 'Cannot modify admin users' })
+  }
+
+  user.status = 'approved'
+  writeJSON(USERS_FILE, users)
+  console.log(`[APPROVE-USER] ✓ SUCCESS - User approved: ${user.username}`)
+  res.json({ ok: true, message: 'User approved', username: user.username })
+})
+
+app.post('/api/admin/users/:username/reject', authMiddleware, async (req, res) => {
+  const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [REJECT-USER] Request received`)
+  
+  if (!req.user.isAdmin) {
+    console.log(`[REJECT-USER] ✗ REJECTED - User is not admin`)
+    return res.status(403).json({ error: 'Admin access required' })
+  }
+
+  const { adminPassword } = req.body
+  if (!adminPassword) {
+    console.log(`[REJECT-USER] ✗ REJECTED - Admin password not provided`)
+    return res.status(400).json({ error: 'Admin password required' })
+  }
+
+  // Verify admin password
+  const users = readJSON(USERS_FILE)
+  const adminUser = users.find(u => u.isAdmin && u.id === req.user.userId)
+  
+  if (!adminUser) {
+    console.log(`[REJECT-USER] ✗ REJECTED - Admin user not found`)
+    return res.status(403).json({ error: 'Admin user not found' })
+  }
+
+  const passwordValid = await bcrypt.compare(adminPassword, adminUser.passwordHash)
+  if (!passwordValid) {
+    console.log(`[REJECT-USER] ✗ REJECTED - Invalid admin password`)
+    return res.status(403).json({ error: 'Invalid admin password' })
+  }
+
+  const { username } = req.params
+  const decodedUsername = decodeURIComponent(username)
+  console.log(`[REJECT-USER] Target username: "${decodedUsername}"`)
+  
+  const user = users.find(u => u.username === decodedUsername)
+  
+  if (!user) {
+    console.log(`[REJECT-USER] ✗ User not found`)
+    return res.status(404).json({ error: 'User not found' })
+  }
+  
+  if (user.isAdmin) {
+    console.log(`[REJECT-USER] ✗ Cannot modify admin user`)
+    return res.status(403).json({ error: 'Cannot modify admin users' })
+  }
+
+  user.status = 'rejected'
+  writeJSON(USERS_FILE, users)
+  console.log(`[REJECT-USER] ✓ SUCCESS - User rejected: ${user.username}`)
+  res.json({ ok: true, message: 'User rejected', username: user.username })
+})
+
 // Admin dashboard endpoint
 app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
   if (!req.user.isAdmin) {
@@ -2707,8 +2821,19 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     }
   })
 
-  console.log(`[DASHBOARD] Returning ${userList.length} non-admin users:`, userList.map(u => ({ username: u.username, devices: u.deviceCount })))
-  res.json({ users: userList })
+  // Get pending registrations
+  const pendingUsers = users
+    .filter(user => !user.isAdmin && user.status === 'pending')
+    .map(user => ({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      status: 'pending',
+      createdAt: user.createdAt
+    }))
+
+  console.log(`[DASHBOARD] Returning ${userList.length} approved users and ${pendingUsers.length} pending users`)
+  res.json({ users: userList, pendingUsers: pendingUsers })
 })
 
 // Admin: Get user readings
