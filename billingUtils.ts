@@ -190,8 +190,8 @@ export function generateBillingHistory(
       statusIcon = '📊';
     }
 
-    const dueDate = new Date(periodEndDate);
-    dueDate.setDate(dueDate.getDate() + 7);
+    const dueDate = new Date(firstReadingDate);
+    dueDate.setMonth(dueDate.getMonth() + 1);
 
     history.push({
       month: monthStr,
