@@ -1524,7 +1524,7 @@ app.post('/api/admin/users', authMiddleware, async (req, res) => {
 })
 
 // Admin: Reset meter for a user
-app.post('/api/admin/users/:username/reset-meter', authMiddleware, (req, res) => {
+app.post('/api/admin/users/:username/reset-meter', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
   console.log(`\n[${timestamp}] [RESET-METER] Request received`)
   
@@ -1532,12 +1532,32 @@ app.post('/api/admin/users/:username/reset-meter', authMiddleware, (req, res) =>
     console.log(`[RESET-METER] ✗ REJECTED - User is not admin`)
     return res.status(403).json({ error: 'Admin access required' })
   }
+
+  const { adminPassword } = req.body
+  if (!adminPassword) {
+    console.log(`[RESET-METER] ✗ REJECTED - Admin password not provided`)
+    return res.status(400).json({ error: 'Admin password required' })
+  }
+
+  // Verify admin password
+  const users = readJSON(USERS_FILE)
+  const adminUser = users.find(u => u.isAdmin && u.id === req.user.userId)
+  
+  if (!adminUser) {
+    console.log(`[RESET-METER] ✗ REJECTED - Admin user not found`)
+    return res.status(403).json({ error: 'Admin user not found' })
+  }
+
+  const passwordValid = await bcrypt.compare(adminPassword, adminUser.passwordHash)
+  if (!passwordValid) {
+    console.log(`[RESET-METER] ✗ REJECTED - Invalid admin password`)
+    return res.status(403).json({ error: 'Invalid admin password' })
+  }
   
   const { username } = req.params
   const decodedUsername = decodeURIComponent(username)
   console.log(`[RESET-METER] Target username: "${decodedUsername}"`)
   
-  const users = readJSON(USERS_FILE)
   const user = users.find(u => u.username === decodedUsername)
   
   if (!user) {
@@ -2313,7 +2333,7 @@ app.get('/api/admin/payments/:username/:billingMonth/:billingYear', authMiddlewa
 })
 
 // Admin: Delete a user by username
-app.delete('/api/admin/users/:username', authMiddleware, (req, res) => {
+app.delete('/api/admin/users/:username', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
   console.log(`\n[${timestamp}] [DELETE-USER] Request received`)
   console.log(`[DELETE-USER] Auth: userId=${req.user.userId}, username=${req.user.username}, isAdmin=${req.user.isAdmin}`)
@@ -2322,12 +2342,31 @@ app.delete('/api/admin/users/:username', authMiddleware, (req, res) => {
     console.log(`[DELETE-USER] ✗ REJECTED - User is not admin (isAdmin=${req.user.isAdmin})`)
     return res.status(403).json({ error: 'Admin access required' })
   }
+
+  const { adminPassword } = req.body
+  if (!adminPassword) {
+    console.log(`[DELETE-USER] ✗ REJECTED - Admin password not provided`)
+    return res.status(400).json({ error: 'Admin password required' })
+  }
+
+  // Verify admin password
+  const users = readJSON(USERS_FILE)
+  const adminUser = users.find(u => u.isAdmin && u.id === req.user.userId)
+  
+  if (!adminUser) {
+    console.log(`[DELETE-USER] ✗ REJECTED - Admin user not found`)
+    return res.status(403).json({ error: 'Admin user not found' })
+  }
+
+  const passwordValid = await bcrypt.compare(adminPassword, adminUser.passwordHash)
+  if (!passwordValid) {
+    console.log(`[DELETE-USER] ✗ REJECTED - Invalid admin password`)
+    return res.status(403).json({ error: 'Invalid admin password' })
+  }
   
   const { username } = req.params
   const decodedUsername = decodeURIComponent(username)
   console.log(`[DELETE-USER] Target username: "${username}" (decoded: "${decodedUsername}")`)
-  
-  const users = readJSON(USERS_FILE)
   console.log(`[DELETE-USER] Total users in database: ${users.length}`)
   
   const user = users.find(u => u.username === decodedUsername)
