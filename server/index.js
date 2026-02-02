@@ -51,9 +51,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 const ALLOWED_DEVICES = [
   { deviceId: 'ESP32-001', houseId: 'house1', location: 'Main House' },
   { deviceId: 'ESP32-002', houseId: 'house2', location: 'Secondary House' },
-  { deviceId: 'ESP32-003', houseId: 'house3', location: 'Office' },
-  { deviceId: 'ESP32-004', houseId: 'house4', location: 'Warehouse' },
-  { deviceId: 'ESP32-005', houseId: 'house5', location: 'Garden House' }
+  { deviceId: 'ESP32-003', houseId: 'house3', location: 'Office' }
 ]
 
 // File operation queue to prevent concurrent read/write race conditions
@@ -1185,25 +1183,43 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
     return res.status(400).json({ error: 'deviceId required' })
   }
   
-  // Validate that device exists in whitelist
-  const allowedDevice = ALLOWED_DEVICES.find(d => d.deviceId === deviceId)
-  if (!allowedDevice) {
-    console.log(`[DEVICE-REGISTER] ✗ REJECTED - Device '${deviceId}' not in whitelist`)
-    console.log(`[DEVICE-REGISTER] Available devices: ${ALLOWED_DEVICES.map(d => d.deviceId).join(', ')}`)
-    return res.status(400).json({ 
-      error: `Device '${deviceId}' is not registered in the system`,
-      availableDevices: ALLOWED_DEVICES.map(d => ({ deviceId: d.deviceId, location: d.location }))
-    })
-  }
-  
   try {
     const devices = readJSON(DEVICES_FILE)
+    
+    // Validate that device exists in whitelist
+    const allowedDevice = ALLOWED_DEVICES.find(d => d.deviceId === deviceId)
+    if (!allowedDevice) {
+      console.log(`[DEVICE-REGISTER] ✗ REJECTED - Device '${deviceId}' not in whitelist`)
+      console.log(`[DEVICE-REGISTER] Available devices: ${ALLOWED_DEVICES.map(d => d.deviceId).join(', ')}`)
+      
+      // Filter out devices already claimed by other users
+      const availableDevices = ALLOWED_DEVICES.filter(d => {
+        const claimed = devices.find(dev => dev.deviceId === d.deviceId && dev.ownerUserId !== req.user.userId)
+        return !claimed
+      }).map(d => ({ deviceId: d.deviceId, location: d.location }))
+      
+      return res.status(400).json({ 
+        error: `Device '${deviceId}' is not registered in the system`,
+        availableDevices: availableDevices
+      })
+    }
+    
     const exists = devices.find(d => d.deviceId === deviceId)
     const claimedByOtherUser = exists && exists.ownerUserId !== req.user.userId
     
     if (claimedByOtherUser) {
       console.log(`[DEVICE-REGISTER] ✗ REJECTED - Device already claimed by user ${exists.ownerUserId}`)
-      return res.status(409).json({ error: `Device '${deviceId}' is already claimed by another user` })
+      
+      // Also return available devices in this error
+      const availableDevices = ALLOWED_DEVICES.filter(d => {
+        const claimed = devices.find(dev => dev.deviceId === d.deviceId && dev.ownerUserId !== req.user.userId)
+        return !claimed
+      }).map(d => ({ deviceId: d.deviceId, location: d.location }))
+      
+      return res.status(409).json({ 
+        error: `Device '${deviceId}' is already claimed by another user`,
+        availableDevices: availableDevices
+      })
     }
     
     console.log(`[DEVICE-REGISTER] Device already owned by current user: ${!!exists}`)
