@@ -3,6 +3,9 @@ import AdminLogin from "./AdminLogin";
 import { computeResidentialBill } from "./billingUtils";
 
 interface UserData {
+  id: string;
+  username: string;
+}
 
 const AdminDashboard: React.FC = () => {
   const [token, setToken] = useState(() => {
