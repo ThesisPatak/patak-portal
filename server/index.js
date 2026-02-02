@@ -32,8 +32,16 @@ try {
     fs.mkdirSync(DATA_DIR, { recursive: true })
   }
   console.log(`[STARTUP] ✓ DATA_DIR is accessible and writable`)
+  
+  // Test write permissions
+  const testFile = path.join(DATA_DIR, '.write-test')
+  fs.writeFileSync(testFile, 'test')
+  fs.unlinkSync(testFile)
+  console.log(`[STARTUP] ✓ Write permissions verified on DATA_DIR`)
 } catch (err) {
   console.error(`[STARTUP] ✗ CRITICAL: DATA_DIR not writable at ${DATA_DIR}:`, err.message)
+  console.error(`[STARTUP] This means user data CANNOT be saved! Fix the volume mount!`)
+  process.exit(1) // Exit immediately if we can't write to data directory
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
@@ -522,14 +530,23 @@ app.post('/auth/register', async (req, res) => {
     console.log(`[REGISTER] Array contents:`, users.map(u => ({ id: u.id, username: u.username, isAdmin: u.isAdmin })))
     
     console.log(`[REGISTER] About to write ${users.length} users to disk (${USERS_FILE})...`)
-    await writeJSON(USERS_FILE, users)
-    console.log(`[REGISTER] ✓ SAVED - User file now contains ${users.length} users`)
-    
-    // Verify the write was successful by reading back
-    const verifyRead = readJSON(USERS_FILE)
-    console.log(`[REGISTER] ✓ VERIFICATION: Read back ${verifyRead.length} users from disk`)
-    if (verifyRead.length !== users.length) {
-      console.error(`[REGISTER] ✗ CRITICAL: Written ${users.length} users but read back ${verifyRead.length}!`)
+    console.log(`[REGISTER] File path is writable: ${fs.existsSync(path.dirname(USERS_FILE))}`)
+    try {
+      await writeJSON(USERS_FILE, users)
+      console.log(`[REGISTER] ✓ SAVED - User file now contains ${users.length} users`)
+      
+      // Verify the write was successful by reading back
+      const verifyRead = readJSON(USERS_FILE)
+      console.log(`[REGISTER] ✓ VERIFICATION: Read back ${verifyRead.length} users from disk`)
+      if (verifyRead.length !== users.length) {
+        console.error(`[REGISTER] ✗ CRITICAL: Written ${users.length} users but read back ${verifyRead.length}!`)
+      } else {
+        console.log(`[REGISTER] ✓ File contents verified - all users present`)
+      }
+    } catch (writeErr) {
+      console.error(`[REGISTER] ✗ WRITE FAILED: Could not save to ${USERS_FILE}:`, writeErr.message)
+      console.error(`[REGISTER] Stack trace:`, writeErr.stack)
+      throw writeErr
     }
     
     const token = jwt.sign({ userId: user.id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '1h' })
