@@ -15,9 +15,13 @@ const __dirname = path.dirname(__filename)
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', '..', 'data')
 console.log(`[STARTUP] DATA_DIR environment variable: ${process.env.DATA_DIR}`)
 console.log(`[STARTUP] Using DATA_DIR: ${DATA_DIR}`)
+console.log(`[STARTUP] Data directory exists: ${fs.existsSync(DATA_DIR)}`)
 const USERS_FILE = path.join(DATA_DIR, 'users.json')
 const DEVICES_FILE = path.join(DATA_DIR, 'devices.json')
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json')
+console.log(`[STARTUP] Users file path: ${USERS_FILE}`)
+console.log(`[STARTUP] Devices file path: ${DEVICES_FILE}`)
+console.log(`[STARTUP] Payments file path: ${PAYMENTS_FILE}`)
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 
@@ -91,12 +95,21 @@ function initializeData() {
 
   // Initialize users - preserve existing, only create if truly missing
   if (!fs.existsSync(USERS_FILE)) {
-    console.log(`[INIT] Users file does not exist, creating with admin user...`)
+    console.log(`[INIT] Users file does not exist at ${USERS_FILE}, creating with admin user...`)
     const adminUser = initializeAdminUser()
-    fs.writeFileSync(USERS_FILE, JSON.stringify([adminUser], null, 2))
-    console.log('✓ Initialized admin user')
+    try {
+      fs.writeFileSync(USERS_FILE, JSON.stringify([adminUser], null, 2))
+      console.log(`✓ Initialized admin user at ${USERS_FILE}`)
+      // Verify file was written
+      if (fs.existsSync(USERS_FILE)) {
+        const stats = fs.statSync(USERS_FILE)
+        console.log(`✓ Verified: File exists with size ${stats.size} bytes`)
+      }
+    } catch (err) {
+      console.error(`✗ CRITICAL: Failed to write users file to ${USERS_FILE}:`, err.message)
+    }
   } else {
-    console.log(`[INIT] Users file exists, loading...`)
+    console.log(`[INIT] Users file exists at ${USERS_FILE}, loading...`)
     try {
       const existing = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'))
       if (Array.isArray(existing)) {
