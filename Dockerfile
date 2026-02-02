@@ -24,6 +24,9 @@ COPY server ./server
 # Copy built frontend from builder stage
 COPY --from=builder /app/dist ./public
 
+# Ensure data directory exists for volume mounting
+RUN mkdir -p /data
+
 EXPOSE 8080
 CMD ["node", "server/index.js"]
 
