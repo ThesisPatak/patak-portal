@@ -27,9 +27,6 @@ COPY --from=builder /app/dist ./public
 # Ensure data directory exists for volume mounting
 RUN mkdir -p /data
 
-# Declare volume for persistent data storage
-VOLUME ["/data"]
-
 EXPOSE 8080
 CMD ["node", "server/index.js"]
 
