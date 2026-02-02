@@ -739,6 +739,22 @@ app.get('/api/houses', authMiddleware, (req, res) => {
       return res.status(404).json({ error: 'User not found' })
     }
     
+    // Check if user is approved (auto-approve existing users without status)
+    if (!user.status) {
+      user.status = 'approved'
+      users[users.findIndex(u => u.id === userId)].status = 'approved'
+      writeJSON(USERS_FILE, users)
+    }
+    
+    if (user.status === 'pending') {
+      console.log(`[HOUSES] ✗ User is pending approval`)
+      return res.status(403).json({ error: 'Account pending admin approval' })
+    }
+    if (user.status === 'rejected') {
+      console.log(`[HOUSES] ✗ User was rejected`)
+      return res.status(403).json({ error: 'Account was rejected by admin' })
+    }
+    
     const userCreatedAt = user?.createdAt || new Date().toISOString()
     
     const devices = readJSON(DEVICES_FILE)
@@ -1197,6 +1213,23 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
   const { deviceId, houseId, meta } = req.body || {}
   console.log(`\n[${timestamp}] [DEVICE-REGISTER] Request from user ${req.user.userId}`)
   console.log(`[DEVICE-REGISTER] deviceId: ${deviceId}, houseId: ${houseId}`)
+  
+  // Check user approval status
+  const users = readJSON(USERS_FILE)
+  const user = users.find(u => u.id === req.user.userId)
+  if (!user) {
+    console.log(`[DEVICE-REGISTER] ✗ User not found`)
+    return res.status(404).json({ error: 'User not found' })
+  }
+  
+  if (user.status === 'pending') {
+    console.log(`[DEVICE-REGISTER] ✗ User is pending approval`)
+    return res.status(403).json({ error: 'Account pending admin approval' })
+  }
+  if (user.status === 'rejected') {
+    console.log(`[DEVICE-REGISTER] ✗ User was rejected`)
+    return res.status(403).json({ error: 'Account was rejected by admin' })
+  }
   
   if (!deviceId) {
     console.log(`[DEVICE-REGISTER] ✗ REJECTED - deviceId required`)
