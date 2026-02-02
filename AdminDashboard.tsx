@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import AdminLogin from "./AdminLogin";
 import { computeResidentialBill } from "./billingUtils";
 
+const API_URL = "https://patak-portal-production.up.railway.app";
+
 interface UserData {
   id: string;
   username: string;
@@ -65,14 +67,26 @@ const AdminDashboard: React.FC = () => {
 
   // Load dashboard data
   const loadDashboard = async () => {
-    if (!token) return;
+    if (!token) {
+      console.warn('[ADMIN-DASHBOARD] No token found');
+      return;
+    }
     setLoading(true);
+    console.log('[ADMIN-DASHBOARD] Loading dashboard with token:', token.substring(0, 20) + '...');
     try {
-      const res = await fetch(`${API_URL}/api/admin/dashboard`, {
+      const url = `${API_URL}/api/admin/dashboard`;
+      console.log('[ADMIN-DASHBOARD] Calling:', url);
+      const res = await fetch(url, {
         headers: { Authorization: "Bearer " + token },
       });
-      if (!res.ok) throw new Error("Failed to load dashboard");
+      console.log('[ADMIN-DASHBOARD] Response status:', res.status);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('[ADMIN-DASHBOARD] Response error:', errorText);
+        throw new Error(`Failed to load dashboard: ${res.status} ${errorText}`);
+      }
       const data = await res.json();
+      console.log('[ADMIN-DASHBOARD] Received users:', data.users?.length || 0);
       // Calculate bill using tiered rates
       const usersWithCorrectBill = (data.users || []).map((user: any) => ({
         ...user,
