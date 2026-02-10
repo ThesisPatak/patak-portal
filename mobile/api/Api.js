@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 // Production server URL - locked to Railway
-const DEFAULT_SERVER_URL = 'https://patak-portal-production.up.railway.app';
+const DEFAULT_SERVER_URL = 'https://patak-portal-production-47ad.up.railway.app';
 
 const Api = {
   // Get production server URL (always returns Railway)

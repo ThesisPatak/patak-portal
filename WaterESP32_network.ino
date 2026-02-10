@@ -46,7 +46,7 @@ String DEVICE_ID = "ESP32-001";  // Change per device or use MAC address
 String DEVICE_TOKEN = "";  // Will be set via serial command or loaded from Preferences
 
 // Backend URL for token claiming
-const char* BACKEND_URL = "https://patak-portal-production.up.railway.app";
+const char* BACKEND_URL = "https://patak-portal-production-47ad.up.railway.app";
 const unsigned long TOKEN_POLL_INTERVAL = 30000;  // Poll for token every 30 seconds
 
 // Web Server for token reception
@@ -176,7 +176,7 @@ void handleSerial() {
 // Configure these for your WiFi and server
 const char* WIFI_SSID = "PLDTHOMEFIBRBsDd4"; // <-- set your SSID
 const char* WIFI_PASS = "PLDTWIFITd5XU"; // <-- set your password
-const char* SERVER_URL = "https://patak-portal-production.up.railway.app/api/readings"; // <-- cloud backend URL
+const char* SERVER_URL = "https://patak-portal-production-47ad.up.railway.app/api/readings"; // <-- cloud backend URL
 const char* HOUSE_NAME = "house1"; // change per device
 
 // Debug: if set to 1 the device will POST a reading every interval (high traffic)

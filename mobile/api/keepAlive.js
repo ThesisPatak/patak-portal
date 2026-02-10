@@ -2,7 +2,7 @@
 // Pings the backend every 5 minutes to keep it warm and responsive
 // Also maintains session even when app is backgrounded
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://patak-portal-production.up.railway.app';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://patak-portal-production-47ad.up.railway.app';
 const KEEP_ALIVE_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
 let keepAliveTimer = null;
 let lastPingTime = null;

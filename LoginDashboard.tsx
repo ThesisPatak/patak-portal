@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = "https://patak-portal-production.up.railway.app";
+const API_URL = "https://patak-portal-production-47ad.up.railway.app";
 
 interface LoginDashboardProps {
   onLogin: (token: string, username: string) => void;
