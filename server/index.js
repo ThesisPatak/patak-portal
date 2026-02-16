@@ -2094,16 +2094,13 @@ app.post('/api/gcash/webhook', (req, res) => {
 
 // PayMongo: Create QR checkout link
 app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
-  try {
-    const timestamp = new Date().toISOString()
-    const { amount, description, billingMonth, billingYear, reference } = req.body
-    const userId = req.user.userId
-    const username = req.user.username
+  const timestamp = new Date().toISOString()
+  const { amount, description, billingMonth, billingYear, reference } = req.body
+  const userId = req.user.userId
+  const username = req.user.username
 
-    console.log(`\n[${timestamp}] [PAYMONGO-CREATE] ===== STARTING CHECKOUT CREATION =====`)
-    console.log(`[PAYMONGO-CREATE] User: ${username} (ID: ${userId})`)
-    console.log(`[PAYMONGO-CREATE] Amount: ₱${amount / 100}, Billing: ${billingMonth}/${billingYear}`)
-    console.log(`[PAYMONGO-CREATE] Request body received:`, JSON.stringify(req.body))
+  console.log(`\n[${timestamp}] [PAYMONGO-CREATE] Creating checkout`)
+  console.log(`[PAYMONGO-CREATE] User: ${username}, Amount: ₱${amount / 100}, Billing: ${billingMonth}/${billingYear}`)
   
   // Check if user is approved
   const approvalCheck = checkUserApprovalStatus(userId, '[PAYMONGO-CREATE]')
