@@ -315,6 +315,21 @@ app.use((req, res, next) => {
   next()
 })
 
+// Request logging middleware - log all incoming requests
+app.use((req, res, next) => {
+  const method = req.method
+  const path = req.path
+  const hasAuth = !!req.headers.authorization
+  console.log(`[REQUEST] ${method} ${path} | Auth: ${hasAuth ? '✓' : '✗'} | IP: ${req.ip}`)
+  next()
+})
+
+// Simple connectivity test endpoint (no auth required)
+app.get('/api/test', (req, res) => {
+  console.log('[TEST] ✓ Backend is online and responding')
+  res.json({ ok: true, message: 'Backend is working', timestamp: new Date().toISOString() })
+})
+
 // JSON error handler
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -2079,13 +2094,16 @@ app.post('/api/gcash/webhook', (req, res) => {
 
 // PayMongo: Create QR checkout link
 app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
-  const timestamp = new Date().toISOString()
-  const { amount, description, billingMonth, billingYear, reference } = req.body
-  const userId = req.user.userId
-  const username = req.user.username
+  try {
+    const timestamp = new Date().toISOString()
+    const { amount, description, billingMonth, billingYear, reference } = req.body
+    const userId = req.user.userId
+    const username = req.user.username
 
-  console.log(`\n[${timestamp}] [PAYMONGO-CREATE] Creating checkout`)
-  console.log(`[PAYMONGO-CREATE] User: ${username}, Amount: ₱${amount / 100}, Billing: ${billingMonth}/${billingYear}`)
+    console.log(`\n[${timestamp}] [PAYMONGO-CREATE] ===== STARTING CHECKOUT CREATION =====`)
+    console.log(`[PAYMONGO-CREATE] User: ${username} (ID: ${userId})`)
+    console.log(`[PAYMONGO-CREATE] Amount: ₱${amount / 100}, Billing: ${billingMonth}/${billingYear}`)
+    console.log(`[PAYMONGO-CREATE] Request body received:`, JSON.stringify(req.body))
   
   // Check if user is approved
   const approvalCheck = checkUserApprovalStatus(userId, '[PAYMONGO-CREATE]')
