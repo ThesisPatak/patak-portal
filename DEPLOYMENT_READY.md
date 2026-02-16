@@ -247,7 +247,7 @@ git log --oneline -5  # Verify commit is there
 ### 3. **Verify Deployment**
 ```bash
 # Test endpoints
-curl https://patak-portal-production.up.railway.app/health
+curl https://patak-portal-production-47ad.up.railway.app/health
 
 # Check logs for startup messages
 railway logs

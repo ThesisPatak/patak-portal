@@ -229,7 +229,7 @@ void checkForServerCommands() {
   }
 
   HTTPClient http;
-  http.begin("https://patak-portal-production.up.railway.app/devices/check-commands");
+  http.begin("https://patak-portal-production-47ad.up.railway.app/devices/check-commands");
   http.addHeader("Content-Type", "application/json");
   
   char body[256];

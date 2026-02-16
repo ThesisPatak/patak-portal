@@ -23,7 +23,7 @@ export default function DeviceScreen({ token, onBack }) {
   const loadDevices = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://patak-portal-production.up.railway.app/devices/list', {
+      const response = await fetch('https://patak-portal-production-47ad.up.railway.app/devices/list', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -90,7 +90,7 @@ export default function DeviceScreen({ token, onBack }) {
       );
 
       // Send token to backend - ESP32 will claim it when it polls
-      const response = await fetch('https://patak-portal-production.up.railway.app/devices/link', {
+      const response = await fetch('https://patak-portal-production-47ad.up.railway.app/devices/link', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -79,7 +79,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       console.log('[PayScreen] Sending request to backend...');
-      const response = await fetch('https://patak-portal-production.up.railway.app/api/paymongo/create-checkout', {
+      const response = await fetch('https://patak-portal-production-47ad.up.railway.app/api/paymongo/create-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -143,7 +143,7 @@ PRODUCTION PHASE (FUTURE):
        │ 1. "Pay ₱500" button click
        ⬇️
 ┌───────────────────────────────┐
-│   OUR BACKEND SERVER          │ (patak-portal-production.up.railway.app)
+│   OUR BACKEND SERVER          │ (patak-portal-production-47ad.up.railway.app)
 │   ├─ Has TEST SECRET KEY      │ (sk_test_9JD...mPU)
 │   └─ Has Billing Data         │
 └───────┬───────────────────────┘

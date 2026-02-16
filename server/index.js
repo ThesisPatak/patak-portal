@@ -2211,8 +2211,8 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
             }
           ],
           reference_number: referenceNum,
-          success_url: `https://patak-portal-production.up.railway.app/payment/success?reference=${referenceNum}`,
-          cancel_url: `https://patak-portal-production.up.railway.app/payment/cancel`,
+          success_url: `https://patak-portal-production-47ad.up.railway.app/payment/success?reference=${referenceNum}`,
+          cancel_url: `https://patak-portal-production-47ad.up.railway.app/payment/cancel`,
           payment_method_types: ['gcash', 'card'],
           send_email_receipt: false,
           show_description: true,

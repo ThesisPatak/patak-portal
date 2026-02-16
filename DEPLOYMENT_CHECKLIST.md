@@ -146,12 +146,12 @@ For 1-month test (Jan 21 - Feb 21, 2026):
 3. **Test Endpoints**
    ```bash
    # Admin login
-   curl -X POST https://patak-portal-production.up.railway.app/auth/login \
+   curl -X POST https://patak-portal-production-47ad.up.railway.app/auth/login \
      -H "Content-Type: application/json" \
      -d '{"username":"adminpatak","password":"<password>"}'
    
    # Get dashboard
-   curl https://patak-portal-production.up.railway.app/api/admin/dashboard \
+   curl https://patak-portal-production-47ad.up.railway.app/api/admin/dashboard \
      -H "Authorization: Bearer <token>"
    ```
 

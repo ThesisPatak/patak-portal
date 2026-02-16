@@ -15,7 +15,7 @@ Locked the mobile app to **always use Railway production** in production builds:
 #### 1. `/mobile/api/Api.js`
 - **Removed**: `serverBaseUrl` variable and `setServerUrl()` function
 - **Removed**: `customServerUrl` parameter from `login()` method
-- **Locked**: Hardcoded `DEFAULT_SERVER_URL` to `'https://patak-portal-production.up.railway.app'`
+- **Locked**: Hardcoded `DEFAULT_SERVER_URL` to `'https://patak-portal-production-47ad.up.railway.app'`
 - **Result**: Mobile app can no longer override the server URL
 
 #### 2. `/mobile/screens/LoginScreen.js`

@@ -297,7 +297,7 @@ This is too permissive. Any website can call your API.
 **Fix:**
 ```javascript
 const ALLOWED_ORIGINS = [
-  'https://patak-portal-production.up.railway.app',
+  'https://patak-portal-production-47ad.up.railway.app',
   'http://localhost:3000',
   'http://192.168.1.100:8080'
 ]
@@ -466,7 +466,7 @@ if (wifiSSID.length() == 0) {
 **Location:** WaterESP32_network.ino, line 269
 
 ```cpp
-const char* BACKEND_URL = "https://patak-portal-production.up.railway.app";
+const char* BACKEND_URL = "https://patak-portal-production-47ad.up.railway.app";
 ```
 
 Not as critical but exposes your backend infrastructure.

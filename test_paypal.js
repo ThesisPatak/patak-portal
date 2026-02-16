@@ -10,7 +10,7 @@
  * node test_paypal.js eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... 500 1 2026
  */
 
-const API_URL = 'https://patak-portal-production.up.railway.app';
+const API_URL = 'https://patak-portal-production-47ad.up.railway.app';
 
 async function testPayPalPayment(token, amount, billingMonth, billingYear) {
   console.log('\n╔═══════════════════════════════════════════════════════╗');

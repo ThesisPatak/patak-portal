@@ -32,7 +32,7 @@ This happens because the `PAYMONGO_SECRET_KEY` is not configured in your Railway
 ### Step 3: Verify Configuration
 Once deployed, visit this debug endpoint to verify:
 ```
-https://patak-portal-production.up.railway.app/debug/paymongo-config
+https://patak-portal-production-47ad.up.railway.app/debug/paymongo-config
 ```
 
 You should see:
