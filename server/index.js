@@ -2112,6 +2112,10 @@ app.post('/api/gcash/webhook', (req, res) => {
 // PayMongo: Create QR checkout link
 app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
+  console.log(`\n[${timestamp}] [PAYMONGO-CREATE] ✓✓✓ REQUEST RECEIVED ✓✓✓`)
+  console.log(`[PAYMONGO-CREATE] Request headers:`, JSON.stringify(req.headers, null, 2))
+  console.log(`[PAYMONGO-CREATE] Request body:`, JSON.stringify(req.body, null, 2))
+  
   const { amount, description, billingMonth, billingYear, reference } = req.body
   const userId = req.user.userId
   const username = req.user.username
