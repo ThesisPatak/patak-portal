@@ -330,6 +330,23 @@ app.get('/api/test', (req, res) => {
   res.json({ ok: true, message: 'Backend is working', timestamp: new Date().toISOString() })
 })
 
+// POST test endpoint - for testing without auth
+app.post('/api/test-post', (req, res) => {
+  console.log('[TEST-POST] ✓ Received POST request')
+  console.log('[TEST-POST] Body:', JSON.stringify(req.body))
+  console.log('[TEST-POST] Headers:', JSON.stringify({
+    'content-type': req.headers['content-type'],
+    'authorization': req.headers['authorization'] ? '✓ PRESENT' : '✗ MISSING',
+    'user-agent': req.headers['user-agent']
+  }))
+  res.json({ 
+    ok: true, 
+    message: 'POST endpoint working',
+    received: req.body,
+    timestamp: new Date().toISOString() 
+  })
+})
+
 // JSON error handler
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
