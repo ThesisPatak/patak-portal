@@ -2222,21 +2222,40 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
     }
 
     console.log(`[PAYMONGO-CREATE] Creating PayMongo Checkout Session for ₱${amount / 100}...`)
+    console.log(`[PAYMONGO-CREATE] Payload being sent to PayMongo:`, JSON.stringify(checkoutPayload, null, 2))
+    
+    const authHeader = `Basic ${Buffer.from(`${PAYMONGO_SECRET_KEY}:`).toString('base64')}`
+    console.log(`[PAYMONGO-CREATE] Auth header (base64): ${authHeader.substring(0, 20)}...`)
+    console.log(`[PAYMONGO-CREATE] Contacting: https://api.paymongo.com/v1/checkout_sessions`)
 
     // Create checkout session via PayMongo Checkout API
-    const checkoutResponse = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(`${PAYMONGO_SECRET_KEY}:`).toString('base64')}`
-      },
-      body: JSON.stringify(checkoutPayload)
-    })
+    let checkoutResponse, checkoutData
+    try {
+      checkoutResponse = await fetch('https://api.paymongo.com/v1/checkout_sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify(checkoutPayload)
+      })
 
-    const checkoutData = await checkoutResponse.json()
-    
-    console.log(`[PAYMONGO-CREATE] Checkout API Response Status: ${checkoutResponse.status}`)
-    console.log(`[PAYMONGO-CREATE] Checkout API Response:`, JSON.stringify(checkoutData, null, 2))
+      console.log(`[PAYMONGO-CREATE] ✓ Got response from PayMongo API`)
+      
+      checkoutData = await checkoutResponse.json()
+      console.log(`[PAYMONGO-CREATE] Response status: ${checkoutResponse.status}`)
+      console.log(`[PAYMONGO-CREATE] Response headers:`, {
+        'content-type': checkoutResponse.headers.get('content-type'),
+        'x-request-id': checkoutResponse.headers.get('x-request-id')
+      })
+      console.log(`[PAYMONGO-CREATE] Full response body:`, JSON.stringify(checkoutData, null, 2))
+    } catch (fetchErr) {
+      console.error(`[PAYMONGO-CREATE] ❌ Network error calling PayMongo:`, fetchErr.message)
+      return res.status(503).json({ 
+        error: 'Failed to connect to PayMongo API',
+        message: fetchErr.message
+      })
+    }
 
     // If Checkout API works, use the checkout URL
     if (checkoutResponse.ok && checkoutData.data && checkoutData.data.attributes) {
@@ -2250,6 +2269,7 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
         // Generate QR code from the checkout URL
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(checkoutUrl)}`
         
+        console.log(`[PAYMONGO-CREATE] ✓✓ SUCCESS - Returning checkout details to client`)
         return res.json({
           qrCode: qrCodeUrl,
           checkoutUrl: checkoutUrl,
@@ -2260,14 +2280,31 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
           description: description,
           paymentMethod: 'paymongo_checkout'
         })
+      } else {
+        console.error(`[PAYMONGO-CREATE] ❌ checkout_url not in response`)
+        console.error(`[PAYMONGO-CREATE] Attributes:`, checkoutData.data.attributes)
       }
     }
 
-    // If checkout fails, return error with details
+    // If checkout fails, analyze the error
     console.log(`[PAYMONGO-CREATE] ❌ Checkout creation failed`)
+    console.log(`[PAYMONGO-CREATE] Status OK: ${checkoutResponse.ok}`)
+    console.log(`[PAYMONGO-CREATE] Has data: ${!!checkoutData.data}`)
+    console.log(`[PAYMONGO-CREATE] Has attributes: ${!!checkoutData.data?.attributes}`)
+    
+    if (checkoutData.errors && Array.isArray(checkoutData.errors)) {
+      console.error(`[PAYMONGO-CREATE] PayMongo errors:`)
+      checkoutData.errors.forEach((err, i) => {
+        console.error(`  [Error ${i+1}] ${err.code}: ${err.detail}`)
+      })
+    } else if (checkoutData.error) {
+      console.error(`[PAYMONGO-CREATE] PayMongo error: ${checkoutData.error}`)
+    }
+    
     return res.status(400).json({ 
       error: 'Failed to create checkout session',
-      details: checkoutData.errors || 'Unknown error'
+      status: checkoutResponse.status,
+      details: checkoutData.errors || checkoutData.error || 'Unknown error'
     })
     
   } catch (err) {
