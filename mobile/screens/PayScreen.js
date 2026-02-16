@@ -60,61 +60,95 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
   // Request checkout URL and redirect to PayMongo
   const initiatePayment = async () => {
     let timeoutId = null;
+    const DEBUG_PREFIX = '🔴 [PayScreen-DEBUG]';
+    
     try {
-      console.log('[PayScreen] Starting payment initiation...');
-      console.log('[PayScreen] Token:', token ? `✓ (${token.substring(0, 20)}...)` : '❌ MISSING');
-      console.log('[PayScreen] Amount:', amount, 'Centavos:', Math.round(Number(amount) * 100));
+      console.log(`${DEBUG_PREFIX} ========== PAYMENT INITIATION START ==========`);
+      console.log(`${DEBUG_PREFIX} Token exists: ${token ? '✓ YES' : '❌ NO'}`);
+      if (token) {
+        console.log(`${DEBUG_PREFIX} Token length: ${token.length}`);
+        console.log(`${DEBUG_PREFIX} Token starts with: ${token.substring(0, 30)}...`);
+      }
+      console.log(`${DEBUG_PREFIX} Amount: ₱${amount}`);
+      console.log(`${DEBUG_PREFIX} House: ${house}`);
+      console.log(`${DEBUG_PREFIX} Billing: ${billingMonth}/${billingYear}`);
       
       setPaymentLoading(true);
       const amountCentavos = Math.round(Number(amount) * 100);
+      console.log(`${DEBUG_PREFIX} Amount in centavos: ${amountCentavos}`);
+      
       if (amountCentavos <= 0) {
+        console.error(`${DEBUG_PREFIX} ❌ Invalid amount: ${amountCentavos}`);
         Alert.alert('Error', 'Invalid amount. Bill amount must be greater than 0.');
         setPaymentLoading(false);
         return;
       }
       
-      // Add timeout to prevent app hanging on slow networks
-      // 10 seconds is reasonable for payment API - if longer, likely network issue
-      const controller = new AbortController();
-      timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const backend_url = 'https://patak-portal-production-47ad.up.railway.app/api/paymongo/create-checkout';
+      const requestBody = {
+        amount: amountCentavos,
+        description: `Water Bill - ${house} (${billingMonth}/${billingYear})`,
+        reference: referenceNumber,
+        billingMonth: billingMonth,
+        billingYear: billingYear,
+      };
       
-      console.log('[PayScreen] Sending request to backend...');
-      const response = await fetch('https://patak-portal-production-47ad.up.railway.app/api/paymongo/create-checkout', {
+      console.log(`${DEBUG_PREFIX} Backend URL: ${backend_url}`);
+      console.log(`${DEBUG_PREFIX} Request body:`, JSON.stringify(requestBody, null, 2));
+      console.log(`${DEBUG_PREFIX} Headers: Content-Type: application/json, Authorization: Bearer [token]`);
+      
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => {
+        console.error(`${DEBUG_PREFIX} ❌ TIMEOUT: Request aborted after 10 seconds`);
+        controller.abort();
+      }, 10000);
+      
+      console.log(`${DEBUG_PREFIX} 🔵 FETCHING...`);
+      const response = await fetch(backend_url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          amount: amountCentavos, // PayMongo uses centavos
-          description: `Water Bill - ${house} (${billingMonth}/${billingYear})`,
-          reference: referenceNumber,
-          billingMonth: billingMonth,
-          billingYear: billingYear,
-        }),
-        signal: controller.signal, // Add abort signal for timeout
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
       });
       
-      console.log('[PayScreen] Backend response status:', response.status);
       if (timeoutId) {
-        clearTimeout(timeoutId); // Clear timeout if request completes
+        clearTimeout(timeoutId);
       }
+      
+      console.log(`${DEBUG_PREFIX} 🟢 RESPONSE RECEIVED!`);
+      console.log(`${DEBUG_PREFIX} Response status: ${response.status}`);
+      console.log(`${DEBUG_PREFIX} Response headers:`, {
+        'content-type': response.headers.get('content-type'),
+        'content-length': response.headers.get('content-length'),
+      });
 
       if (!response.ok) {
+        console.error(`${DEBUG_PREFIX} ❌ Response NOT OK (${response.status})`);
         const errorText = await response.text();
+        console.error(`${DEBUG_PREFIX} Response text: ${errorText.substring(0, 200)}`);
+        
         let errorData = {};
         try {
           errorData = JSON.parse(errorText);
+          console.error(`${DEBUG_PREFIX} Parsed error JSON:`, errorData);
         } catch (e) {
+          console.error(`${DEBUG_PREFIX} Could not parse error as JSON:`, e.message);
           errorData = { error: errorText || 'Unknown server error' };
         }
-        console.error('[PayScreen] ❌ Server error:', response.status, errorData);
+        
         Alert.alert('Error', `Server error: ${errorData.error || 'Unknown error'}`);
+        setPaymentLoading(false);
         return;
       }
 
+      console.log(`${DEBUG_PREFIX} Parsing response JSON...`);
       const data = await response.json();
-      console.log('[PayScreen] ✓ Checkout response received:', { checkoutUrl: data.checkoutUrl ? 'EXISTS' : 'MISSING', qrCode: data.qrCode ? 'EXISTS' : 'MISSING' });
+      console.log(`${DEBUG_PREFIX} ✓ Response parsed successfully`);
+      console.log(`${DEBUG_PREFIX} Response keys:`, Object.keys(data).join(', '));
+      console.log(`${DEBUG_PREFIX} Full response:`, JSON.stringify(data, null, 2));
       
       // Get checkout URL (either checkoutUrl or fallback to qrCode)
       const checkoutUrl = data.checkoutUrl || data.qrCode;
@@ -143,16 +177,36 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       if (timeoutId) {
         clearTimeout(timeoutId); // Ensure timeout is cleared on error
       }
-      console.error('[PayScreen] ❌ Payment initiation failed:', err.name, err.message);
+      
+      const DEBUG_PREFIX = '🔴 [PayScreen-DEBUG]';
+      console.log(`${DEBUG_PREFIX} ========== CATCH BLOCK - ERROR THROWN ==========`);
+      console.log(`${DEBUG_PREFIX} Error name: ${err.name}`);
+      console.log(`${DEBUG_PREFIX} Error message: ${err.message}`);
+      console.log(`${DEBUG_PREFIX} Error code: ${err.code}`);
+      console.log(`${DEBUG_PREFIX} Stack trace:`, err.stack);
+      console.log(`${DEBUG_PREFIX} Full error object:`, JSON.stringify({
+        name: err.name,
+        message: err.message,
+        code: err.code,
+        errno: err.errno,
+        syscall: err.syscall,
+      }, null, 2));
       
       // Handle timeout error specifically
       if (err.name === 'AbortError') {
+        console.error(`${DEBUG_PREFIX} ❌ NETWORK TIMEOUT - Request aborted after 10 seconds`);
         Alert.alert('Payment Timeout', 'The payment request took too long. Please check your internet connection and try again.');
+      } else if (err.name === 'TypeError') {
+        console.error(`${DEBUG_PREFIX} ❌ TYPE ERROR - Likely network connectivity issue`);
+        console.error(`${DEBUG_PREFIX} TypeError usually means: network unreachable, DNS failed, or system error`);
+        Alert.alert('Network Error', `Failed to reach payment server: ${err.message || 'Check your internet connection'}`);
       } else {
+        console.error(`${DEBUG_PREFIX} ❌ UNKNOWN ERROR - ${err.name}`);
         Alert.alert('Error', 'Failed to process payment: ' + (err.message || 'Unknown error'));
       }
     } finally {
       setPaymentLoading(false);
+      console.log('🔴 [PayScreen-DEBUG] ========== FINALLY - Cleanup complete ==========' );
     }
   };
 
