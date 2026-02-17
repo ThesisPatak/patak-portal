@@ -128,18 +128,25 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
       if (!response.ok) {
         console.error(`${DEBUG_PREFIX} ❌ Response NOT OK (${response.status})`);
         const errorText = await response.text();
-        console.error(`${DEBUG_PREFIX} Response text: ${errorText.substring(0, 200)}`);
-        
+        console.error(`${DEBUG_PREFIX} Response text (first 1k): ${errorText.substring(0, 1000)}`);
+
         let errorData = {};
         try {
           errorData = JSON.parse(errorText);
           console.error(`${DEBUG_PREFIX} Parsed error JSON:`, errorData);
         } catch (e) {
           console.error(`${DEBUG_PREFIX} Could not parse error as JSON:`, e.message);
-          errorData = { error: errorText || 'Unknown server error' };
+          errorData = { error: errorText && errorText.trim() ? errorText.trim() : null };
         }
-        
-        Alert.alert('Error', `Server error: ${errorData.error || 'Unknown error'}`);
+
+        const statusInfo = `${response.status}${response.statusText ? ' ' + response.statusText : ''}`;
+        const serverMessage = errorData && (errorData.error || errorData.message) ? (errorData.error || errorData.message) : (errorData.error === null ? null : errorText);
+        const alertMsg = serverMessage && serverMessage.toString().trim()
+          ? `Server error (${statusInfo}): ${serverMessage}`
+          : `Server error (${statusInfo}): Unknown server response`;
+
+        console.error(`${DEBUG_PREFIX} Alerting user: ${alertMsg}`);
+        Alert.alert('Error', alertMsg);
         setPaymentLoading(false);
         return;
       }

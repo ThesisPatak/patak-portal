@@ -2232,6 +2232,7 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
     console.log(`[PAYMONGO-CREATE] ✓ Pending payment stored for ${username}: ${referenceNum}`)
 
     // Use PayMongo's Checkout Sessions API (works with test keys)
+    const BASE_URL = process.env.BACKEND_URL || 'https://patak-portal-production-47ad.up.railway.app'
     const checkoutPayload = {
       data: {
         attributes: {
@@ -2247,8 +2248,8 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
             }
           ],
           reference_number: referenceNum,
-          success_url: `https://patak-portal-production-47ad.up.railway.app/payment/success?reference=${referenceNum}`,
-          cancel_url: `https://patak-portal-production-47ad.up.railway.app/payment/cancel`,
+          success_url: `${BASE_URL}/payment/success?reference=${referenceNum}`,
+          cancel_url: `${BASE_URL}/payment/cancel`,
           payment_method_types: ['gcash', 'card'],
           send_email_receipt: false,
           show_description: true,
