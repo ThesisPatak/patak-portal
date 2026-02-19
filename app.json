@@ -16,6 +16,13 @@
         "projectId": "6394acab-d06a-437b-8aff-021dd1592604"
       }
     },
-    "owner": "deploypatak"
+    "owner": "deploypatak",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6394acab-d06a-437b-8aff-021dd1592604"
+    },
+    "ios": {}
   }
 }

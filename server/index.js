@@ -2253,7 +2253,13 @@ app.post('/api/paymongo/create-checkout', authMiddleware, async (req, res) => {
           payment_method_types: ['gcash', 'card'],
           send_email_receipt: false,
           show_description: true,
-          show_line_items: true
+          show_line_items: true,
+          // Minimize customer info collection: name and email only
+          collect_billing_details: false,
+          // Pre-populate to skip unnecessary fields (PayMongo may show minimal form)
+          customer: {
+            email: ''  // customers will fill this
+          }
         }
       }
     }

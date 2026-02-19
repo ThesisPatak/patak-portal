@@ -19,6 +19,8 @@
     "@react-navigation/native-stack": "^6.9.12",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "expo": "^54.0.33",
+    "expo-updates": "^29.0.16",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.0",
     "react": "18.2.0",
