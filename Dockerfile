@@ -22,7 +22,7 @@ RUN npm install --production
 COPY server ./server
 
 # Copy built frontend from builder stage
-COPY --from=builder /app/dist ./public
+COPY --from=builder /app/dist ./server/public
 
 # Ensure data directory exists for volume mounting
 RUN mkdir -p /data
