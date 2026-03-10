@@ -324,6 +324,22 @@ app.use((req, res, next) => {
   next()
 })
 
+// Serve frontend static files EARLY (before API routes, so real files take priority)
+app.use(express.static(path.join(__dirname, 'public'), { 
+  maxAge: '1h',
+  etag: false
+}))
+
+// SPA fallback: redirect unmatched routes to index.html for client-side routing
+app.get('/', (req, res) => {
+  const indexPath = path.join(__dirname, 'public', 'index.html')
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath)
+  } else {
+    res.status(404).json({ error: 'Frontend not deployed' })
+  }
+})
+
 // Simple connectivity test endpoint (no auth required)
 app.get('/api/test', (req, res) => {
   console.log('[TEST] ✓ Backend is online and responding')
