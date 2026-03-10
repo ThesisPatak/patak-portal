@@ -99,7 +99,7 @@ function initializeAdminUser() {
     id: 'user-1767835763822',
     email: null,
     username: 'adminpatak',
-    passwordHash: '$2a$10$Y2gr8aro9OGKnOdo99uLcunL.T5ocLHiPKW835V84gQfNZBh2vBZa',
+    passwordHash: '$2a$10$YzGKTV9Q6IEzX1RtDChEHewuvi1kn8Dr.PVN87eO3cU8lzjuvaX8y',
     isAdmin: true,
     createdAt: '2026-01-08T01:29:23.822Z',
     lastPasswordChange: '2026-01-08T01:53:31.451Z'
