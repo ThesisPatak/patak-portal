@@ -1,0 +1,13 @@
+# Railway configuration for PATAK Portal
+# Frontend and Backend served from single Railway instance
+
+[build]
+builder = "dockerfile"
+
+[deploy]
+restartPolicyCondition = "on-failure"
+restartPolicyMaxRetries = 5
+
+[[deploy.volumes]]
+name = "patak-data"
+mountPath = "/data"
