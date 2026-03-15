@@ -1,4 +1,4 @@
-const BASE_URL = 'https://patak-portal-production-47ad.up.railway.app';
+const BASE_URL = 'https://patak-portal-production-351f.up.railway.app';
 
 async function checkServer() {
   try {

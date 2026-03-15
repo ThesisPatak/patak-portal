@@ -84,7 +84,7 @@ export default function PayScreen({ payInfo, token, username, onBack, onPaymentS
         return;
       }
       
-      const backend_url = 'https://patak-portal-production-47ad.up.railway.app/api/paymongo/create-checkout';
+      const backend_url = 'https://patak-portal-production-351f.up.railway.app/api/paymongo/create-checkout';
       const requestBody = {
         amount: amountCentavos,
         description: `Water Bill - ${house} (${billingMonth}/${billingYear})`,

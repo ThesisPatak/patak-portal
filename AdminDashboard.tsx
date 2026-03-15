@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminLogin from "./AdminLogin";
 import { computeResidentialBill } from "./billingUtils";
 
-const API_URL = "https://patak-portal-production-47ad.up.railway.app";
+const API_URL = "https://patak-portal-production-351f.up.railway.app";
 
 interface UserData {
   id: string;

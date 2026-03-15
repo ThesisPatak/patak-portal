@@ -4,7 +4,7 @@ interface AdminLoginProps {
   onLogin: (token: string, username: string) => void;
 }
 
-const API_URL = "https://patak-portal-production-47ad.up.railway.app";
+const API_URL = "https://patak-portal-production-351f.up.railway.app";
 
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState("");

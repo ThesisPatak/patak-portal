@@ -15,7 +15,7 @@ const uint8_t FLOW_PIN = 14;           // YF-S201 signal -> ESP32 GPIO14
 volatile uint32_t pulseCount = 0;     // incremented in ISR
 
 // UPDATED calibrated value
-double PULSES_PER_LITER = 388.8; // use 6 decimals
+double PULSES_PER_LITER = 417.5; // use 6 decimals
 
 const unsigned long INTERVAL_MS = 1000; // update interval in ms
 const unsigned long SAVE_MS = 60000;    // save totals every 60s
@@ -46,7 +46,7 @@ String DEVICE_ID = "ESP32-001";  // Change per device or use MAC address
 String DEVICE_TOKEN = "";  // Will be set via serial command or loaded from Preferences
 
 // Backend URL for token claiming
-const char* BACKEND_URL = "https://patak-portal-production-47ad.up.railway.app";
+const char* BACKEND_URL = "https://patak-portal-production-351f.up.railway.app";
 const unsigned long TOKEN_POLL_INTERVAL = 30000;  // Poll for token every 30 seconds
 
 // Web Server for token reception
@@ -176,7 +176,7 @@ void handleSerial() {
 // Configure these for your WiFi and server
 const char* WIFI_SSID = "PLDTHOMEFIBRBsDd4"; // <-- set your SSID
 const char* WIFI_PASS = "PLDTWIFITd5XU"; // <-- set your password
-const char* SERVER_URL = "https://patak-portal-production-47ad.up.railway.app/api/readings"; // <-- cloud backend URL
+const char* SERVER_URL = "https://patak-portal-production-351f.up.railway.app/api/readings"; // <-- cloud backend URL
 const char* HOUSE_NAME = "house1"; // change per device
 
 // Debug: if set to 1 the device will POST a reading every interval (high traffic)
@@ -229,7 +229,7 @@ void checkForServerCommands() {
   }
 
   HTTPClient http;
-  http.begin("https://patak-portal-production-47ad.up.railway.app/devices/check-commands");
+  http.begin("https://patak-portal-production-351f.up.railway.app/devices/check-commands");
   http.addHeader("Content-Type", "application/json");
   
   char body[256];

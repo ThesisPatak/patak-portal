@@ -4,7 +4,7 @@ import { useAuth } from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { computeResidentialBill } from '../api/billingUtils';
 
-const SERVER = 'https://patak-portal-production-47ad.up.railway.app'; // Production server
+const SERVER = 'https://patak-portal-production-351f.up.railway.app'; // Production server
 
 export default function DashboardScreen() {
   const { user, setUser } = useAuth();
