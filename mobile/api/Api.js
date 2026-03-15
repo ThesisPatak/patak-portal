@@ -25,7 +25,8 @@ const Api = {
       clearTimeout(timeoutId);
       
       if (!res.ok) {
-        const error = new Error('Login failed');
+        const errorData = await res.json();
+        const error = new Error(errorData.error || 'Login failed');
         error.status = res.status;
         throw error;
       }

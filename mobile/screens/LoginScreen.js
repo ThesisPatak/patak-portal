@@ -31,6 +31,15 @@ export default function LoginScreen({ onLogin, onShowRegister }) {
     } catch (e) {
       if (e.status === 401) {
         setError('Wrong password');
+      } else if (e.status === 403) {
+        // User account pending approval or rejected
+        if (e.message && e.message.includes('pending')) {
+          setError('⏳ Account pending admin approval.\nPlease wait for admin to approve your registration.');
+        } else if (e.message && e.message.includes('rejected')) {
+          setError('❌ Your account was rejected by admin.');
+        } else {
+          setError('Access denied: ' + e.message);
+        }
       } else if (e.message && e.message.includes('fetch')) {
         setError('Cannot reach server. Check your internet connection.');
       } else {
