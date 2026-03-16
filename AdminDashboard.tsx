@@ -28,11 +28,6 @@ const AdminDashboard: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [userReadings, setUserReadings] = useState<any[]>([]);
-  const [userPayments, setUserPayments] = useState<any[]>([]);
-  const [readingsLoading, setReadingsLoading] = useState(false);
-  const [userConsumption, setUserConsumption] = useState<Record<string, { present: number; previous: number }>>({});
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
@@ -103,31 +98,9 @@ const AdminDashboard: React.FC = () => {
       // Calculate bill using tiered rates
       const usersWithCorrectBill = (data.users || []).map((user: any) => ({
         ...user,
-        monthlyBill: computeResidentialBill(user.cubicMeters || 0)
+        monthlyBill: computeResidentialBill(user.currentConsumption || user.cubicMeters || 0)
       }));
       setUsers(usersWithCorrectBill);
-      
-      // Fetch consumption data for all users
-      const consumptionMap: Record<string, { present: number; previous: number }> = {};
-      for (const user of usersWithCorrectBill) {
-        try {
-          const readingsRes = await fetch(`${API_URL}/api/admin/users/${user.id}/readings`, {
-            headers: { Authorization: "Bearer " + token },
-          });
-          if (readingsRes.ok) {
-            const readingsData = await readingsRes.json();
-            const readings = readingsData.readings || [];
-            consumptionMap[user.id] = {
-              present: getPresentConsumption(readings),
-              previous: getPreviousConsumption(readings),
-            };
-          }
-        } catch (err) {
-          console.error(`Failed to fetch readings for user ${user.id}:`, err);
-          consumptionMap[user.id] = { present: 0, previous: 0 };
-        }
-      }
-      setUserConsumption(consumptionMap);
     } catch (err) {
       console.error("Dashboard error:", err);
       setUsers([]);
@@ -169,56 +142,9 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Calculate consumption for current month (from start of month to now)
-  const getPresentConsumption = (readings: any[]) => {
-    if (!readings || readings.length === 0) return 0;
-    
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    const monthReadings = readings.filter((r: any) => {
-      const readingDate = new Date(r.timestamp);
-      return readingDate >= startOfMonth;
-    }).sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-    
-    if (monthReadings.length === 0) return 0;
-    
-    // If only one reading in month, it's the consumption from month start
-    if (monthReadings.length === 1) {
-      return monthReadings[0].cubicMeters;
-    }
-    
-    // Get the first reading of this month
-    const firstReading = monthReadings[0];
-    const lastReading = monthReadings[monthReadings.length - 1];
-    
-    // Return the difference from first to last reading in the month
-    return Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
-  };
 
-  // Calculate consumption for previous month
-  const getPreviousConsumption = (readings: any[]) => {
-    if (!readings || readings.length === 0) return 0;
-    
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    
-    const prevMonthReadings = readings.filter((r: any) => {
-      const readingDate = new Date(r.timestamp);
-      return readingDate >= startOfPrevMonth && readingDate < startOfMonth;
-    }).sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-    
-    if (prevMonthReadings.length === 0) return 0;
-    
-    const firstReading = prevMonthReadings[0];
-    const lastReading = prevMonthReadings[prevMonthReadings.length - 1];
-    
-    return Math.max(0, lastReading.cubicMeters - firstReading.cubicMeters);
-  };
-
-  // Generate billing history for a user - shows 12 calendar months (current year and next)
-  // Dynamically generates months based on current date
-  const generateBillingHistory = (readings: any[], createdAt: string) => {
+  // Load user readings
+  const loadUserReadings = async (userId: string, username: string) => {
     const history = [];
     const now = new Date();
 
@@ -972,13 +898,13 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
-                                {(userConsumption[user.id]?.present || 0).toFixed(6)}
+                                {(user.currentConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
-                                {(userConsumption[user.id]?.previous || 0).toFixed(6)}
+                                {(user.previousConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
-                                {(user.cubicMeters || 0).toFixed(6)}
+                                {(user.totalConsumption || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
                                 ₱{user.monthlyBill.toFixed(2)}
