@@ -3008,16 +3008,16 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
         // 1. It has sent a reading/heartbeat within the last 5 minutes, OR
         // 2. It was just registered (status is 'registered' and createdAt is recent)
         let computedStatus = 'offline';
-        const now = Date.now();
+        const nowMs = Date.now();
         const lastSeenTime = d.lastSeen ? new Date(d.lastSeen).getTime() : null;
         const createdAtTime = d.createdAt ? new Date(d.createdAt).getTime() : null;
         
         // Within 10 seconds of last activity = online
-        if (lastSeenTime && (now - lastSeenTime) < 10 * 1000) {
+        if (lastSeenTime && (nowMs - lastSeenTime) < 10 * 1000) {
           computedStatus = 'online';
         }
         // Just registered (within 10 seconds of creation) and no activity yet = online (registered)
-        else if (createdAtTime && (now - createdAtTime) < 10 * 1000 && !lastSeenTime) {
+        else if (createdAtTime && (nowMs - createdAtTime) < 10 * 1000 && !lastSeenTime) {
           computedStatus = 'online';
         }
         // Otherwise = offline
