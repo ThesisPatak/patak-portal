@@ -232,10 +232,12 @@ const AdminDashboard: React.FC = () => {
 
   // Reset user meter - now shows password confirmation modal
   const resetUserMeter = async (userId: string, username: string) => {
+    console.log('[RESET] Reset button clicked for user:', username, 'id:', userId);
     setDestructiveAction({ type: 'reset', userId, username });
     setShowDestructiveConfirm(true);
     setDestructivePassword("");
     setDestructiveError("");
+    console.log('[RESET] Modal should now be visible');
   };
 
   // Handle destructive action with password verification
@@ -282,6 +284,7 @@ const AdminDashboard: React.FC = () => {
         }
         alert(`User ${destructiveAction.username} deleted successfully`);
       } else if (destructiveAction.type === 'reset') {
+        console.log('[RESET] Processing reset action for user:', destructiveAction.username);
         // Reset meter
         const res = await fetch(`${API_URL}/api/admin/users/${encodeURIComponent(destructiveAction.username)}/reset-meter`, {
           method: "POST",
@@ -294,9 +297,12 @@ const AdminDashboard: React.FC = () => {
 
         if (!res.ok) {
           const data = await res.json();
+          console.error('[RESET] API call failed:', data);
           throw new Error(data.error || "Failed to reset meter");
         }
 
+        const responseData = await res.json();
+        console.log('[RESET] API call successful:', responseData);
         alert(`Meter reset for ${destructiveAction.username}`);
         await loadDashboard();
       }
@@ -1369,7 +1375,9 @@ const AdminDashboard: React.FC = () => {
 
       {/* Destructive Action Confirmation Modal (Delete/Reset with Password) */}
       {showDestructiveConfirm && destructiveAction && (
-        <div
+        <>
+          {console.log('[RESET] Modal rendering for action:', destructiveAction)}
+          <div
           style={{
             position: "fixed",
             top: 0,
