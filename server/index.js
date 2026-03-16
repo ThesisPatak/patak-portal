@@ -977,11 +977,11 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const monthlyBill = computeResidentialBill(monthlyConsumption)
     const estimatedMonthlyBill = computeResidentialBill(monthlyConsumption * (30 / (new Date().getDate())))
     
-    const now = Date.now()
+    const nowMs = Date.now()
     const lastSeenTime = device.lastSeen ? new Date(device.lastSeen).getTime() : 0
     const lastReadingTime = lastReading ? new Date(lastReading.receivedAt || lastReading.timestamp).getTime() : 0
     const lastActivityTime = Math.max(lastSeenTime, lastReadingTime)
-    const isOnline = lastActivityTime && (now - lastActivityTime) < 10 * 1000 // 10 second threshold
+    const isOnline = lastActivityTime && (nowMs - lastActivityTime) < 10 * 1000 // 10 second threshold
     const hasAlert = monthlyConsumption > 100 // Alert if consumption > 100 m³
     
     summary[device.deviceId] = {
