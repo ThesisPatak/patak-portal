@@ -118,6 +118,32 @@ function queueFileOperation(filePath, operation) {
   return newPromise
 }
 
+// Device online/offline threshold (ms)
+const ONLINE_THRESHOLD_MS = Number(process.env.ONLINE_THRESHOLD_MS) || 15 * 1000
+
+/**
+ * Determine whether a device should be considered online.
+ *
+ * We treat a device as online if it has had any activity in the last threshold window.
+ * Activity is defined as:
+ *   - lastSeen (device heartbeat/reading was accepted by server)
+ *   - last reading timestamp (from readings.json)
+ *   - recently registered (createdAt)
+ */
+function isDeviceOnline({ lastSeen, lastReadingTimestamp, createdAt }) {
+  const now = Date.now()
+  const lastSeenTime = lastSeen ? new Date(lastSeen).getTime() : 0
+  const lastReadingTime = lastReadingTimestamp ? new Date(lastReadingTimestamp).getTime() : 0
+  const lastActivity = Math.max(lastSeenTime, lastReadingTime)
+
+  if (lastActivity && (now - lastActivity) < ONLINE_THRESHOLD_MS) return true
+
+  const createdAtTime = createdAt ? new Date(createdAt).getTime() : 0
+  if (createdAtTime && (now - createdAtTime) < ONLINE_THRESHOLD_MS) return true
+
+  return false
+}
+
 // Real-time SSE client tracking for broadcasting readings
 const sseClients = new Map() // { userId: Set<{ res, sendEvent }> }
 
@@ -977,11 +1003,11 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const monthlyBill = computeResidentialBill(monthlyConsumption)
     const estimatedMonthlyBill = computeResidentialBill(monthlyConsumption * (30 / (new Date().getDate())))
     
-    const nowMs = Date.now()
-    const lastSeenTime = device.lastSeen ? new Date(device.lastSeen).getTime() : 0
-    const lastReadingTime = lastReading ? new Date(lastReading.receivedAt || lastReading.timestamp).getTime() : 0
-    const lastActivityTime = Math.max(lastSeenTime, lastReadingTime)
-    const isOnline = lastActivityTime && (nowMs - lastActivityTime) < 15 * 1000 // 15 second threshold
+    const isOnline = isDeviceOnline({
+      lastSeen: device.lastSeen,
+      lastReadingTimestamp: lastReading ? (lastReading.receivedAt || lastReading.timestamp) : null,
+      createdAt: device.createdAt
+    })
     const hasAlert = monthlyConsumption > 100 // Alert if consumption > 100 m³
     
     summary[device.deviceId] = {
@@ -3003,25 +3029,12 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       deviceCount: userDevices.length,
       lastReading: latestReading ? { cubicMeters: latestReading.cubicMeters, timestamp: latestReading.timestamp } : null,
       devices: userDevices.map(d => {
-        // Compute device status dynamically based on lastSeen timestamp
-        // A device is considered 'online' if:
-        // 1. It has sent a reading/heartbeat within the last 5 minutes, OR
-        // 2. It was just registered (status is 'registered' and createdAt is recent)
-        let computedStatus = 'offline';
-        const nowMs = Date.now();
-        const lastSeenTime = d.lastSeen ? new Date(d.lastSeen).getTime() : null;
-        const createdAtTime = d.createdAt ? new Date(d.createdAt).getTime() : null;
-        
-        // Within 15 seconds of last activity = online
-        if (lastSeenTime && (nowMs - lastSeenTime) < 15 * 1000) {
-          computedStatus = 'online';
-        }
-        // Just registered (within 15 seconds of creation) and no activity yet = online (registered)
-        else if (createdAtTime && (nowMs - createdAtTime) < 15 * 1000 && !lastSeenTime) {
-          computedStatus = 'online';
-        }
-        // Otherwise = offline
-        
+        const computedStatus = isDeviceOnline({
+          lastSeen: d.lastSeen,
+          lastReadingTimestamp: latestReading ? (latestReading.receivedAt || latestReading.timestamp) : null,
+          createdAt: d.createdAt
+        }) ? 'online' : 'offline'
+
         return {
           deviceId: d.deviceId,
           status: computedStatus,
