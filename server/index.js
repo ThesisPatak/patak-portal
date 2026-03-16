@@ -1962,7 +1962,7 @@ app.post('/api/admin/users/:username/reset-meter', authMiddleware, async (req, r
     resetCommands = []
   }
   
-  // Mark devices as needing reset (for legacy polling endpoints)
+  // Mark devices as needing reset
   userDevices.forEach(device => {
     device.resetRequested = true
     resetCommands.push({

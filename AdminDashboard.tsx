@@ -304,7 +304,9 @@ const AdminDashboard: React.FC = () => {
         const responseData = await res.json();
         console.log('[RESET] API call successful:', responseData);
         alert(`Meter reset for ${destructiveAction.username}`);
-        await loadDashboard();
+        setShowDestructiveConfirm(false);
+        setDestructiveAction(null);
+        setDestructivePassword("");
         await loadDashboard();
       }
 
