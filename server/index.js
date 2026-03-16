@@ -7,10 +7,51 @@ import cors from 'cors'
 import compression from 'compression'
 import crypto from 'crypto'
 import { fileURLToPath } from 'url'
-import { computeResidentialBill } from '../billingUtils.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+// Tiered water billing calculation based on residential rates
+// Tier 1 (0-10 m³): ₱255.00 minimum
+// Tier 2 (11-20 m³): ₱33.00 per m³
+// Tier 3 (21-30 m³): ₱40.50 per m³
+// Tier 4 (31-40 m³): ₱48.00 per m³
+// Tier 5 (41+ m³): ₱55.50 per m³
+function computeResidentialBill(usage) {
+  const MINIMUM = 255.0;
+  
+  // Always charge minimum even with zero usage
+  if (!usage || usage <= 0) return MINIMUM;
+  
+  if (usage <= 10) return Number(MINIMUM.toFixed(2));
+  
+  let excess = usage - 10;
+  let total = MINIMUM;
+  
+  if (excess > 0) {
+    const m3 = Math.min(excess, 10);
+    total += m3 * 33.0; // 11-20 m³
+    excess -= m3;
+  }
+  
+  if (excess > 0) {
+    const m3 = Math.min(excess, 10);
+    total += m3 * 40.5; // 21-30 m³
+    excess -= m3;
+  }
+  
+  if (excess > 0) {
+    const m3 = Math.min(excess, 10);
+    total += m3 * 48.0; // 31-40 m³
+    excess -= m3;
+  }
+  
+  if (excess > 0) {
+    total += excess * 55.5; // 41+ m³
+  }
+  
+  return Number(total.toFixed(2));
+}
 
 // Use environment variable for data directory, default to /data for Railway volume
 // On Railway, DATA_DIR should be set to /data, but fallback to /data anyway since that's the mounted volume
