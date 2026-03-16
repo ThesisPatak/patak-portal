@@ -1427,7 +1427,7 @@ app.post('/devices/register', authMiddleware, async (req, res) => {
       location: allowedDevice.location,
       meta: meta || {},
       status: 'registered',
-      lastSeen: null,
+      lastSeen: new Date().toISOString(),
       createdAt: exists ? exists.createdAt : new Date().toISOString()
     }
     console.log(`[DEVICE-REGISTER] Created device object:`, device)
