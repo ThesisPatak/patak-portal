@@ -969,10 +969,10 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
-                                {(user.currentConsumption || 0).toFixed(6)}
+                                {(userConsumption[user.id]?.present || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>
-                                {(user.totalConsumption || 0).toFixed(6)}
+                                {(user.cubicMeters || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
                                 ₱{user.monthlyBill.toFixed(2)}
