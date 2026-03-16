@@ -919,10 +919,7 @@ const AdminDashboard: React.FC = () => {
                               Household
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Current Consumption (m³)
-                            </th>
-                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Total Consumption (m³)
+                              Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Amount Due (₱)
@@ -969,9 +966,6 @@ const AdminDashboard: React.FC = () => {
                                 {user.username}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
-                                {(userConsumption[user.id]?.present || 0).toFixed(6)}
-                              </td>
-                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8" }}>
                                 {(user.cubicMeters || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#333" }}>
