@@ -164,7 +164,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Generate billing history for display in modal
-  const generateBillingHistory = (readings: any[], createdAt: string) => {
+  const generateBillingHistory = (readings: any[], createdAt: string, userPayments: any[]) => {
     const history = [];
     const now = new Date();
 
@@ -180,48 +180,41 @@ const AdminDashboard: React.FC = () => {
       latestMeterReading = sorted[0].cubicMeters || 0;
     }
 
-    // Generate two 31-day billing cycles starting from account creation date
+    // Only show the current billing period (period hasn't ended yet or is ending today)
     const billingBaseDate = new Date(createdAt);
-    let previousPeriodLastReading = 0;
+    const periodStartDate = new Date(billingBaseDate);
+    const periodEndDate = new Date(periodStartDate);
+    periodEndDate.setDate(periodEndDate.getDate() + 31);
 
-    for (let i = 0; i < 2; i++) {
-      const periodStartDate = new Date(billingBaseDate);
-      periodStartDate.setDate(periodStartDate.getDate() + i * 31);
-      const periodEndDate = new Date(periodStartDate);
-      periodEndDate.setDate(periodEndDate.getDate() + 31);
+    // Only show this period if it has started (periodStartDate <= now)
+    if (periodStartDate <= now) {
+      // Use payment baseline logic (same as API)
+      let periodConsumption = 0;
+      let periodBaseLine = 0;
 
-      const periodReadings = (readings || [])
-        .filter((r: any) => {
-          const readingDate = r.receivedAt ? new Date(r.receivedAt) : new Date(r.timestamp);
-          return readingDate >= periodStartDate && readingDate < periodEndDate;
-        })
-        .sort((a: any, b: any) => {
-          const dateA = a.receivedAt ? new Date(a.receivedAt) : new Date(a.timestamp);
-          const dateB = b.receivedAt ? new Date(b.receivedAt) : new Date(b.timestamp);
-          return dateA.getTime() - dateB.getTime();
-        });
+      // Find the last payment for this user
+      const lastPayment = userPayments
+        .filter(p => p && p.meterReadingAtPayment !== undefined)
+        .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))[0];
 
-      let consumption = 0;
-      if (periodReadings.length > 0) {
-        const firstReading = periodReadings[0].cubicMeters;
-        const lastReading = periodReadings[periodReadings.length - 1].cubicMeters;
-        consumption = Math.max(0, lastReading - firstReading);
-        previousPeriodLastReading = lastReading;
-      } else if (i > 0 && previousPeriodLastReading > 0) {
-        consumption = Math.max(0, latestMeterReading - previousPeriodLastReading);
+      if (lastPayment && typeof lastPayment.meterReadingAtPayment === 'number') {
+        periodBaseLine = lastPayment.meterReadingAtPayment;
       }
 
+      // Current consumption = latest reading - baseline (same as API calculation)
+      periodConsumption = Math.max(0, latestMeterReading - periodBaseLine);
+
       const monthStr = `${periodStartDate.toLocaleString('default', { month: 'short', day: 'numeric' })} – ${new Date(periodEndDate.getTime() - 1).toLocaleString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      const amountDue = computeResidentialBill(consumption);
+      const amountDue = computeResidentialBill(periodConsumption);
 
       history.push({
         month: monthStr,
-        consumption: consumption.toFixed(6),
+        consumption: periodConsumption.toFixed(6),
         totalConsumption: latestMeterReading.toFixed(6),
         amountDue: amountDue.toFixed(2),
-        billStatus: i === 0 ? 'Current' : 'Upcoming',
-        statusColor: i === 0 ? '#4CAF50' : '#ff9800',
-        statusIcon: i === 0 ? '📊' : '⏳',
+        billStatus: 'Current',
+        statusColor: '#ff9800',
+        statusIcon: '⏳',
         dueDate: periodEndDate.toISOString().split('T')[0]
       });
     }
@@ -1224,7 +1217,7 @@ const AdminDashboard: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString()).map((bill, idx, arr) => {
+                        {generateBillingHistory(userReadings, users.find(u => u.id === selectedUserId)?.createdAt || new Date().toISOString(), userPayments).map((bill, idx, arr) => {
                           const now = new Date();
                           const isCurrentPeriod = bill.billStatus === 'Current' || bill.billStatus === 'Pending';
                           return (

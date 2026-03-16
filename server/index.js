@@ -2904,20 +2904,17 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const payments = readJSON(PAYMENTS_FILE)
     const userPayments = payments.filter(p => p.userId === user.id)
     
-    // Find the previous payment's meter reading (baseline for current consumption)
-    const previousPayment = userPayments
-      .filter(p => 
-        p.billingMonth === now.getMonth() + 1 && 
-        p.billingYear === now.getFullYear() &&
-        (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID')
-      )
+    // Find the most recent payment (this is the baseline for current consumption)
+    // Use the latest payment regardless of billing month - it represents the end of the last billing period
+    const lastPayment = userPayments
+      .filter(p => p && p.meterReadingAtPayment !== undefined && (p.status === 'verified' || p.status === 'confirmed' || p.status === 'PAID'))
       .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))[0]
     
-    // Current Consumption = Latest meter reading - Previous period baseline
+    // Current Consumption = Latest meter reading - Last payment baseline
     // If no previous payment, baseline = 0 (new user)
     let periodStartMeterReading = 0
-    if (previousPayment && typeof previousPayment.meterReadingAtPayment === 'number') {
-      periodStartMeterReading = previousPayment.meterReadingAtPayment
+    if (lastPayment && typeof lastPayment.meterReadingAtPayment === 'number') {
+      periodStartMeterReading = lastPayment.meterReadingAtPayment
     }
     
     const currentConsumption = Math.max(0, latestMeterReading - periodStartMeterReading)
@@ -2934,8 +2931,9 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       ? Math.max(0, (prevMonthReadings[0].cubicMeters || 0) - (prevMonthReadings[prevMonthReadings.length - 1].cubicMeters || 0))
       : 0
     
-    // Total Consumption = sum of current and previous
-    const totalConsumption = currentConsumption + previousConsumption
+    // Total Consumption = cumulative meter reading (not sum of current+previous)
+    // This represents the absolute meter reading from the device
+    const totalConsumption = latestMeterReading
     
     
     const monthlyBill = computeResidentialBill(currentConsumption)
