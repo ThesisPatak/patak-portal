@@ -977,7 +977,11 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const monthlyBill = computeResidentialBill(monthlyConsumption)
     const estimatedMonthlyBill = computeResidentialBill(monthlyConsumption * (30 / (new Date().getDate())))
     
-    const isOnline = device.lastSeen && (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 1000 // 5 second threshold
+    const now = Date.now()
+    const lastSeenTime = device.lastSeen ? new Date(device.lastSeen).getTime() : 0
+    const lastReadingTime = lastReading ? new Date(lastReading.receivedAt || lastReading.timestamp).getTime() : 0
+    const lastActivityTime = Math.max(lastSeenTime, lastReadingTime)
+    const isOnline = lastActivityTime && (now - lastActivityTime) < 10 * 1000 // 10 second threshold
     const hasAlert = monthlyConsumption > 100 // Alert if consumption > 100 m³
     
     summary[device.deviceId] = {
@@ -1906,8 +1910,9 @@ app.post('/api/admin/users/:username/reset-meter', authMiddleware, async (req, r
     resetCommands = []
   }
   
-  // Add reset command for each device
+  // Mark devices as needing reset (for legacy polling endpoints)
   userDevices.forEach(device => {
+    device.resetRequested = true
     resetCommands.push({
       deviceId: device.deviceId,
       username: user.username,
@@ -1917,7 +1922,14 @@ app.post('/api/admin/users/:username/reset-meter', authMiddleware, async (req, r
     })
     console.log(`[RESET-METER] Reset command queued for device: ${device.deviceId}`)
   })
-  
+
+  // Persist device flag changes so /devices/check-commands can respond
+  try {
+    writeJSON(DEVICES_FILE, devices)
+  } catch (e) {
+    console.error('[RESET-METER] Error saving devices after marking reset:', e)
+  }
+
   // Save reset commands
   try {
     fs.writeFileSync(RESET_COMMANDS_FILE, JSON.stringify(resetCommands, null, 2))
@@ -3000,12 +3012,12 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
         const lastSeenTime = d.lastSeen ? new Date(d.lastSeen).getTime() : null;
         const createdAtTime = d.createdAt ? new Date(d.createdAt).getTime() : null;
         
-        // Within 5 seconds of last activity = online
-        if (lastSeenTime && (now - lastSeenTime) < 5 * 1000) {
+        // Within 10 seconds of last activity = online
+        if (lastSeenTime && (now - lastSeenTime) < 10 * 1000) {
           computedStatus = 'online';
         }
-        // Just registered (within 5 seconds of creation) and no activity yet = online (registered)
-        else if (createdAtTime && (now - createdAtTime) < 5 * 1000 && !lastSeenTime) {
+        // Just registered (within 10 seconds of creation) and no activity yet = online (registered)
+        else if (createdAtTime && (now - createdAtTime) < 10 * 1000 && !lastSeenTime) {
           computedStatus = 'online';
         }
         // Otherwise = offline
