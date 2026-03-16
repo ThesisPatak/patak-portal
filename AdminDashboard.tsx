@@ -145,6 +145,24 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Extract shared bill status calculation to avoid duplication
+  const calculateBillStatus = (user: any) => {
+    if (user.cubicMeters === 0 || !user.lastReadingTimestamp) {
+      return { text: 'Not yet active', color: '#999' };
+    }
+    
+    const firstReadingDate = new Date(user.lastReadingTimestamp);
+    const dueDate = new Date(firstReadingDate);
+    dueDate.setMonth(dueDate.getMonth() + 1);
+    
+    const now = new Date();
+    if (now > dueDate) {
+      return { text: '🔴 Overdue', color: '#ff6b6b' };
+    } else {
+      return { text: '⏳ Pending', color: '#ff9800' };
+    }
+  };
+
   // Generate billing history for display in modal
   const generateBillingHistory = (readings: any[], createdAt: string) => {
     const history = [];
@@ -686,25 +704,7 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       ) : (
                         filteredUsers.map((user) => {
-                          // Calculate bill status
-                          const getBillStatus = () => {
-                            if (user.cubicMeters === 0 || !user.lastReadingTimestamp) {
-                              return { text: 'Not yet active', color: '#999' };
-                            }
-                            
-                            const firstReadingDate = new Date(user.lastReadingTimestamp);
-                            const dueDate = new Date(firstReadingDate);
-                            dueDate.setMonth(dueDate.getMonth() + 1);
-                            
-                            const now = new Date();
-                            if (now > dueDate) {
-                              return { text: '🔴 Overdue', color: '#ff6b6b' };
-                            } else {
-                              return { text: '⏳ Pending', color: '#ff9800' };
-                            }
-                          };
-                          
-                          const billStatus = getBillStatus();
+                          const billStatus = calculateBillStatus(user);
                           
                           return (
                           <div
@@ -815,25 +815,7 @@ const AdminDashboard: React.FC = () => {
                         </thead>
                         <tbody>
                           {filteredUsers.map((user) => {
-                            // Calculate bill status
-                            const getBillStatus = () => {
-                              if (user.cubicMeters === 0 || !user.lastReadingTimestamp) {
-                                return { text: 'Not yet active', color: '#999' };
-                              }
-                              
-                              const firstReadingDate = new Date(user.lastReadingTimestamp);
-                              const dueDate = new Date(firstReadingDate);
-                              dueDate.setMonth(dueDate.getMonth() + 1);
-                              
-                              const now = new Date();
-                              if (now > dueDate) {
-                                return { text: '🔴 Overdue', color: '#ff6b6b' };
-                              } else {
-                                return { text: '⏳ Pending', color: '#ff9800' };
-                              }
-                            };
-                            
-                            const billStatus = getBillStatus();
+                            const billStatus = calculateBillStatus(user);
                             
                             return (
                             <tr key={user.id} style={{ borderBottom: "1px solid #e0e0e0", transition: "background 0.2s" }}
