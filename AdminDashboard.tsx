@@ -919,7 +919,13 @@ const AdminDashboard: React.FC = () => {
                               Household
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
-                              Consumption (m³)
+                              Current Consumption (m³)
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Previous Consumption (m³)
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Total Consumption (m³)
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Amount Due (₱)
@@ -964,6 +970,12 @@ const AdminDashboard: React.FC = () => {
                             >
                               <td style={{ padding: "1rem", color: "#333", fontSize: "0.95rem" }}>
                                 {user.username}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
+                                {(userConsumption[user.id]?.present || 0).toFixed(6)}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
+                                {(userConsumption[user.id]?.previous || 0).toFixed(6)}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, color: "#0057b8", fontSize: "0.95rem" }}>
                                 {(user.cubicMeters || 0).toFixed(6)}
