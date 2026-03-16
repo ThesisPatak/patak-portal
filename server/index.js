@@ -49,9 +49,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me'
 // Pre-configured allowed devices (whitelist)
 // Only these devices can be registered by users
 const ALLOWED_DEVICES = [
-  { deviceId: 'ESP32-001', houseId: 'house1', location: 'Main House' },
-  { deviceId: 'ESP32-002', houseId: 'house2', location: 'Secondary House' },
-  { deviceId: 'ESP32-003', houseId: 'house3', location: 'Office' }
+  { deviceId: 'esp32-001', houseId: 'house1', location: 'Main House' },
+  { deviceId: 'esp32-002', houseId: 'house2', location: 'Secondary House' },
+  { deviceId: 'esp32-003', houseId: 'house3', location: 'Office' }
 ]
 
 // File operation queue to prevent concurrent read/write race conditions
