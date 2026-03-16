@@ -16,7 +16,8 @@
     "volumes": [
       {
         "name": "patak-data",
-        "mountPath": "/data"
+        "mountPath": "/data",
+        "persistent": true
       }
     ]
   }
