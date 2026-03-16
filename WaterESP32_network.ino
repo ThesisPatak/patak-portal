@@ -230,6 +230,7 @@ void checkForServerCommands() {
 
   HTTPClient http;
   http.begin("https://patak-portal-production-351f.up.railway.app/devices/check-commands");
+  http.setInsecure(); // Skip certificate validation for HTTPS
   http.addHeader("Content-Type", "application/json");
   
   char body[256];
