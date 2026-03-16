@@ -3054,19 +3054,36 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
       totalLiters: currentConsumption * 1000,
       deviceCount: userDevices.length,
       lastReading: latestReading ? { cubicMeters: latestReading.cubicMeters, timestamp: latestReading.timestamp } : null,
+      // Compute per-device online status using the most recent reading for that device
       devices: userDevices.map(d => {
+        const readingsForDevice = deviceReadings.filter(r => r.deviceId === d.deviceId)
+        const sortedForDevice = sortReadingsByDateDesc([...readingsForDevice])
+        const lastReadingForDevice = sortedForDevice[0]
+
         const computedStatus = isDeviceOnline({
           lastSeen: d.lastSeen,
-          lastReadingTimestamp: latestReading ? (latestReading.receivedAt || latestReading.timestamp) : null,
+          lastReadingTimestamp: lastReadingForDevice ? (lastReadingForDevice.receivedAt || lastReadingForDevice.timestamp) : null,
           createdAt: d.createdAt
         }) ? 'online' : 'offline'
 
         return {
           deviceId: d.deviceId,
           status: computedStatus,
+          isOnline: computedStatus === 'online',
           lastSeen: d.lastSeen,
           createdAt: d.createdAt
         };
+      }),
+      // If at least one device is online, consider the user online
+      isOnline: userDevices.some(d => {
+        const readingsForDevice = deviceReadings.filter(r => r.deviceId === d.deviceId)
+        const sortedForDevice = sortReadingsByDateDesc([...readingsForDevice])
+        const lastReadingForDevice = sortedForDevice[0]
+        return isDeviceOnline({
+          lastSeen: d.lastSeen,
+          lastReadingTimestamp: lastReadingForDevice ? (lastReadingForDevice.receivedAt || lastReadingForDevice.timestamp) : null,
+          createdAt: d.createdAt
+        })
       }),
       monthlyBill: monthlyBill,
       dataSource: userDevices.length > 0 ? 'registered_devices' : (deviceReadings.length > 0 ? 'fallback_all_readings' : 'no_data')
