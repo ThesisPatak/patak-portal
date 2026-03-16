@@ -1,0 +1,30 @@
+========================================
+ESP32 DEVICE TOKENS
+========================================
+
+DEVICE: ESP32-001
+TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VJZCI6ImVzcDMyLTAwMSIsInR5cGUiOiJkZXZpY2UiLCJpYXQiOjE3NzM2MjU1NDksImV4cCI6MjA4OTIwMTU0OX0.bFVtkwWenDRpasVjmkYyctsSnhPYfO_OHTuLlzPt2Lw
+
+Serial commands:
+clear
+token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VJZCI6ImVzcDMyLTAwMSIsInR5cGUiOiJkZXZpY2UiLCJpYXQiOjE3NzM2MjU1NDksImV4cCI6MjA4OTIwMTU0OX0.bFVtkwWenDRpasVjmkYyctsSnhPYfO_OHTuLlzPt2Lw
+
+========================================
+
+DEVICE: ESP32-002
+TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VJZCI6ImVzcDMyLTAwMiIsInR5cGUiOiJkZXZpY2UiLCJpYXQiOjE3NzM2MjU1NDksImV4cCI6MjA4OTIwMTU0OX0.UioqMNMjxGcyk_66Z3hVqQuggKTf2prVIPnh77S2yXE
+
+Serial commands:
+clear
+token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VJZCI6ImVzcDMyLTAwMiIsInR5cGUiOiJkZXZpY2UiLCJpYXQiOjE3NzM2MjU1NDksImV4cCI6MjA4OTIwMTU0OX0.UioqMNMjxGcyk_66Z3hVqQuggKTf2prVIPnh77S2yXE
+
+========================================
+
+DEVICE: ESP32-003
+TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VJZCI6ImVzcDMyLTAwMyIsInR5cGUiOiJkZXZpY2UiLCJpYXQiOjE3NzM2MjU1NDksImV4cCI6MjA4OTIwMTU0OX0.U_NQJAjRqMzswj__EdVrt3qRafbiUpV36zZKFtQ9ots
+
+Serial commands:
+clear
+token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VJZCI6ImVzcDMyLTAwMyIsInR5cGUiOiJkZXZpY2UiLCJpYXQiOjE3NzM2MjU1NDksImV4cCI6MjA4OTIwMTU0OX0.U_NQJAjRqMzswj__EdVrt3qRafbiUpV36zZKFtQ9ots
+
+========================================

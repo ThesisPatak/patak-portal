@@ -7,6 +7,7 @@ import cors from 'cors'
 import compression from 'compression'
 import crypto from 'crypto'
 import { fileURLToPath } from 'url'
+import { computeResidentialBill } from '../billingUtils.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -485,35 +486,7 @@ function sortReadingsByDateDesc(readings) {
 // Tiered water billing calculation based on official schedule
 // Minimum: 255.00 PHP for up to 10 m³
 // Excess rates: 11-20: 33.00, 21-30: 40.50, 31-40: 48.00, 41+: 55.50 PHP per m³
-function calculateWaterBill(cubicMeters) {
-  // Validate input
-  if (!Number.isFinite(cubicMeters) || cubicMeters < 0) {
-    console.error(`[BILL] Invalid cubic meters value: ${cubicMeters}`)
-    return 255.00 // Return minimum as fallback
-  }
-  
-  const MINIMUM_CHARGE_CENTS = 25500 // 255.00 PHP in cents
-  const FREE_USAGE = 10 // cubic meters included in minimum
-  
-  if (cubicMeters <= FREE_USAGE) {
-    return MINIMUM_CHARGE_CENTS / 100
-  }
-  
-  const excess = cubicMeters - FREE_USAGE
-  let excessChargeCents = 0
-  
-  // Apply tiered rates for usage above 10 m³ (use cents to avoid float precision)
-  const tier1 = Math.min(excess, 10)           // 11-20 m³: 33.00 per m³
-  const tier2 = Math.min(Math.max(excess - 10, 0), 10)  // 21-30 m³: 40.50 per m³
-  const tier3 = Math.min(Math.max(excess - 20, 0), 10)  // 31-40 m³: 48.00 per m³
-  const tier4 = Math.max(excess - 30, 0)      // 41+ m³: 55.50 per m³
-  
-  // All math in cents to avoid float precision errors
-  excessChargeCents = Math.round((tier1 * 3300) + (tier2 * 4050) + (tier3 * 4800) + (tier4 * 5550))
-  
-  // Convert back to PHP (round to 2 decimal places)
-  return Math.round((MINIMUM_CHARGE_CENTS + excessChargeCents)) / 100
-}
+// Use centralized billing function from billingUtils for consistency
 
 function authMiddleware(req, res, next) {
   // Support token from both Authorization header and query string
@@ -960,8 +933,8 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     
     // Since ESP32 sends cumulative totals, use period consumption for billing (not cumulative total)
     const monthlyConsumption = currentPeriodConsumption
-    const monthlyBill = calculateWaterBill(monthlyConsumption)
-    const estimatedMonthlyBill = calculateWaterBill(monthlyConsumption * (30 / (new Date().getDate())))
+    const monthlyBill = computeResidentialBill(monthlyConsumption)
+    const estimatedMonthlyBill = computeResidentialBill(monthlyConsumption * (30 / (new Date().getDate())))
     
     const isOnline = device.lastSeen && (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 60 * 1000 // 5 min threshold
     const hasAlert = monthlyConsumption > 100 // Alert if consumption > 100 m³
@@ -2962,7 +2935,7 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
     const userPayments = payments.filter(p => p.username === user.username)
     
     
-    const monthlyBill = calculateWaterBill(currentConsumption)
+    const monthlyBill = computeResidentialBill(currentConsumption)
 
     return {
       id: user.id,
