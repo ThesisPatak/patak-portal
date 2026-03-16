@@ -28,6 +28,10 @@ const AdminDashboard: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [userReadings, setUserReadings] = useState<any[]>([]);
+  const [userPayments, setUserPayments] = useState<any[]>([]);
+  const [readingsLoading, setReadingsLoading] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
