@@ -931,6 +931,9 @@ const AdminDashboard: React.FC = () => {
                               Due Date
                             </th>
                             <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
+                              Device Status
+                            </th>
+                            <th style={{ padding: "1rem", textAlign: "center", color: "#333", fontWeight: 600, fontSize: "0.95rem" }}>
                               Action
                             </th>
                           </tr>
@@ -980,6 +983,9 @@ const AdminDashboard: React.FC = () => {
                                   const due = new Date(base.getTime() + 31 * 24 * 60 * 60 * 1000);
                                   return due.toISOString().split('T')[0];
                                 })()}
+                              </td>
+                              <td style={{ padding: "1rem", textAlign: "center", fontWeight: 600, fontSize: "0.85rem", color: user.isOnline ? "#4caf50" : "#ff6b6b" }}>
+                                {user.isOnline ? '🟢 Online' : '🔴 Offline'}
                               </td>
                               <td style={{ padding: "1rem", textAlign: "center" }}>
                                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
