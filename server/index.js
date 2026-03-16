@@ -2077,6 +2077,48 @@ app.get('/api/device/:deviceId/pending-commands', (req, res) => {
   res.json({ hasPendingCommands: false, commands: [] })
 })
 
+// Legacy device polling endpoint (used by older ESP32 firmware)
+// Accepts POST { deviceId } and returns a JSON response containing "reset" when a reset is queued.
+app.post('/devices/check-commands', (req, res) => {
+  const { deviceId } = req.body || {}
+  if (!deviceId) {
+    return res.status(400).json({ error: 'deviceId required' })
+  }
+
+  const RESET_COMMANDS_FILE = path.join(DATA_DIR, 'reset_commands.json')
+  let resetCommands = []
+  try {
+    if (fs.existsSync(RESET_COMMANDS_FILE)) {
+      resetCommands = JSON.parse(fs.readFileSync(RESET_COMMANDS_FILE, 'utf8'))
+      if (!Array.isArray(resetCommands)) resetCommands = []
+    }
+  } catch (e) {
+    console.error('[LEGACY-CHECK-CMDS] Error reading reset commands:', e)
+    return res.status(500).json({ error: 'Failed to read commands' })
+  }
+
+  const pendingCommands = resetCommands.filter(cmd => cmd.deviceId === deviceId && !cmd.executed)
+  if (pendingCommands.length > 0) {
+    const now = new Date().toISOString()
+    const updatedCommands = resetCommands.map(cmd => {
+      if (cmd.deviceId === deviceId && !cmd.executed) {
+        cmd.executed = true
+        cmd.executedAt = now
+      }
+      return cmd
+    })
+    try {
+      fs.writeFileSync(RESET_COMMANDS_FILE, JSON.stringify(updatedCommands, null, 2))
+    } catch (e) {
+      console.error('[LEGACY-CHECK-CMDS] Error saving reset commands:', e)
+    }
+
+    return res.json({ reset: true, commands: pendingCommands.map(cmd => ({ type: 'reset', command: 'RESET_METER', username: cmd.username })) })
+  }
+
+  return res.json({ reset: false, commands: [] })
+})
+
 // User: Record a payment for their bill
 app.post('/api/payments/record', authMiddleware, async (req, res) => {
   const timestamp = new Date().toISOString()
