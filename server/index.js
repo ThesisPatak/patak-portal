@@ -981,7 +981,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const lastSeenTime = device.lastSeen ? new Date(device.lastSeen).getTime() : 0
     const lastReadingTime = lastReading ? new Date(lastReading.receivedAt || lastReading.timestamp).getTime() : 0
     const lastActivityTime = Math.max(lastSeenTime, lastReadingTime)
-    const isOnline = lastActivityTime && (nowMs - lastActivityTime) < 10 * 1000 // 10 second threshold
+    const isOnline = lastActivityTime && (nowMs - lastActivityTime) < 15 * 1000 // 15 second threshold
     const hasAlert = monthlyConsumption > 100 // Alert if consumption > 100 m³
     
     summary[device.deviceId] = {
@@ -3012,12 +3012,12 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
         const lastSeenTime = d.lastSeen ? new Date(d.lastSeen).getTime() : null;
         const createdAtTime = d.createdAt ? new Date(d.createdAt).getTime() : null;
         
-        // Within 10 seconds of last activity = online
-        if (lastSeenTime && (nowMs - lastSeenTime) < 10 * 1000) {
+        // Within 15 seconds of last activity = online
+        if (lastSeenTime && (nowMs - lastSeenTime) < 15 * 1000) {
           computedStatus = 'online';
         }
-        // Just registered (within 10 seconds of creation) and no activity yet = online (registered)
-        else if (createdAtTime && (nowMs - createdAtTime) < 10 * 1000 && !lastSeenTime) {
+        // Just registered (within 15 seconds of creation) and no activity yet = online (registered)
+        else if (createdAtTime && (nowMs - createdAtTime) < 15 * 1000 && !lastSeenTime) {
           computedStatus = 'online';
         }
         // Otherwise = offline
