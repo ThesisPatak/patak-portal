@@ -42,7 +42,7 @@ unsigned long lastSaveMillis = 0;
 unsigned long lastTokenPollMillis = 0;  // For polling backend for pending tokens
 
 // Device Authentication
-String DEVICE_ID = "ESP32-001";  // Change per device or use MAC address
+String DEVICE_ID = "esp32-001";  // Change per device or use MAC address
 String DEVICE_TOKEN = "";  // Will be set via serial command or loaded from Preferences
 
 // Backend URL for token claiming
