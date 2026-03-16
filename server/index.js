@@ -977,7 +977,7 @@ app.get('/api/houses', authMiddleware, (req, res) => {
     const monthlyBill = computeResidentialBill(monthlyConsumption)
     const estimatedMonthlyBill = computeResidentialBill(monthlyConsumption * (30 / (new Date().getDate())))
     
-    const isOnline = device.lastSeen && (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 60 * 1000 // 5 min threshold
+    const isOnline = device.lastSeen && (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 1000 // 5 second threshold
     const hasAlert = monthlyConsumption > 100 // Alert if consumption > 100 m³
     
     summary[device.deviceId] = {
@@ -3000,12 +3000,12 @@ app.get('/api/admin/dashboard', authMiddleware, (req, res) => {
         const lastSeenTime = d.lastSeen ? new Date(d.lastSeen).getTime() : null;
         const createdAtTime = d.createdAt ? new Date(d.createdAt).getTime() : null;
         
-        // Within 5 minutes of last activity = online
-        if (lastSeenTime && (now - lastSeenTime) < 5 * 60 * 1000) {
+        // Within 5 seconds of last activity = online
+        if (lastSeenTime && (now - lastSeenTime) < 5 * 1000) {
           computedStatus = 'online';
         }
-        // Just registered (within 5 minutes of creation) and no activity yet = online (registered)
-        else if (createdAtTime && (now - createdAtTime) < 5 * 60 * 1000 && !lastSeenTime) {
+        // Just registered (within 5 seconds of creation) and no activity yet = online (registered)
+        else if (createdAtTime && (now - createdAtTime) < 5 * 1000 && !lastSeenTime) {
           computedStatus = 'online';
         }
         // Otherwise = offline
