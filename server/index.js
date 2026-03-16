@@ -1127,11 +1127,37 @@ app.post('/api/readings', async (req, res) => {
   
   // CRITICAL VALIDATION: Check if device actually exists in database
   const devices = readJSON(DEVICES_FILE)
-  const device = devices.find(d => d.deviceId === deviceId)
+  let device = devices.find(d => d.deviceId === deviceId)
+
+  if (!device) {
+    console.log(`[ESP32-READING] ⚠ Device not found in database: ${deviceId} - attempting auto-register based on username match`)
+
+    // Try auto-registering by matching a user with the same username as the deviceId
+    const users = readJSON(USERS_FILE)
+    const userMatch = users.find(u => u.username && u.username.toLowerCase() === deviceId.toLowerCase())
+
+    if (userMatch) {
+      const allowedDevice = ALLOWED_DEVICES.find(d => d.deviceId === deviceId)
+      device = {
+        deviceId,
+        ownerUserId: userMatch.id,
+        houseId: allowedDevice ? allowedDevice.houseId : null,
+        location: allowedDevice ? allowedDevice.location : null,
+        status: 'registered',
+        lastSeen: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      }
+      devices.push(device)
+      writeJSON(DEVICES_FILE, devices)
+      console.log(`[ESP32-READING] ✓ Auto-registered device ${deviceId} for user ${userMatch.username}`)
+    }
+  }
+
   if (!device) {
     console.log(`[ESP32-READING] ✗ REJECTED - Device not found in database: ${deviceId}`)
     return res.status(403).json({ error: 'Device not registered. Please register device first.' })
   }
+
   console.log(`[ESP32-READING] ✓ Device validated: ${deviceId} belongs to user ${device.ownerUserId}`)
   
   // CRITICAL VALIDATION: Ensure all values are valid numbers
